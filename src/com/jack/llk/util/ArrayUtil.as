@@ -60,12 +60,12 @@ package com.jack.llk.util
 		{
 			var arr:Array = [];
 			
-			var w:int = map.getW();
-			var h:int = map.getH();
+			var w:int = map.getW() - 2;
+			var h:int = map.getH() - 2;
 			
-			for (var i:int = 0; i < w; i++) 
+			for (var i:int = 1; i <= w; i++) 
 			{
-				for (var j:int = 0; j < h; j++) 
+				for (var j:int = 1; j <= h; j++) 
 				{
 					arr.push(map.get(i, j));
 				}				
@@ -77,14 +77,14 @@ package com.jack.llk.util
 		public static function drawWrappedMap(arr:Array, map:Array2):void
 		{
 			var n:int = arr.length;
-			var w:int = map.getW();
-			var h:int = map.getH();
+			var w:int = map.getW() - 2;
+			var h:int = map.getH() - 2;
 			
-			for (var i:int = 0; i < w; i++) 
+			for (var i:int = 1; i <= w; i++) 
 			{
-				for (var j:int = 0; j < h; j++) 
+				for (var j:int = 1; j <= h; j++) 
 				{
-					map.set(i, j, arr[i*h+j]);
+					map.set(i, j, arr[(i-1)*h+(j-1)]);
 				}				
 			}
 		}

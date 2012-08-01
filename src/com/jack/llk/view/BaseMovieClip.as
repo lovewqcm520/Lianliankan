@@ -22,7 +22,7 @@ package com.jack.llk.view
 			onClickFunc = func;
 		}
 		
-		private function onTouch(event:TouchEvent):void
+		protected function onTouch(event:TouchEvent):void
 		{
 			var touch:Touch = event.getTouch(this);
 			

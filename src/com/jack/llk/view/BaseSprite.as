@@ -10,7 +10,8 @@ package com.jack.llk.view
 	
 	public class BaseSprite extends Sprite
 	{
-		private var onClickFunc:Function;
+		protected var onClickFunc:Function;
+		protected var onClickArgs:Array;
 		
 		public function BaseSprite()
 		{
@@ -45,12 +46,13 @@ package com.jack.llk.view
 			}
 		}
 		
-		public function set onClick(func:Function):void
+		public function onClick(func:Function, ...args):void
 		{
 			onClickFunc = func;
+			onClickArgs = args;
 		}
 		
-		private function onTouch(event:TouchEvent):void
+		protected function onTouch(event:TouchEvent):void
 		{
 			var touch:Touch = event.getTouch(this);
 			
@@ -59,7 +61,7 @@ package com.jack.llk.view
 				if(touch.phase == TouchPhase.ENDED)
 				{
 					if(onClickFunc != null)
-						onClickFunc.apply();
+						onClickFunc.apply(null, onClickArgs);
 				}
 			}
 		}
@@ -67,6 +69,7 @@ package com.jack.llk.view
 		override public function dispose():void
 		{
 			onClickFunc = null;
+			onClickArgs = null;
 			removeEventListener(TouchEvent.TOUCH, onTouch);
 			
 			super.dispose();

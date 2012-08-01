@@ -63,7 +63,7 @@ package com.jack.llk.view.panel
 			}
 			else
 			{
-				this.onClick = startGameAtChapter;
+				this.onClick(startGameAtChapter);
 			}
 		}
 		

@@ -3,18 +3,12 @@ package com.jack.llk.view.view
 	import com.jack.llk.control.Constant;
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.control.events.ViewEvent;
-	import com.jack.llk.log.Log;
-	import com.jack.llk.util.GameUtil;
 	import com.jack.llk.view.CountDownSprite;
-	import com.jack.llk.view.ItemMovieClip;
 	import com.jack.llk.view.button.BaseButton;
-	import com.jack.llk.vo.map.Map;
 	
 	import flash.desktop.NativeApplication;
 	import flash.events.StatusEvent;
-	import flash.utils.getTimer;
 	
-	import starling.core.Starling;
 	import starling.display.Image;
 	import starling.display.Sprite;
 	import starling.events.Event;
@@ -26,7 +20,7 @@ package com.jack.llk.view.view
 		private var aboutScreen:AboutView;
 
 		private var countDown:CountDownSprite;
-		private var gameCanvas:Sprite;
+		private var gameCanvas:GameContainer;
 
 		public function GameView()
 		{
@@ -44,7 +38,10 @@ package com.jack.llk.view.view
 		public function start():void
 		{
 			initGameCenter();
+			setTools();
 		}
+		
+
 		
 		private function initialize():void
 		{
@@ -114,50 +111,43 @@ package com.jack.llk.view.view
 		
 		private function initGameCenter():void
 		{
-			var oldTime:Number = getTimer();
-			
-			var map:Map = new Map(10, 10);
-			
-			var itemW:Number = 36;
-			var itemH:Number = 38;
-			
-			var col:int = 10;
-			var row:int = 10;
-			var gapX:Number = 0;
-			var gapY:Number = 0;
-			
-			gameCanvas = new Sprite();
-			
-			for (var i:int = 0; i < col; i++) 
-			{
-				for (var j:int = 0; j < row; j++) 
-				{
-					var itemIndex:int = int(map.map.get(i, j));
-					if(itemIndex != Map.EMPTY)
-					{
-						var item:ItemMovieClip = GameUtil.getSmallItemAt(itemIndex);
-						if(item)
-						{
-							item.loop = true;
-							//item.stop();
-							item.x = i*(itemW+gapX);
-							item.y = j*(itemH+gapY);
-							gameCanvas.addChild(item);
-							Starling.juggler.add(item);
-						}
-						else
-						{
-							trace("initGameCenter wrong", itemIndex);
-						}
-					}
-				}				
-			}
-			
+			gameCanvas = new GameContainer();
+			gameCanvas.scaleX = gameCanvas.scaleY = 1.2;
 			addChildScaled(gameCanvas);
 			gameCanvas.x = (width-gameCanvas.width)/2;
 			gameCanvas.y = (height-gameCanvas.height)/2;
-			
-			Log.traced("initGameCenter takes", getTimer()-oldTime, "ms.");
 		}
+		
+		private function setTools():void
+		{
+			var toolY:Number = 700;
+			var gapX:Number = 120;
+			var firstX:Number = 90;
+			
+			// set refresh tool
+			var upState:Texture = Assets.getTexture("reset_n");
+			var text:String="";
+			var downState:Texture = Assets.getTexture("reset_p");	
+			var refreshBtn:BaseButton = new BaseButton(upState, text, downState);
+			addChildScaled(refreshBtn, firstX, toolY);
+			refreshBtn.onClick = gameCanvas.refreshMap;
+			
+			// set bomb tool
+			var upState1:Texture = Assets.getTexture("bomb_n");
+			var text1:String="";
+			var downState1:Texture = Assets.getTexture("bomb_p");	
+			var bombBtn:BaseButton = new BaseButton(upState1, text1, downState1);
+			addChildScaled(bombBtn, firstX+gapX*1, toolY);
+			bombBtn.onClick = gameCanvas.bomb2Items;
+			
+			// set search tool
+			var upState2:Texture = Assets.getTexture("find_n");
+			var text2:String="";
+			var downState2:Texture = Assets.getTexture("find_p");	
+			var searchBtn:BaseButton = new BaseButton(upState2, text2, downState2);
+			addChildScaled(searchBtn, firstX+gapX*2, toolY);
+			searchBtn.onClick = gameCanvas.autoFindLine;
+		}
+	
 	}
 }

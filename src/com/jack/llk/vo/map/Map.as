@@ -18,12 +18,17 @@ package com.jack.llk.vo.map
 		//private var _vector:DLinkedList; //保存符合条件线段的地方
 		private var _countOfPerItem:uint; //每个项目出现的次数(偶数)
 		//private var _result:MatchResult; //暂存符合条件的结果
+		private var width:int;
+
+		private var height:int;
 		
-		public function Map(w:int, h:int, level:uint = 33)
+		public function Map(w:int, h:int, level:uint = 5)
 		{
+			width = w+2;
+			height = h+2;
 			//加2是为了加一圈0
-			map = new Array2( w+2, h+2 );
-			var tmp:int = w*h;
+			map = new Array2( width, height );
+			var tmp:int = (w)*(h);
 			_array = new Array(tmp);
 //			_vector = null;
 //			_result = new MatchResult();
@@ -105,6 +110,16 @@ package com.jack.llk.vo.map
 		
 		private function _initMap():void
 		{
+			// 初始化全部为空
+			for (var k:int = 0; k < width; k++) 
+			{
+				for (var m:int = 0; m < height; m++) 
+				{
+					map.set(k, m, EMPTY);
+				}				
+			}
+			
+			
 			//一维数组初始化和乱序
 			for (var n:uint = 0; n < _array.length; n++)
 				_array[n] = EMPTY;
@@ -186,19 +201,22 @@ package com.jack.llk.vo.map
 			var y:int;
 			
 			for(y = a.y; y >= 0; y--)
-				if(map[a.x][y] == -1 && map[b.x][y] == -1 && hTest(new Point(a.x, y), new Point(b.x, y)))
+				if(map.get(a.x, y) == -1 && map.get(b.x, y) == -1 && hTest(new Point(a.x, y), new Point(b.x, y)))
 					ll.push(new line(0, new Point(a.x, y), new Point(b.x, y)));
 			
 			for(y = a.y; y < map.getH(); y++)
-				if(map[a.x][y] == -1 && map[b.x][y] == -1 && hTest(new Point(a.x, y), new Point(b.x, y)))
+				if(map.get(a.x, y) == -1 && map.get(b.x, y) == -1 && hTest(new Point(a.x, y), new Point(b.x, y)))
 					ll.push(new line(0, new Point(a.x, y), new Point(b.x, y)));
 			
 			for(x = a.x; x >= 0; x--)
-				if(map[x][a.y] == -1 && map[x][b.y] == -1 && vTest(new Point(x, a.y), new Point(x, b.y)))
+			{
+				trace(x, a.y, map.get(x, a.y), x, b.y, map.get(x, b.y));
+				if(map.get(x, a.y) == -1 && map.get(x, b.y) == -1 && vTest(new Point(x, a.y), new Point(x, b.y)))
 					ll.push(new line(1, new Point(x, a.y), new Point(x, b.y)));
+			}
 			
 			for(x = a.x; x < map.getW(); x++)
-				if(map[x][a.y] == -1 && map[x][b.y] == -1 && vTest(new Point(x, a.y), new Point(x, b.y)))
+				if(map.get(x, a.y) == -1 && map.get(x, b.y) == -1 && vTest(new Point(x, a.y), new Point(x, b.y)))
 					ll.push(new line(1, new Point(x, a.y), new Point(x, b.y)));
 			
 			return ll;
