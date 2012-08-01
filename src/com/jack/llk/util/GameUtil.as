@@ -1,0 +1,37 @@
+package com.jack.llk.util
+{
+	import com.jack.llk.control.asset.Assets;
+	import com.jack.llk.view.BaseMovieClip;
+	
+	import starling.textures.Texture;
+	import com.jack.llk.view.ItemMovieClip;
+
+	public class GameUtil
+	{
+		public function GameUtil()
+		{
+		}
+		
+		public static function getSmallItemAt(index:int, fps:Number=12):ItemMovieClip
+		{
+			var prefix:String = "SMALL_ITEM_" + index.toString();
+			
+			var t:Vector.<Texture> = Assets.getTextures(prefix);
+			if(t && t.length > 0)
+				return new ItemMovieClip(t, fps);
+			
+			return null;
+		}
+		
+		public static function getBigItemAt(index:int, fps:Number=12):BaseMovieClip
+		{
+			var prefix:String = "BIG_ITEM_" + index.toString();
+			
+			var t:Vector.<Texture> = Assets.getTextures(prefix);
+			if(t && t.length > 0)
+				return new BaseMovieClip(t, fps);
+			
+			return null;
+		}
+	}
+}

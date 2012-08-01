@@ -1,7 +1,7 @@
 package 
 {
-	import com.jack.Game;
-	import com.jack.control.asset.Assets;
+	import com.jack.llk.Game;
+	import com.jack.llk.control.asset.Assets;
 	
 	import starling.display.Sprite;
 	import starling.events.Event;

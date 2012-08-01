@@ -1,11 +1,11 @@
 package
 {
-	import com.jack.Game;
-	import com.jack.control.Constant;
-	import com.jack.control.Global;
-	import com.jack.control.asset.Assets;
-	import com.jack.log.Log;
-	import com.jack.view.view.Splash;
+	import com.jack.llk.Game;
+	import com.jack.llk.control.Constant;
+	import com.jack.llk.control.Global;
+	import com.jack.llk.control.asset.Assets;
+	import com.jack.llk.log.Log;
+	import com.jack.llk.view.view.Splash;
 	
 	import flash.display.Sprite;
 	import flash.display.StageAlign;
@@ -33,7 +33,7 @@ package
 			
 			// show the splash view
 			var splash:Splash = new Splash(Assets.getBitmap("asset_bg_splash"), 
-				Game.getInstance().showGame, 3000, Splash.SCALE_MODE_STRETCH);
+				Game.getInstance().showGame, 1000, Splash.SCALE_MODE_STRETCH);
 			stage.addChild(splash);
 		}		
 		
@@ -47,7 +47,7 @@ package
 			var viewPort:Rectangle = new Rectangle(0, 0, stage.fullScreenWidth, stage.fullScreenHeight);
 			mStarling = new Starling(Startup, stage, viewPort, null, "auto");
 			
-			mStarling.enableErrorChecking = true;
+			mStarling.enableErrorChecking = false;
 			mStarling.showStats = true;
 			
 			mStarling.start();
