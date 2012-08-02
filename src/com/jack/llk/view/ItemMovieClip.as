@@ -3,6 +3,7 @@ package com.jack.llk.view
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.control.factors.SoundFactors;
 	import com.jack.llk.control.sound.SoundManager;
+	import com.jack.llk.util.Delay;
 	import com.jack.llk.util.GameUtil;
 	
 	import starling.core.Starling;
@@ -38,7 +39,7 @@ package com.jack.llk.view
 		
 		private function initialize():void
 		{
-			smallItem = GameUtil.getSmallItemAt(itemIndex);
+			smallItem = GameUtil.getSmallItemAt(itemIndex, 3);
 			smallItem.loop = true;
 			smallItem.stop();
 			addChild(smallItem);
@@ -57,6 +58,7 @@ package com.jack.llk.view
 				
 				// show the explosion
 				var mcExplosion:OnceMovieClip = new OnceMovieClip(t, dispose, true, 20);
+				mcExplosion.scaleX = mcExplosion.scaleY = 0.5;
 				mcExplosion.x = (smallItem.width-mcExplosion.width)/2;
 				mcExplosion.y = (smallItem.height-mcExplosion.height)/2;
 				addChild(mcExplosion);
@@ -98,10 +100,13 @@ package com.jack.llk.view
 			smallItem.stop();
 		}
 		
-		public function shine():void
+		public function showFindAnimation():void
 		{
-			smallItem.play();
-			Starling.juggler.add(smallItem);
+			// show the big item
+			gotoBig();
+			
+			// go back to normal small status after some times
+			Delay.doIt(1000, gotoSmall);
 		}
 		
 		public function onActivate(func:Function, ...args):void
@@ -149,43 +154,55 @@ package com.jack.llk.view
 				
 				if(value)
 				{
-					// show the big item
-					if(!bigItem)
-					{
-						bigItem = GameUtil.getBigItemAt(itemIndex);
-						bigItem.x = (smallItem.width-bigItem.width)/2;
-						bigItem.y = (smallItem.height-bigItem.height)/2;
-					}
+					gotoBig();
 					
-					if(bigItem)
-					{
-						smallItem.removeFromParent();
-						if(!contains(bigItem))
-						{
-							addChild(bigItem);
-							Starling.juggler.add(bigItem);
-						}
-					}
 					// call activate function 
 					if(onActivateFunc != null)
 						onActivateFunc.apply(null, onActivateArgs);
 				}
 				else
 				{
-					// go back to the small item					
-					if(bigItem)
-					{
-						bigItem.removeFromParent();
-						Starling.juggler.remove(bigItem);
-					}
+					gotoSmall();
 					
-					if(!contains(smallItem))
-					{
-						addChild(smallItem);
-					}
 					// call inactivate function 
 					if(onInactivateFunc != null)
 						onInactivateFunc.apply(null, onInactivateArgs);
+				}
+			}
+		}
+		
+		private function gotoSmall():void
+		{
+			// go back to the small item					
+			if(bigItem)
+			{
+				bigItem.removeFromParent();
+				Starling.juggler.remove(bigItem);
+			}
+			
+			if(smallItem && !contains(smallItem))
+			{
+				addChild(smallItem);
+			}
+		}
+		
+		private function gotoBig():void
+		{
+			// show the big item
+			if(!bigItem)
+			{
+				bigItem = GameUtil.getBigItemAt(itemIndex);
+				bigItem.x = (smallItem.width-bigItem.width)/2;
+				bigItem.y = (smallItem.height-bigItem.height)/2;
+			}
+			
+			if(bigItem)
+			{
+				smallItem.removeFromParent();
+				if(!contains(bigItem))
+				{
+					addChild(bigItem);
+					Starling.juggler.add(bigItem);
 				}
 			}
 		}

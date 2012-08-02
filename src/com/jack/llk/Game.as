@@ -201,7 +201,7 @@ package com.jack.llk
 		{
 			if(gameCanvas && gameCanvas.stage)
 			{
-				gameCanvas.showItemDefAnimation();
+				gameCanvas.showItemIdleAnimation();
 			}
 		}
 	}

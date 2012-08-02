@@ -86,8 +86,14 @@ package com.jack.llk.view.view
 			var downState:Texture = Assets.getTexture("pausebted");	
 			var pauseBtn:BaseButton = new BaseButton(upState, text, downState);
 			addChildScaled(pauseBtn, 0, 0);
+			pauseBtn.onClick = onPause;
 		}		
-
+		
+		private function onPause():void
+		{
+			
+		}
+		
 		private function onBackClick():void
 		{
 
@@ -111,7 +117,7 @@ package com.jack.llk.view.view
 		private function initGameCenter():void
 		{
 			gameCanvas = new GameContainer();
-			gameCanvas.scaleX = gameCanvas.scaleY = 1.2;
+			gameCanvas.scaleX = gameCanvas.scaleY = 1.25;
 			addChildScaled(gameCanvas);
 			gameCanvas.x = (width-gameCanvas.width)/2;
 			gameCanvas.y = (height-gameCanvas.height)/2;

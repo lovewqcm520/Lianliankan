@@ -115,11 +115,52 @@ package com.jack.llk.vo.map
 			return _result.clone();
 		}
 		
+		public function autoFindItem():Array
+		{
+			var a:Point = _findRestPointA(); if (!a) return null;
+			
+			var b:Point = _findRestPointB(a); if (!b) return null;
+			
+			var ignoreA:Array = [];
+			var ignoreB:Array = [];
+			
+			while ( !this.test(a, b) )
+			{
+				ignoreB.push(b);
+				
+				b = _findRestPointB(a, ignoreB);
+				
+				//基于A没有可以连通的点了, 换一个A试试
+				if (!b)
+				{
+					ignoreB = [];
+					ignoreA.push(a);
+					
+					var tempMap:Array2 = ArrayUtil.cloneArray2(map);
+					tempMap.set(a.x, a.y, EMPTY);
+					
+					if (ignoreA.length)
+						for each (var p:Point in ignoreA)
+						tempMap.set(p.x, p.y, EMPTY);
+					
+					a = _findRestPointA(tempMap);
+					b = _findRestPointB(a);
+				}
+			}
+			
+			//找不到可以连通的B点
+			if (!b) return null;
+			
+			return [a, b];
+		}
+		
 		public function earse(a:Point, b:Point):void
 		{
 			map.set(a.x, a.y, EMPTY);
 			map.set(b.x, b.y, EMPTY);
 			_restBlock -= 2;
+			
+			updateItemLayout();
 		}
 		
 		public function get count():uint
@@ -134,6 +175,8 @@ package com.jack.llk.vo.map
 			
 			_array = ArrayUtil.random(ArrayUtil.getWarppedMapArray(map));
 			ArrayUtil.drawWrappedMap(_array, map);
+			
+			updateItemLayout();
 		}
 		
 		/**
@@ -200,27 +243,29 @@ package com.jack.llk.vo.map
 				_array[k+1] = flag;
 			}		
 			
-			// testonly
 			
 			_array = ArrayUtil.random(_array);
 			
 			ArrayUtil.drawWrappedMap(_array, map);
 			
-			// get the items vo
-			for (var i1:uint = 1; i1 <= realWidth; i1++)
+			updateItemLayout();
+		}
+		
+		private function updateItemLayout():void
+		{
+			 //get the items vo
+			for (var i:uint = 1; i <= realWidth; i++)
 			{
-				for (var j1:uint = 1; j1 <= realHeight; j1++)
+				for (var j:uint = 1; j <= realHeight; j++)
 				{
-					var index:int = map.get(i1, j1);
+					var index:int = int(map.get(i, j));
 					if(index != EMPTY)
 					{
-						_items.push(new ItemVO(i1, j1, index));
+						_items.push(new ItemVO(i, j, index));
 					}
 				}
 			}
 		}
-		
-		//private function updateItems
 		
 		private function hTest(a:Point, b:Point):MatchResult
 		{
@@ -465,6 +510,12 @@ package com.jack.llk.vo.map
 			
 			return b;
 		}
+
+		public function get items():Vector.<ItemVO>
+		{
+			return _items;
+		}
+
 	}
 }
 

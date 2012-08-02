@@ -5,7 +5,7 @@ package com.jack.llk.control.factors
 		/**
 		 * 当手机切换到游戏以外的界面时, 比如按HOME键.
 		 */
-		public static const FPS_DEACTIVATE:int = 1;
+		public static const FPS_DEACTIVATE:int = 60;
 		
 		/**
 		 * 游戏停留在 关卡选择界面 或者 等待界面.
