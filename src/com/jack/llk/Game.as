@@ -8,6 +8,7 @@ package com.jack.llk
 	import com.jack.llk.control.sound.SoundManager;
 	import com.jack.llk.log.Log;
 	import com.jack.llk.view.view.AboutView;
+	import com.jack.llk.view.view.GameContainer;
 	import com.jack.llk.view.view.GameView;
 	import com.jack.llk.view.view.InitView;
 	import com.jack.llk.view.view.ModelView;
@@ -32,6 +33,9 @@ package com.jack.llk
 		public var aboutView:AboutView;
 		public var modelView:ModelView;
 		public var gameView:GameView;
+		public var gameCanvas:GameContainer;
+		
+		private var oldTime:Number;
 		
 		public function Game()
 		{
@@ -57,6 +61,9 @@ package com.jack.llk
 			// would report a very long 'passedTime' when the app is reactivated.			
 			NativeApplication.nativeApplication.addEventListener(Event.ACTIVATE, onActivate);			
 			NativeApplication.nativeApplication.addEventListener(Event.DEACTIVATE, onDeactivate);
+			
+			// add enter_frame event
+			Starling.current.nativeStage.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 		}	
 		
 		private function initSplashScreen():void
@@ -100,11 +107,9 @@ package com.jack.llk
 			// update the framerate
 			Starling.current.stop();
 			Starling.current.nativeStage.frameRate = FramerateFactors.FPS_DEACTIVATE;
-			// mute the music if music is on
-			if(SoundManager.musicEnabled)
-			{
-				SoundManager.muteMusic();
-			}
+			
+			// mute all the sound and music
+			SoundManager.muteAll();
 		}
 		
 		/**
@@ -143,6 +148,25 @@ package com.jack.llk
 					break;
 				}
 					
+				case GameStatusFactors.STATUS_WARNING:
+				{
+					Starling.current.nativeStage.frameRate = FramerateFactors.FPS_PLAYING;
+					
+					// resume play warning sound
+					SoundManager.play(SoundFactors.DAO_JI_SHI_MUSIC, false, true);	
+					break;
+				}
+					
+				case GameStatusFactors.STATUS_OVER:
+				{
+					break;
+				}
+					
+				case GameStatusFactors.STATUS_START:
+				{
+					break;
+				}
+					
 				default:
 				{
 					Starling.current.nativeStage.frameRate = FramerateFactors.FPS_PLAYING;
@@ -154,8 +178,8 @@ package com.jack.llk
 			{
 				SoundManager.resumeMusic();
 			}
+			
 		}
-		
 		
 		protected function onKeyDown(event:KeyboardEvent):void
 		{
@@ -170,6 +194,14 @@ package com.jack.llk
 					EventController.e.dispatchEvent(e);
 					break;
 				}
+			}
+		}
+		
+		protected function onEnterFrame(event:Event):void
+		{
+			if(gameCanvas && gameCanvas.stage)
+			{
+				gameCanvas.showItemDefAnimation();
 			}
 		}
 	}

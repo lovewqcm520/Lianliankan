@@ -1,5 +1,6 @@
 package com.jack.llk.view
 {
+	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.control.factors.SoundFactors;
 	import com.jack.llk.control.sound.SoundManager;
 	import com.jack.llk.util.GameUtil;
@@ -8,6 +9,7 @@ package com.jack.llk.view
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
+	import starling.textures.Texture;
 	
 	public class ItemMovieClip extends BaseSprite
 	{
@@ -23,7 +25,6 @@ package com.jack.llk.view
 		private var onInactivateFunc:Function;
 		private var onInactivateArgs:Array;
 
-		
 		public function ItemMovieClip(itemIndex:int, mapX:int, mapY:int, fps:Number=12)
 		{
 			activated = false;
@@ -41,6 +42,60 @@ package com.jack.llk.view
 			smallItem.loop = true;
 			smallItem.stop();
 			addChild(smallItem);
+			Starling.juggler.add(smallItem);
+		}
+		
+		public function disappear():void
+		{
+			// show the explosion animation before dispose the item
+			var t:Vector.<Texture> = Assets.getTextures("ITEM_OVER_SKIN");
+			if(t && t.length > 0)
+			{
+				smallItem.visible = false;
+				if(bigItem)
+					bigItem.visible = false;
+				
+				// show the explosion
+				var mcExplosion:OnceMovieClip = new OnceMovieClip(t, dispose, true, 20);
+				mcExplosion.x = (smallItem.width-mcExplosion.width)/2;
+				mcExplosion.y = (smallItem.height-mcExplosion.height)/2;
+				addChild(mcExplosion);
+				mcExplosion.play();
+			}
+		}
+		
+		override public function dispose():void
+		{
+			onActivateFunc = null;
+			onActivateArgs = null;
+			onInactivateFunc = null;
+			onInactivateArgs = null;
+			
+			if(smallItem)
+			{
+				Starling.juggler.remove(smallItem);
+				smallItem.removeFromParent(true);
+				smallItem = null;
+			}
+			
+			if(bigItem)
+			{
+				Starling.juggler.remove(bigItem);
+				bigItem.removeFromParent(true);
+				bigItem = null;
+			}
+			
+			super.dispose();
+		}
+		
+		public function playSmallAnimation():void
+		{
+			smallItem.play();
+		}
+		
+		public function stopSmallAnimation():void
+		{
+			smallItem.stop();
 		}
 		
 		public function shine():void

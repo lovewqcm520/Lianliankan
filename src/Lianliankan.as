@@ -47,7 +47,7 @@ package
 			var viewPort:Rectangle = new Rectangle(0, 0, stage.fullScreenWidth, stage.fullScreenHeight);
 			mStarling = new Starling(Startup, stage, viewPort, null, "auto");
 			
-			mStarling.enableErrorChecking = false;
+			mStarling.enableErrorChecking = true;
 			mStarling.showStats = true;
 			
 			mStarling.start();

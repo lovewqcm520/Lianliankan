@@ -1,6 +1,8 @@
 package com.jack.llk.view
 {
+	import com.jack.llk.Game;
 	import com.jack.llk.control.asset.Assets;
+	import com.jack.llk.control.factors.GameStatusFactors;
 	import com.jack.llk.control.factors.SoundFactors;
 	import com.jack.llk.control.sound.SoundManager;
 	
@@ -90,6 +92,9 @@ package com.jack.llk.view
 				
 				if(!isWarningActivate)
 				{
+					// set game status to warning status
+					Game.getInstance().gameStatus = GameStatusFactors.STATUS_WARNING;
+					
 					// play warning sound
 					SoundManager.play(SoundFactors.DAO_JI_SHI_MUSIC, false, true);					
 				}
@@ -117,6 +122,10 @@ package com.jack.llk.view
 			SoundManager.stop(SoundFactors.DAO_JI_SHI_MUSIC);
 			// stop moving
 			mcMovingIcon.stop();
+			
+			// game over
+			// set game status to game_over status
+			Game.getInstance().gameStatus = GameStatusFactors.STATUS_OVER;
 		}
 		
 		/**

@@ -3,6 +3,11 @@ package com.jack.llk.control.factors
 	public class SoundFactors
 	{
 		/**
+		 * 使用雷电chain时播放
+		 */
+		public static const THUNDER:String = "THUNDER";
+		
+		/**
 		 * 使用炸弹道具时播放
 		 */
 		public static const ZHA_DAN_MUSIC:String = "ZHA_DAN_MUSIC";

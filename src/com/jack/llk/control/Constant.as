@@ -11,5 +11,7 @@ package com.jack.llk.control
 		
 		public static const DEFAULT_WIDTH:Number = 480;
 		public static const DEFAULT_HEIGHT:Number = 800;
+		
+		
 	}
 }

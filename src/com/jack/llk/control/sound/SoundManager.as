@@ -10,6 +10,9 @@ package com.jack.llk.control.sound
 	public class SoundManager
 	{
 		// sounds		
+		[Embed(source="assets/sounds/THUNDER.mp3")]
+		private static const THUNDER:Class;
+		
 		[Embed(source="assets/sounds/XIAO_CHU_MUSIC.mp3")]
 		private static const XIAO_CHU_MUSIC:Class;
 		
@@ -137,6 +140,19 @@ package com.jack.llk.control.sound
 				vo.sound.isBuffering ? vo.sound.close() : null;
 				vo.channel.stop();
 			}
+		}
+		
+		public static function muteAll():void
+		{
+			var vo:SoundVO;
+			for each (vo in mSoundDic) 
+			{
+				if(vo)
+				{
+					vo.sound.isBuffering ? vo.sound.close() : null;
+					vo.channel.stop();
+				}
+			}			
 		}
 		
 		public static function muteMusic():void

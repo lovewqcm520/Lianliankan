@@ -1,5 +1,6 @@
 package com.jack.llk.view.view
 {
+	import com.jack.llk.Game;
 	import com.jack.llk.control.Constant;
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.control.events.ViewEvent;
@@ -40,8 +41,6 @@ package com.jack.llk.view.view
 			initGameCenter();
 			setTools();
 		}
-		
-
 		
 		private function initialize():void
 		{
@@ -116,6 +115,8 @@ package com.jack.llk.view.view
 			addChildScaled(gameCanvas);
 			gameCanvas.x = (width-gameCanvas.width)/2;
 			gameCanvas.y = (height-gameCanvas.height)/2;
+			
+			Game.getInstance().gameCanvas = gameCanvas;
 		}
 		
 		private function setTools():void

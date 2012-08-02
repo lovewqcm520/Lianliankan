@@ -94,6 +94,33 @@ package com.jack.llk.util
 			return [];
 		}
 		
+		public static function cloneArray2(map:Array2):Array2
+		{
+			return map.clone() as Array2;
+		}
+		
+		/**
+		 * get random elements from a arr.
+		 * ex:	 getRandomElements([1,2,3,4,5,6,7], 3) = [2, 4, 5];
+		 * @param arr
+		 * @param n
+		 * @return
+		 *
+		 */
+		public static function getRandomElements(arr:*, n:int):*
+		{
+			if (n >= arr.length)
+			{
+				return arr;
+			}
+			
+			if (n <= 0)
+			{
+				return [];
+			}
+			
+			return RandomUtil.chooseMuti(arr, n);
+		}
 	}
 
 }

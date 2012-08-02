@@ -30,11 +30,12 @@ package com.jack.llk.control.asset
 		private static const asset_bg_game:Class;
 		
 		// texture atlas
-		[Embed(source="assets/textures/asset1.png")]
-		private static const asset1:Class;
 		
-		[Embed(source="assets/textures/asset1.xml", mimeType="application/octet-stream")]
-		private static const asset1Xml:Class;
+		[Embed(source="assets/textures/effect.png")]
+		private static const effect:Class;
+		
+		[Embed(source="assets/textures/effect.xml", mimeType="application/octet-stream")]
+		private static const effectXml:Class;
 		
 		[Embed(source="assets/textures/asset2.png")]
 		private static const asset2:Class;
@@ -55,7 +56,7 @@ package com.jack.llk.control.asset
 		
 		public static function init():void
 		{
-			registeTextureAtlas("asset1", "asset1Xml");
+			registeTextureAtlas("effect", "effectXml");
 			registeTextureAtlas("asset2", "asset2Xml");
 			registeTextureAtlas("asset3", "asset3Xml");
 		}
