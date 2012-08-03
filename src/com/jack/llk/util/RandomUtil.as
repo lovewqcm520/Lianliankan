@@ -4,14 +4,18 @@ package com.jack.llk.util
 
 	/**
 	 * 随机类
-	 *
-	 * @author
-	 *
 	 */
 	public final class RandomUtil
 	{
 		private static var randomHistory:Dictionary=new Dictionary(); //随机数历史记录
 
+		public static function isEnabledOnProbability(probability:Number):Boolean
+		{
+			probability = probability > 1 ? 1 : probability;
+			
+			return Math.random() <= probability;
+		}
+		
 		/**
 		 * 获得一个范围内的双精度小数
 		 *

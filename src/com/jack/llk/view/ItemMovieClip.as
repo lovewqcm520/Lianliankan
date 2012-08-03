@@ -52,7 +52,8 @@ package com.jack.llk.view
 			var t:Vector.<Texture> = Assets.getTextures("ITEM_OVER_SKIN");
 			if(t && t.length > 0)
 			{
-				smallItem.visible = false;
+				if(smallItem)
+					smallItem.visible = false;
 				if(bigItem)
 					bigItem.visible = false;
 				

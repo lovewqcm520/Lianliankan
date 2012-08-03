@@ -10,7 +10,7 @@ package com.jack.llk.view.component.chain
 	import starling.textures.Texture;
 	import starling.utils.deg2rad;
 	
-	public class ThunderChain extends Sprite implements IChainSprite
+	public class ThunderChain extends Sprite
 	{
 		private var textures:Vector.<Texture>;
 		private var itemExactWidth:Number;
@@ -28,12 +28,12 @@ package com.jack.llk.view.component.chain
 			super();
 		}
 		
-		public function initialize(routeList:Array, itemExactWidth:Number, itemExactHeight:Number):void
+		public function initialize(routeList:Array, itemExactWidth:Number, itemExactHeight:Number, itemGapX:Number, itemGapY:Number):void
 		{
 			this.itemExactWidth = itemExactWidth;
 			this.itemExactHeight = itemExactHeight;
-			this.itemGapX = 2;
-			this.itemGapY = 2;
+			this.itemGapX = itemGapX;
+			this.itemGapY = itemGapY;
 			
 			textures = Assets.getTextures("chain_thunder_blue");
 		

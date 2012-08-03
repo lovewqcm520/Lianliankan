@@ -7,6 +7,7 @@ package com.jack.llk
 	import com.jack.llk.control.factors.SoundFactors;
 	import com.jack.llk.control.sound.SoundManager;
 	import com.jack.llk.log.Log;
+	import com.jack.llk.util.RandomUtil;
 	import com.jack.llk.view.view.AboutView;
 	import com.jack.llk.view.view.GameContainer;
 	import com.jack.llk.view.view.GameView;
@@ -197,11 +198,22 @@ package com.jack.llk
 			}
 		}
 		
+		private var tmp:int=0;
+		private var tmp1:int=0;
 		protected function onEnterFrame(event:Event):void
 		{
 			if(gameCanvas && gameCanvas.stage)
 			{
 				gameCanvas.showItemIdleAnimation();
+				
+			}
+			
+			// testonly
+			tmp++;
+			if(RandomUtil.isEnabledOnProbability(0.001))
+			{
+				tmp1++;
+				trace("isEnabledOnProbability", tmp1, tmp);
 			}
 		}
 	}

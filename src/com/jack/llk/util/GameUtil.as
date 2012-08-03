@@ -14,7 +14,7 @@ package com.jack.llk.util
 		public static function getSmallItemAt(index:int, fps:Number=12):BaseMovieClip
 		{
 			// testonly
-			index += 18;
+			//index += 18;
 			
 			var prefix:String = "SMALL_ITEM_" + index.toString();
 			
@@ -28,7 +28,7 @@ package com.jack.llk.util
 		public static function getBigItemAt(index:int, fps:Number=12):BaseMovieClip
 		{
 			// testonly
-			index += 18;
+			//index += 18;
 			
 			var prefix:String = "BIG_ITEM_" + index.toString();
 			

@@ -19,9 +19,9 @@ package com.jack.llk.view
 
 	public class CountDownSprite extends Sprite
 	{
-		private var totalTime:Number=20;
-		private var warningStartTime:Number=10;
-		private var warningPercentage:Number = NaN;
+		private var totalTime:int;
+		private var warningStartTime:int;
+		private var warningPercentage:Number;
 		private var isWarningActivate:Boolean;
 		private var tmpGetTime:Number=0;
 		private var progressWidth:Number;
@@ -32,10 +32,12 @@ package com.jack.llk.view
 		private var regularBgSkin:Image;
 		private var warningBgSkin:Image;
 		
-		public function CountDownSprite()
+		public function CountDownSprite(totalTime:int, warningStartTime:int)
 		{
 			super();
 			
+			this.totalTime = totalTime;
+			this.warningStartTime = warningStartTime;
 			warningPercentage = warningStartTime/totalTime;
 			isWarningActivate = false;
 			init();
@@ -78,6 +80,20 @@ package com.jack.llk.view
 			addChild(mcMovingIcon);
 			Starling.juggler.add(mcMovingIcon);			
 		}		
+		
+		public function reset(totalTime:int, warningStartTime:int):void
+		{
+			this.totalTime = totalTime;
+			this.warningStartTime = warningStartTime;
+			warningPercentage = warningStartTime/totalTime;
+			isWarningActivate = false;
+			
+			progress.value = 0;
+			
+			pTween.beginning();
+			pTween.duration = totalTime;
+			pTween.paused = false;
+		}
 		
 		private function onProgress():void
 		{

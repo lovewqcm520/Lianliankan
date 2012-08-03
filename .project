@@ -26,12 +26,12 @@
 		<link>
 			<name>[source path] source</name>
 			<type>2</type>
-			<location>G:/Github/foxhole-starling/source</location>
+			<location>D:/jack&apos;s data/Github/foxhole-starling/source</location>
 		</link>
 		<link>
 			<name>[source path] src</name>
 			<type>2</type>
-			<location>G:/Github/as3-signals/src</location>
+			<location>D:/jack&apos;s data/Github/as3-signals/src</location>
 		</link>
 	</linkedResources>
 </projectDescription>

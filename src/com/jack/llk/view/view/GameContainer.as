@@ -7,8 +7,9 @@ package com.jack.llk.view.view
 	import com.jack.llk.view.BaseSprite;
 	import com.jack.llk.view.ItemMovieClip;
 	import com.jack.llk.view.component.chain.ThunderChain;
+	import com.jack.llk.vo.RoundVO;
 	import com.jack.llk.vo.map.ItemVO;
-	import com.jack.llk.vo.map.Map;
+	import com.jack.llk.vo.map.MapVO;
 	
 	import de.polygonal.ds.Array2;
 	
@@ -17,68 +18,83 @@ package com.jack.llk.view.view
 	
 	public class GameContainer extends BaseSprite
 	{
-		private var canvas:BaseSprite;
-		private var map:Map;		
-		private var items:Array2;
+		public static const INTERVAL_RANDOM_ANIMATE_ITEM:int = 15000;
 		
-		public static const INTERVAL_RANDOM_ANIMATE_ITEM:int = 10000;
+		private var canvas:BaseSprite;
+		private var round:RoundVO;
+		private var items:Array2;
 		private var animateItems:Vector.<ItemVO>;
 		
-		private var p:Point=new Point(-1, -1);
-		private var numActivate:int=0;
-		private var numAnimate:int = 10;
-		private var itemW:Number;
-		private var itemH:Number;
-		private var gapX:Number;
-		private var gapY:Number;
+		private var lastPoint:Point=new Point(-1, -1);
 		private var tempLastTime:int=0;	
-		private var nRandomItems:int = 5;
+		private var numActivate:int;
 		
 		public function GameContainer()
 		{
 			super();
 			
+
+		}
+		
+		override public function dispose():void
+		{
+			round = null;
+			items = null;
+			animateItems = null;
+			lastPoint = null;
+			
+			super.dispose();
+		}
+		
+		public function reset():void
+		{
+			
+		}
+		
+		public function init(roundData:RoundVO):void
+		{
+			this.round = roundData;
+			//initGameRoundParameters();
 			initGameCenter();
 		}
 		
+		// init some necessary parameters for this round
+		private function initGameRoundParameters():void
+		{
+		}
+		
+		// init the game visual
 		private function initGameCenter():void
 		{
-			var oldTime:Number = getTimer();
-			
-			var col:int = 10;
-			var row:int = 10;
-			
-			if(!map)
-			{
-				map = new Map(col, row, 100, 10);
-			}
-			
-			itemW = 36;
-			itemH = 38;
-	
-			gapX = 2;
-			gapY = 2;
-			
 			// reset some data
-			p.x = -1;
-			p.y = -1;
+			lastPoint.x = -1;
+			lastPoint.y = -1;
 			numActivate = 0;
 			if(canvas)
 			{
 				canvas.removeFromParent(true);
 				canvas = null;
 				items = null;
+				animateItems = null;
 			}
 			
 			// new some data
+			var itemW:Number = round.nTileWidth;
+			var itemH:Number = round.nTileHeight;
+			var gapX:Number = round.nGapHorizontal;
+			var gapY:Number = round.nGapVertical;
+			var col:int = round.col;
+			var row:int = round.row;
+			
+			// draw the items
 			canvas = new BaseSprite();			
-			items = new Array2(col+2, row+2);
+			items = new Array2(round.actualCol, round.actualRow);
 			for (var i:int = 1; i <= col; i++) 
 			{
 				for (var j:int = 1; j <= row; j++) 
 				{
-					var itemIndex:int = int(map.map.get(i, j));
-					if(itemIndex != Map.EMPTY)
+					var itemIndex:int = int(round.getItemIndex(i, j));
+					if(itemIndex != MapVO.EMPTY)
 					{
 						var item:ItemMovieClip = new ItemMovieClip(itemIndex, i, j);
 						if(item)
@@ -88,54 +104,48 @@ package com.jack.llk.view.view
 							item.onActivate(onItemActivate, i, j);
 							item.onInactivate(onItemInactivate, i, j);
 							canvas.addChild(item);
-							
 							items.set(i, j, item);
 						}
 						else
 						{
-							trace("initGameCenter wrong", itemIndex);
+							Log.error("initGameCenter wrong", itemIndex);
 						}
 					}
 				}				
 			}
-			
 			addChild(canvas);
-			
-			Log.traced("initGameCenter takes", getTimer()-oldTime, "ms.");
 		}
 		
 		private function onItemInactivate(i:int, j:int):void
 		{
 			// reset some flag
 			numActivate = 0;
-			p.x = -1;
-			p.y = -1;
+			lastPoint.x = -1;
+			lastPoint.y = -1;
 		}	
 		
 		private function onItemActivate(i:int, j:int):void
 		{
-			trace("onGameClick", i, j);
-			
-			if(numActivate != 0 && p.x != i || p.y != j)
+			if(numActivate != 0 && lastPoint.x != i || lastPoint.y != j)
 			{
 				// test 2 item
 				var t:Point = new Point(i, j);
-				if(map.test(p, t))
+				if(round.test2Items(lastPoint, t))
 				{					
 					// dispose the two items that matched
-					dispose2Items(p, t)
+					dispose2Items(lastPoint, t)
 					
 					// reset some flag
 					numActivate = 0;
-					p.x = -1;
-					p.y = -1;
+					lastPoint.x = -1;
+					lastPoint.y = -1;
 					
 					return;
 				}					
 				else
 				{
 					// set previous item to small status
-					var item:ItemMovieClip = items.get(p.x, p.y) as ItemMovieClip;
+					var item:ItemMovieClip = items.get(lastPoint.x, lastPoint.y) as ItemMovieClip;
 					if(item)
 					{
 						item.activated = false;
@@ -143,8 +153,8 @@ package com.jack.llk.view.view
 				}
 			}			
 			
-			p.x = i;
-			p.y = j;
+			lastPoint.x = i;
+			lastPoint.y = j;
 			numActivate = 1;
 		}
 		
@@ -154,7 +164,7 @@ package com.jack.llk.view.view
 			var bItem:ItemMovieClip = items.get(b.x, b.y) as ItemMovieClip;
 			
 			// draw explosion and lines
-			drawLines(map.result.list);
+			drawLines(round.matchedRouteList);
 			
 			// dispose items
 			if(aItem)
@@ -169,7 +179,7 @@ package com.jack.llk.view.view
 			}
 			
 			// delete from map
-			map.earse(a, b);
+			round.erase2Items(a, b);
 			// delete from items
 			items.set(a.x, a.y, null);
 			items.set(b.x, b.y, null);
@@ -178,7 +188,7 @@ package com.jack.llk.view.view
 		public function refreshMap():void
 		{
 			// refresh the map data
-			map.refresh();
+			round.refreshMap();
 			
 			// refresh the items
 			initGameCenter();
@@ -189,7 +199,7 @@ package com.jack.llk.view.view
 		public function bomb2Items():void
 		{
 			// find 2 items
-			var arr:Array = map.autoFindItem();
+			var arr:Array = round.find2Items();
 			if(arr && arr.length == 2)
 			{
 				trace(arr.toString());
@@ -201,10 +211,10 @@ package com.jack.llk.view.view
 			}
 		}
 		
-		public function autoFindLine():void
+		public function findLine():void
 		{
 			// find 2 items
-			var arr:Array = map.autoFindItem();
+			var arr:Array = round.find2Items();
 			if(arr && arr.length == 2)
 			{
 				trace(arr.toString());
@@ -253,8 +263,9 @@ package com.jack.llk.view.view
 				}
 				
 				// play new animation then
-				var remain:int = map.count;							
-				animateItems = ArrayUtil.getRandomElements(map.items, nRandomItems);
+				var remain:int = round.nAvailableItems;		
+				var nRandomItems:int = round.nFlicker;
+				animateItems = ArrayUtil.getRandomElements(round.availableItemVector, nRandomItems);
 				if(animateItems && animateItems.length > 0)
 				{
 					for (i = 0; i <nRandomItems; i++) 
@@ -268,15 +279,16 @@ package com.jack.llk.view.view
 					}
 				}
 				
-				trace("showItemDefAnimation");
+				Log.log("showItemDefAnimation");
 			}
 		}
 		
+		// draw lines between 2 available items
 		private function drawLines(list:Array):void
 		{
 			var chain:ThunderChain = new ThunderChain();			
 			canvas.addChild(chain);
-			chain.initialize(list, itemW, itemH);
+			chain.initialize(list, round.nTileWidth, round.nTileHeight, round.nGapHorizontal, round.nGapVertical);
 		}
 	}
 }

@@ -7,14 +7,14 @@ package com.jack.llk.view
 	
 	public class NumberSprite extends Sprite
 	{
-		private var num:int;
+		private var strNum:String;
 		private var gap:Number = 0;
 		
-		public function NumberSprite(n:int)
+		public function NumberSprite(number:*)
 		{
 			super();
 			
-			num = n;
+			strNum = String(number);
 			initalize();
 			
 			this.touchable = false;
@@ -23,7 +23,7 @@ package com.jack.llk.view
 		
 		private function initalize():void
 		{
-			var str:String = num.toString();
+			var str:String = strNum;
 			var arr:Array = [];
 			
 			var len:int = str.length;
