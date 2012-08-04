@@ -5,13 +5,13 @@ package com.jack.llk.view
 	import com.jack.llk.control.factors.GameStatusFactors;
 	import com.jack.llk.control.factors.SoundFactors;
 	import com.jack.llk.control.sound.SoundManager;
-	
+
 	import flash.utils.getTimer;
-	
+
 	import org.josht.starling.foxhole.controls.ProgressBar;
 	import org.josht.starling.foxhole.extensions.MyProgressBar;
 	import org.josht.starling.motion.GTween;
-	
+
 	import starling.core.Starling;
 	import starling.display.Image;
 	import starling.display.MovieClip;
@@ -31,172 +31,186 @@ package com.jack.llk.view
 		private var mcMovingIcon:MovieClip;
 		private var regularBgSkin:Image;
 		private var warningBgSkin:Image;
-		
+		private var onFinishFunc:Function;
+
 		public function CountDownSprite(totalTime:int, warningStartTime:int)
 		{
 			super();
-			
-			this.totalTime = totalTime;
-			this.warningStartTime = warningStartTime;
-			warningPercentage = warningStartTime/totalTime;
-			isWarningActivate = false;
+
+			this.totalTime=totalTime;
+			this.warningStartTime=warningStartTime;
+			warningPercentage=warningStartTime / totalTime;
+			isWarningActivate=false;
 			init();
 		}
-		
+
+		public function set onFinished(onFinishFunc:Function):void
+		{
+			this.onFinishFunc=onFinishFunc;
+		}
+
 		private function init():void
 		{
 			// set the moving icon
-			mcMovingIcon = Assets.getMovieClip("BIG_ITEM_15");
-			mcMovingIcon.loop = true;
-			
-			regularBgSkin = Assets.getImage("ratebg");
-			warningBgSkin = Assets.getImage("ratelessbg");
-			progressWidth = regularBgSkin.width;
-			
+			mcMovingIcon=Assets.getMovieClip("BIG_ITEM_15");
+			mcMovingIcon.loop=true;
+
+			regularBgSkin=Assets.getImage("ratebg");
+			warningBgSkin=Assets.getImage("ratelessbg");
+			progressWidth=regularBgSkin.width;
+
 			// init the progress
-			progress = new MyProgressBar();			
-			progress.onProgress = onProgress;
-			progress.onFinish = onFinish;
-			progress.minimum = 0;
-			progress.maximum = 1;
-			progress.value = 0;			
-			addChild(progress);			
-			progress.direction = ProgressBar.DIRECTION_HORIZONTAL;
+			progress=new MyProgressBar();
+			progress.onProgress=onProgress;
+			progress.onFinish=onFinish;
+			progress.minimum=0;
+			progress.maximum=1;
+			progress.value=0;
+			addChild(progress);
+			progress.direction=ProgressBar.DIRECTION_HORIZONTAL;
 			// set background image and fill image
-			progress.backgroundSkin = regularBgSkin;
-			var fill:Image = Assets.getImage("rateoverbg");
-			fill.width = 0;
-			fill.height = 0;
-			progress.fillSkin = fill;
-			
+			progress.backgroundSkin=regularBgSkin;
+			var fill:Image=Assets.getImage("rateoverbg");
+			fill.width=0;
+			fill.height=0;
+			progress.fillSkin=fill;
+
 			// set the tween for progress
-			pTween = new GTween(progress, totalTime, {value:1}, {repeatCount:1});
-			
+			pTween=new GTween(progress, totalTime, {value: 1}, {repeatCount: 1});
+
 			// set moving character position
-			mcMovingIcon.pivotX = mcMovingIcon.width/2;
-			mcMovingIcon.pivotY = mcMovingIcon.height/2;
-			mcMovingIcon.x = 0;
-			mcMovingIcon.y = regularBgSkin.height/2;
+			mcMovingIcon.pivotX=mcMovingIcon.width / 2;
+			mcMovingIcon.pivotY=mcMovingIcon.height / 2;
+			mcMovingIcon.x=0;
+			mcMovingIcon.y=regularBgSkin.height / 2;
 			addChild(mcMovingIcon);
-			Starling.juggler.add(mcMovingIcon);			
-		}		
-		
+			Starling.juggler.add(mcMovingIcon);
+		}
+
 		public function reset(totalTime:int, warningStartTime:int):void
 		{
-			this.totalTime = totalTime;
-			this.warningStartTime = warningStartTime;
-			warningPercentage = warningStartTime/totalTime;
-			isWarningActivate = false;
-			
-			progress.value = 0;
-			
+			this.totalTime=totalTime;
+			this.warningStartTime=warningStartTime;
+			warningPercentage=warningStartTime / totalTime;
+			isWarningActivate=false;
+
+			progress.value=0;
+			progress.backgroundSkin=regularBgSkin;
+
 			pTween.beginning();
-			pTween.duration = totalTime;
-			pTween.paused = false;
+			pTween.duration=totalTime;
+			pTween.paused=false;
 		}
-		
+
 		private function onProgress():void
 		{
 			// update the moving character position
-			var tmpX:Number = progressWidth*progress.value;
-			mcMovingIcon.x = tmpX;
-				
+			var tmpX:Number=progressWidth * progress.value;
+			mcMovingIcon.x=tmpX;
+
 			// do warning stuff
-			if(progress.value >= warningPercentage)
+			if (progress.value >= warningPercentage)
 			{
-				var tmp:Number = getTimer();
-				
-				if(!isWarningActivate)
+				var tmp:Number=getTimer();
+
+				if (!isWarningActivate)
 				{
 					// set game status to warning status
-					Game.getInstance().gameStatus = GameStatusFactors.STATUS_WARNING;
-					
+					Game.getInstance().gameStatus=GameStatusFactors.STATUS_WARNING;
+
 					// play warning sound
-					SoundManager.play(SoundFactors.DAO_JI_SHI_MUSIC, false, true);					
+					SoundManager.play(SoundFactors.DAO_JI_SHI_MUSIC, false, true);
 				}
-				
+
 				// shine the remain time progress bar to make it obvious
 				// control time to switch progress backgroundSkin 150ms once
-				if(tmp - tmpGetTime >= 150)
+				if (tmp - tmpGetTime >= 150)
 				{
-					if(progress.backgroundSkin == regularBgSkin)
-						progress.backgroundSkin = warningBgSkin;
+					if (progress.backgroundSkin == regularBgSkin)
+						progress.backgroundSkin=warningBgSkin;
 					else
-						progress.backgroundSkin = regularBgSkin;
-					
-					tmpGetTime = tmp;
+						progress.backgroundSkin=regularBgSkin;
+
+					tmpGetTime=tmp;
 				}
-				
+
 				// update the flag
-				isWarningActivate = true;
+				isWarningActivate=true;
 			}
 		}
-		
+
 		private function onFinish():void
 		{
 			// stop warning sound
 			SoundManager.stop(SoundFactors.DAO_JI_SHI_MUSIC);
 			// stop moving
 			mcMovingIcon.stop();
-			
-			// game over
-			// set game status to game_over status
-			Game.getInstance().gameStatus = GameStatusFactors.STATUS_OVER;
+
+			// call the function 
+			if (onFinishFunc != null)
+			{
+				onFinishFunc.apply();
+			}
 		}
-		
-		
+
+
 		/**
 		 * Resume the count down.
 		 */
 		public function resume():void
 		{
-			if(pTween)
+			if (pTween)
 			{
-				pTween.paused = false;
+				pTween.paused=false;
 			}
-			
+
 			// play warning sound
-			if(isWarningActivate)
+			if (isWarningActivate)
 			{
 				SoundManager.play(SoundFactors.DAO_JI_SHI_MUSIC, false, true);
 			}
 		}
-		
+
+		public function get passedTime():int
+		{
+			return int(progress.value * totalTime);
+		}
+
 		/**
 		 * Pause the count down.
 		 */
 		public function pause():void
 		{
-			if(pTween)
+			if (pTween)
 			{
-				pTween.paused = true;
+				pTween.paused=true;
 			}
-			
+
 			// stop warning sound
 			SoundManager.stop(SoundFactors.DAO_JI_SHI_MUSIC);
 		}
-		
+
 		override public function dispose():void
 		{
-			if(mcMovingIcon)
+			if (mcMovingIcon)
 			{
 				mcMovingIcon.removeFromParent(true);
-				mcMovingIcon = null;
+				mcMovingIcon=null;
 			}
-			
+
 			progress.removeFromParent(true);
-			progress = null;	
-			
-			regularBgSkin = null;
-			warningBgSkin = null;
+			progress=null;
+
+			regularBgSkin=null;
+			warningBgSkin=null;
 
 			Starling.juggler.remove(pTween);
-			pTween.paused = true;
-			pTween = null;
-			
+			pTween.paused=true;
+			pTween=null;
+
 			super.dispose();
 		}
-		
-		
+
+
 	}
 }

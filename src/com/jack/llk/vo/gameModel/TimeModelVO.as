@@ -1,5 +1,5 @@
 package com.jack.llk.vo.gameModel
-{	
+{
 	import com.jack.llk.control.Constant;
 
 	public class TimeModelVO extends BaseModelVO

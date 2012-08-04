@@ -5,6 +5,6 @@ package com.jack.llk.view.component.chain
 	public interface IChainSprite
 	{
 		function initialize(routeList:Array, itemExactWidth:Number, itemExactHeight:Number):void;
-		
+
 	}
 }

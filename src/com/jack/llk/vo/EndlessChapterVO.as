@@ -14,18 +14,18 @@ package com.jack.llk.vo
 		public var useTime:Number;
 		public var isWin:Boolean;
 		public var isFinished:Boolean;
-		
+
 		public var voMap:EndlessModeMapVO;
-		
-		public function EndlessChapterVO() 
+
+		public function EndlessChapterVO()
 		{
 		}
-		
+
 		public function importFrom():void
 		{
-			
+
 		}
-			
-		
+
+
 	}
 }

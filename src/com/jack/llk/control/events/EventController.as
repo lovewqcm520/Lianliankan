@@ -4,6 +4,6 @@ package com.jack.llk.control.events
 
 	public class EventController
 	{
-		public static var e:EventDispatcher = new EventDispatcher();
+		public static var e:EventDispatcher=new EventDispatcher();
 	}
 }

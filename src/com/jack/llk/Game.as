@@ -1,33 +1,33 @@
 package com.jack.llk
 {
 	import com.jack.llk.control.events.EventController;
+	import com.jack.llk.control.events.GameEvent;
 	import com.jack.llk.control.events.ViewEvent;
 	import com.jack.llk.control.factors.FramerateFactors;
 	import com.jack.llk.control.factors.GameStatusFactors;
 	import com.jack.llk.control.factors.SoundFactors;
 	import com.jack.llk.control.sound.SoundManager;
 	import com.jack.llk.log.Log;
-	import com.jack.llk.util.RandomUtil;
 	import com.jack.llk.view.view.AboutView;
 	import com.jack.llk.view.view.BaseView;
 	import com.jack.llk.view.view.GameContainer;
 	import com.jack.llk.view.view.GameView;
 	import com.jack.llk.view.view.InitView;
 	import com.jack.llk.view.view.ModelView;
-	
+
 	import flash.desktop.NativeApplication;
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
-	
+
 	import starling.core.Starling;
 	import starling.display.Sprite;
 
 	public class Game
 	{
-		private static var _instance:Game = new Game();
-		
-		public var container:Sprite;		
+		private static var _instance:Game=new Game();
+
+		public var container:Sprite;
 		public var gameStatus:int;
 		public var gameModel:int;
 
@@ -37,38 +37,38 @@ package com.jack.llk
 		public var gameView:GameView;
 		public var previousView:BaseView;
 		public var gameCanvas:GameContainer;
-		
+
 		private var oldTime:Number;
-		
+
 		public function Game()
 		{
 		}
-		
+
 		public static function getInstance():Game
 		{
 			return _instance;
 		}
-		
+
 		public function initialize():void
-		{			
-			container = new Sprite();
+		{
+			container=new Sprite();
 			Starling.current.stage.addChild(container);
-			
+
 			initSplashScreen();
-			initGame();		
-			
+			initGame();
+
 			// add stage keyboard event
 			NativeApplication.nativeApplication.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-			
+
 			// When the game becomes inactive, we pause Starling; otherwise, the enter frame event
 			// would report a very long 'passedTime' when the app is reactivated.			
-			NativeApplication.nativeApplication.addEventListener(Event.ACTIVATE, onActivate);			
+			NativeApplication.nativeApplication.addEventListener(Event.ACTIVATE, onActivate);
 			NativeApplication.nativeApplication.addEventListener(Event.DEACTIVATE, onDeactivate);
-			
+
 			// add enter_frame event
 			Starling.current.nativeStage.addEventListener(Event.ENTER_FRAME, onEnterFrame);
-		}	
-		
+		}
+
 		private function initSplashScreen():void
 		{
 //			var splash:SplashScreen = new SplashScreen();
@@ -76,30 +76,30 @@ package com.jack.llk
 //			splash.setBackground("asset_bg_splash");
 //			splash.setTime(showGame, 3);
 //			splash.start();
-			
+
 //			var splash:Splash = new Splash(Assets.getBitmap("asset_bg_splash"), showGame, 3000, Splash.SCALE_MODE_NONE);
 //			Starling.current.nativeStage.addChild(splash);
 		}
-		
+
 		private function initGame():void
 		{
 			// load assets
 			// init some ui
-			
+
 			// read setting config from local shared object
 			SoundManager.readSettingFromCache();
-			
-			initView = new InitView();
+
+			initView=new InitView();
 			container.addChild(initView);
 		}
-		
+
 		public function showGame():void
 		{
 			Log.log("showGame");
 			// play the waiting background music
 			SoundManager.play(SoundFactors.DATING_BACK_MUSIC, true, true);
 		}
-		
+
 		/**
 		 * Mobile status change to deactivate.
 		 * @param event
@@ -109,14 +109,14 @@ package com.jack.llk
 			Log.log("onDeactivate");
 			// update the framerate
 			Starling.current.stop();
-			Starling.current.nativeStage.frameRate = FramerateFactors.FPS_DEACTIVATE;
-			
+			Starling.current.nativeStage.frameRate=FramerateFactors.FPS_DEACTIVATE;
+
 			// mute all the sound and music
 			SoundManager.muteAll();
 		}
-		
+
 		/**
-		 * Mobile status change to activate. 
+		 * Mobile status change to activate.
 		 * @param event
 		 */
 		protected function onActivate(event:Event):void
@@ -125,114 +125,103 @@ package com.jack.llk
 			// update the framerate
 			Starling.current.start();
 			// 针对不同的游戏状态更新不同的framerate
-			switch(gameStatus)
+			switch (gameStatus)
 			{
 				case GameStatusFactors.STATUS_IDLE:
 				{
-					Starling.current.nativeStage.frameRate = FramerateFactors.FPS_IDLE;
+					Starling.current.nativeStage.frameRate=FramerateFactors.FPS_IDLE;
 					break;
 				}
-					
+
 				case GameStatusFactors.STATUS_PAUSE_BY_DEACTIVATE:
 				{
-					Starling.current.nativeStage.frameRate = FramerateFactors.FPS_PAUSE_BY_DEACTIVATE;
+					Starling.current.nativeStage.frameRate=FramerateFactors.FPS_PAUSE_BY_DEACTIVATE;
 					break;
 				}
-					
+
 				case GameStatusFactors.STATUS_PAUSE_BY_USER:
 				{
-					Starling.current.nativeStage.frameRate = FramerateFactors.FPS_PAUSE_BY_USER;
+					Starling.current.nativeStage.frameRate=FramerateFactors.FPS_PAUSE_BY_USER;
 					break;
 				}
-					
+
 				case GameStatusFactors.STATUS_PLAYING:
 				{
-					Starling.current.nativeStage.frameRate = FramerateFactors.FPS_PLAYING;
+					Starling.current.nativeStage.frameRate=FramerateFactors.FPS_PLAYING;
 					break;
 				}
-					
+
 				case GameStatusFactors.STATUS_WARNING:
 				{
-					Starling.current.nativeStage.frameRate = FramerateFactors.FPS_PLAYING;
-					
+					Starling.current.nativeStage.frameRate=FramerateFactors.FPS_PLAYING;
+
 					// resume play warning sound
-					SoundManager.play(SoundFactors.DAO_JI_SHI_MUSIC, false, true);	
+					SoundManager.play(SoundFactors.DAO_JI_SHI_MUSIC, false, true);
 					break;
 				}
-					
+
 				case GameStatusFactors.STATUS_OVER:
 				{
 					break;
 				}
-					
+
 				case GameStatusFactors.STATUS_START:
 				{
 					break;
 				}
-					
+
 				default:
 				{
-					Starling.current.nativeStage.frameRate = FramerateFactors.FPS_PLAYING;
+					Starling.current.nativeStage.frameRate=FramerateFactors.FPS_PLAYING;
 				}
 			}
-			
+
 			// resume the music if music is on
-			if(SoundManager.musicEnabled)
+			if (SoundManager.musicEnabled)
 			{
 				SoundManager.resumeMusic();
 			}
-			
+
 		}
-		
+
 		protected function onKeyDown(event:KeyboardEvent):void
 		{
-			switch(event.keyCode)
+			switch (event.keyCode)
 			{
 				case Keyboard.BACK:
 				{
 					// prevent the default event behavior
 					event.preventDefault();
 
-					
+
 					// if game status was playing, then pause the game
-					if(gameStatus == GameStatusFactors.STATUS_PLAYING)
+					if (gameStatus == GameStatusFactors.STATUS_PLAYING)
 					{
-						var e2:ViewEvent = new ViewEvent(ViewEvent.GAME_PAUSE);
+						var e2:GameEvent=new GameEvent(GameEvent.GAME_PAUSE);
 						EventController.e.dispatchEvent(e2);
-					}					
+					}
 					// if game status was pause, then go back to previous view
-					else 
+					else
 					{
 //						if(gameStatus == GameStatusFactors.STATUS_PAUSE_BY_DEACTIVATE || 
 //							gameStatus == GameStatusFactors.STATUS_PAUSE_BY_USER)
 //						{
 //						}
-						
+
 						// return to last screen
-						var e:ViewEvent = new ViewEvent(ViewEvent.GOTO_PREVIOUS_VIEW);
+						var e:ViewEvent=new ViewEvent(ViewEvent.GOTO_PREVIOUS_VIEW);
 						EventController.e.dispatchEvent(e);
-					}	
+					}
 					break;
 				}
 			}
 		}
-		
-		private var tmp:int=0;
-		private var tmp1:int=0;
+
 		protected function onEnterFrame(event:Event):void
 		{
-			if(gameCanvas && gameCanvas.stage)
+			if (gameCanvas && gameCanvas.stage)
 			{
 				gameCanvas.showItemIdleAnimation();
-				
-			}
-			
-			// testonly
-			tmp++;
-			if(RandomUtil.isEnabledOnProbability(0.001))
-			{
-				tmp1++;
-				trace("isEnabledOnProbability", tmp1, tmp);
 			}
 		}
 	}

@@ -60,8 +60,9 @@ package com.jack.llk.log
 			var _loc_4:Object=null;
 			var _loc_5:int=0;
 			var _loc_6:String=null;
-			
-			if(param3 == null)	param3 = "";
+
+			if (param3 == null)
+				param3="";
 
 			if (param2 == null || param1 <= LEVEL_WARNING)
 			{
@@ -81,7 +82,7 @@ package com.jack.llk.log
 			}
 			if (param1 <= _loc_5)
 			{
-				
+
 				var clsName:String;
 				if (param3)
 				{

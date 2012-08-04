@@ -10,6 +10,6 @@ package com.jack.llk.control.asset
 		function getTexture(name:String):Texture;
 		function getTextures(name:String):Vector.<Texture>;
 		function getTextureAtlas(name:String):ATextureAtlas;
-		
+
 	}
 }

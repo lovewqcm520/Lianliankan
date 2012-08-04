@@ -11,11 +11,11 @@ package com.jack.llk.util
 
 		public static function isEnabledOnProbability(probability:Number):Boolean
 		{
-			probability = probability > 1 ? 1 : probability;
-			
+			probability=probability > 1 ? 1 : probability;
+
 			return Math.random() <= probability;
 		}
-		
+
 		/**
 		 * 获得一个范围内的双精度小数
 		 *

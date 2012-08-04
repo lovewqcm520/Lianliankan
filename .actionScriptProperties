@@ -38,6 +38,7 @@
         </excludedEntries>
       </libraryPathEntry>
       <libraryPathEntry kind="1" linkType="1" path="libs"/>
+      <libraryPathEntry kind="5" linkType="2" path="src/assets/AIR3Extension.ane"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>
@@ -61,14 +62,16 @@
       <actionScriptSettings version="1"/>
     </buildTarget>
     <buildTarget airDownloadURL="https://market.android.com/details?id=com.adobe.air" androidSettingsVersion="1" buildTargetName="com.adobe.flexide.multiplatform.android.platform">
-      <multiPlatformSettings enabled="true" includePlatformLibs="false" platformID="com.adobe.flexide.multiplatform.android.platform" version="2"/>
       <airSettings airCertificatePath="C:/Users/Developer/Desktop/Otrino Android Digital Certificate.p12" airTimestamp="true" anePathSet="true" version="1">
         <airExcludes>
           <pathEntry path="assets/textures"/>
           <pathEntry path="assets/preview"/>
         </airExcludes>
-        <anePaths/>
+        <anePaths>
+          <anePathEntry path="D:/jack's data/Github/Lianliankan/src/assets/AIR3Extension.ane"/>
+        </anePaths>
       </airSettings>
+      <multiPlatformSettings enabled="true" includePlatformLibs="false" platformID="com.adobe.flexide.multiplatform.android.platform" version="2"/>
       <actionScriptSettings version="1"/>
     </buildTarget>
     <buildTarget buildTargetName="default">
