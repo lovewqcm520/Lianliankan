@@ -144,6 +144,24 @@ package com.jack.llk.view
 			Game.getInstance().gameStatus = GameStatusFactors.STATUS_OVER;
 		}
 		
+		
+		/**
+		 * Resume the count down.
+		 */
+		public function resume():void
+		{
+			if(pTween)
+			{
+				pTween.paused = false;
+			}
+			
+			// play warning sound
+			if(isWarningActivate)
+			{
+				SoundManager.play(SoundFactors.DAO_JI_SHI_MUSIC, false, true);
+			}
+		}
+		
 		/**
 		 * Pause the count down.
 		 */

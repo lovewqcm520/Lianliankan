@@ -1,5 +1,6 @@
 package com.jack.llk.view.panel
 {
+	import com.jack.llk.control.Constant;
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.view.BaseSprite;
 	import com.jack.llk.view.NumberSprite;
@@ -26,6 +27,11 @@ package com.jack.llk.view.panel
 			super();
 		}
 		
+		override public function dispose():void
+		{
+			super.dispose();
+		}
+		
 		public function showWin():void
 		{
 			this.isWin = true;
@@ -44,6 +50,9 @@ package com.jack.llk.view.panel
 		
 		private function initialize():void
 		{
+			// draw the black alpha bg
+			drawFullScreenBg();
+			
 			// set background dialog
 			var bg:Image = Assets.getImage("dialogbg");
 			//bg.scaleX = bg.scaleY = 0.82;
@@ -200,6 +209,17 @@ package com.jack.llk.view.panel
 				restartBtn.x = backBtn.x + backBtn.width + btnGap;
 				restartBtn.y = btnY;
 				addChild(restartBtn);
+			}
+		}
+		
+		private function drawFullScreenBg():void
+		{
+			var blackBg:Image = Assets.getImage("bg_line");
+			if(blackBg)
+			{
+				blackBg.width = Constant.DEFAULT_WIDTH;
+				blackBg.height = Constant.DEFAULT_HEIGHT;			
+				addChildAt(blackBg, 0);
 			}
 		}
 		

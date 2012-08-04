@@ -41,5 +41,6 @@ package com.jack.llk.control.factors
 		 * 游戏开始(针对当前章节)
 		 */
 		public static const STATUS_START:int = 8;
+		
 	}
 }

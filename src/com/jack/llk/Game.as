@@ -9,6 +9,7 @@ package com.jack.llk
 	import com.jack.llk.log.Log;
 	import com.jack.llk.util.RandomUtil;
 	import com.jack.llk.view.view.AboutView;
+	import com.jack.llk.view.view.BaseView;
 	import com.jack.llk.view.view.GameContainer;
 	import com.jack.llk.view.view.GameView;
 	import com.jack.llk.view.view.InitView;
@@ -34,6 +35,7 @@ package com.jack.llk
 		public var aboutView:AboutView;
 		public var modelView:ModelView;
 		public var gameView:GameView;
+		public var previousView:BaseView;
 		public var gameCanvas:GameContainer;
 		
 		private var oldTime:Number;
@@ -190,9 +192,26 @@ package com.jack.llk
 				{
 					// prevent the default event behavior
 					event.preventDefault();
-					// return to last screen
-					var e:ViewEvent = new ViewEvent(ViewEvent.GOTO_PREVIOUS_VIEW);
-					EventController.e.dispatchEvent(e);
+
+					
+					// if game status was playing, then pause the game
+					if(gameStatus == GameStatusFactors.STATUS_PLAYING)
+					{
+						var e2:ViewEvent = new ViewEvent(ViewEvent.GAME_PAUSE);
+						EventController.e.dispatchEvent(e2);
+					}					
+					// if game status was pause, then go back to previous view
+					else 
+					{
+//						if(gameStatus == GameStatusFactors.STATUS_PAUSE_BY_DEACTIVATE || 
+//							gameStatus == GameStatusFactors.STATUS_PAUSE_BY_USER)
+//						{
+//						}
+						
+						// return to last screen
+						var e:ViewEvent = new ViewEvent(ViewEvent.GOTO_PREVIOUS_VIEW);
+						EventController.e.dispatchEvent(e);
+					}	
 					break;
 				}
 			}

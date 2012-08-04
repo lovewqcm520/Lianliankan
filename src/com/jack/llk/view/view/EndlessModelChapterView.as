@@ -10,6 +10,8 @@ package com.jack.llk.view.view
 	import com.jack.llk.view.panel.SettingPanel;
 	import com.jack.llk.vo.gameModel.EndlessModelVO;
 	
+	import starling.animation.Tween;
+	import starling.core.Starling;
 	import starling.display.Image;
 	import starling.display.Sprite;
 	import starling.events.Event;
@@ -111,16 +113,25 @@ package com.jack.llk.view.view
 		private function onPlayClick():void
 		{
 			var gameView:GameView = new GameView();		
+			gameView.x = Starling.current.nativeStage.fullScreenWidth;
 			Game.getInstance().container.addChild(gameView);
 			
 			// endless mode always start from 1 round		
 			gameView.start(1);
 			gameView.visible = true;
+			
+			var t1:Tween = new Tween(gameView, 0.3);
+			t1.animate("x", 0);
+			Starling.juggler.add(t1);
+			
 			gameView.prepareShow();
 			
-			// hide model selecte screen
-			this.visible = false;
+			var t2:Tween = new Tween(this, 0.3);
+			t2.animate("x", -Starling.current.nativeStage.fullScreenWidth);
+			Starling.juggler.add(t2);
+			
 			this.prepareHide();
+			Game.getInstance().previousView = this;
 		}
 		
 		/**

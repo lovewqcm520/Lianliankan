@@ -3,18 +3,21 @@ package com.jack.llk.view.view
 	import com.jack.llk.Game;
 	import com.jack.llk.control.Constant;
 	import com.jack.llk.control.asset.Assets;
+	import com.jack.llk.control.events.EventController;
 	import com.jack.llk.control.events.ViewEvent;
+	import com.jack.llk.control.factors.GameStatusFactors;
 	import com.jack.llk.view.CountDownSprite;
 	import com.jack.llk.view.NumberSprite;
 	import com.jack.llk.view.button.BaseButton;
 	import com.jack.llk.view.panel.PausePanel;
-	import com.jack.llk.view.panel.RewardPanel;
 	import com.jack.llk.vo.MapFactory;
 	import com.jack.llk.vo.RoundVO;
 	
 	import flash.desktop.NativeApplication;
 	import flash.events.StatusEvent;
 	
+	import starling.animation.Tween;
+	import starling.core.Starling;
 	import starling.display.Image;
 	import starling.display.Sprite;
 	import starling.events.Event;
@@ -22,12 +25,9 @@ package com.jack.llk.view.view
 
 	public class GameView extends BaseView
 	{
-		private var modelScreen:ModelView;
-		private var aboutScreen:AboutView;
 		private var countDown:CountDownSprite;
 		private var gameCanvas:GameContainer;
 		private var round:RoundVO;
-		private var level:int;
 
 		private var spTop:Sprite;
 		private var levelNumBg:Image;
@@ -39,8 +39,10 @@ package com.jack.llk.view.view
 		private var refreshBtn:BaseButton;
 		private var bombBtn:BaseButton;
 		private var searchBtn:BaseButton;
-
 		private var pausePanel:PausePanel;
+		private var pauseBtn:BaseButton;
+		
+		private var level:int;
 
 		public function GameView()
 		{
@@ -51,7 +53,13 @@ package com.jack.llk.view.view
 		{
 			super.onAddedToStage(event);
 			
-			setBackground("asset_bg_game");			
+			setBackground("asset_bg_game");		
+			
+			// add event listener
+			EventController.e.addEventListener(ViewEvent.GAME_RESUME, onGameResume);
+			EventController.e.addEventListener(ViewEvent.GAME_PAUSE, onGamePause);
+			EventController.e.addEventListener(ViewEvent.GAME_RESTART, onGameRestart);
+			EventController.e.addEventListener(ViewEvent.GAME_NEXT, onGameNext);
 		}
 		
 		public function reset(nLevel:int):void
@@ -65,6 +73,9 @@ package com.jack.llk.view.view
 			refreshBtn.onClick = gameCanvas.refreshMap;
 			bombBtn.onClick = gameCanvas.bomb2Items;
 			searchBtn.onClick = gameCanvas.findLine;
+			
+			// set the game status
+			Game.getInstance().gameStatus = GameStatusFactors.STATUS_PLAYING;
 		}
 		
 		public function start(nLevel:int):void
@@ -76,6 +87,9 @@ package com.jack.llk.view.view
 			initGameCenter();
 			setTools();
 			updateUis();
+			
+			// set the game status
+			Game.getInstance().gameStatus = GameStatusFactors.STATUS_PLAYING;
 		}
 		
 		private function initGameCenter():void
@@ -132,10 +146,62 @@ package com.jack.llk.view.view
 			var upState:Texture = Assets.getTexture("pausebt");
 			var text:String="";
 			var downState:Texture = Assets.getTexture("pausebted");	
-			var pauseBtn:BaseButton = new BaseButton(upState, text, downState);
+			pauseBtn = new BaseButton(upState, text, downState);
 			addChildScaled(pauseBtn, 0, 0);
 			pauseBtn.onClick = onPause;
 		}		
+		
+		/**
+		 * Restart the cur level game.
+		 */
+		private function onRestart():void
+		{
+			reset(level);
+
+			// show the pause button
+			pauseBtn.visible = true;
+			
+			// refresh the map
+			gameCanvas.refreshMap();
+			
+			// set the game status
+			Game.getInstance().gameStatus = GameStatusFactors.STATUS_PLAYING;
+		}
+		
+		/**
+		 * Goto next level game.
+		 */
+		private function onNext():void
+		{
+			
+		}
+		
+		/**
+		 * Hide the pause panel and resume the game.
+		 */
+		private function onResume():void
+		{
+			// hide the pause menu
+			if(pausePanel)
+			{
+				
+			}
+			
+			// resume the game
+			
+			// show the pause button
+			pauseBtn.visible = true;
+			//  pause the count time timer
+			countDown.resume();
+			// show the game canvas sprite
+			gameCanvas.visible = true;
+			
+			// set the game status
+			Game.getInstance().gameStatus = GameStatusFactors.STATUS_PLAYING;
+			
+			// start the hide animation
+			pausePanel.hide();
+		}
 		
 		/**
 		 * Open the pause panel and pause the game.
@@ -145,27 +211,59 @@ package com.jack.llk.view.view
 			// testonly
 			//this.reset(++level);
 			
-			var rewardPanel:RewardPanel = new RewardPanel();
-			rewardPanel.showLose();
-			addChildScaled(rewardPanel, 65, 100);
+//			var rewardPanel:RewardPanel = new RewardPanel();
+//			rewardPanel.showWin();
+//			rewardPanel.scaleX *= 0.75;
+//			rewardPanel.scaleY *= 0.75;
+//			var tx:Number = (Constant.DEFAULT_WIDTH-428*0.75)/2;
+//			var ty:Number = (Constant.DEFAULT_HEIGHT-421*0.75)/2;
+//			addChildScaled(rewardPanel, tx, ty);
+//			// set reward ui on top
+//			setChildIndex(npRefresh, this.numChildren-1);
+
+
 			
 			// open the pause menu
-//			if(!pausePanel)
-//			{
-//				pausePanel = new PausePanel();
-//				addChildScaled(pausePanel, 65, 580);
-//			}
-//			else
-//			{
-//				
-//			}
+			if(!pausePanel)
+			{
+				pausePanel = new PausePanel();
+				addChildScaled(pausePanel, 65, Constant.DEFAULT_HEIGHT);
+				pausePanel.y = Constant.DEFAULT_HEIGHT;
+			}
+			else
+			{
+				
+			}
 			
 			// pause the game
+			
+			// hide the pause button
+			pauseBtn.visible = false;
+			//  pause the count time timer
+			countDown.pause();
+			// hide the game canvas sprite
+			gameCanvas.visible = false;
+			
+			// set the game status
+			Game.getInstance().gameStatus = GameStatusFactors.STATUS_PAUSE_BY_USER;
+			
+			// start the show animation
+			pausePanel.show();
 		}
 		
 		private function onBackClick():void
 		{
-
+			var t1:Tween = new Tween(this, 0.3);
+			t1.animate("x", Starling.current.nativeStage.fullScreenWidth);
+			Starling.juggler.add(t1);
+			
+			this.prepareHide();
+			
+			var t2:Tween = new Tween(Game.getInstance().previousView, 0.3);
+			t2.animate("x", 0);
+			Starling.juggler.add(t2);
+			
+			Game.getInstance().previousView.prepareShow();
 		}
 		
 		protected function onStatusEvent(event:StatusEvent):void
@@ -214,6 +312,26 @@ package com.jack.llk.view.view
 			searchBtn.onClick = gameCanvas.findLine;
 		}
 	
+		private function onGameResume(event:ViewEvent):void
+		{
+			onResume();
+		}
+		
+		private function onGamePause(event:ViewEvent):void
+		{
+			onPause();
+		}
+		
+		private function onGameRestart(event:ViewEvent):void
+		{
+			onRestart();
+		}
+		
+		private function onGameNext(event:ViewEvent):void
+		{
+			onNext();
+		}
+		
 		//////////////////  write functions for update some local ui /////////////////////////
 		
 		private function updateUis():void
@@ -299,5 +417,6 @@ package com.jack.llk.view.view
 			npFind.scaleX = npFind.scaleY = 0.5;
 			addChildScaled(npFind, 385, 745);
 		}
+
 	}
 }
