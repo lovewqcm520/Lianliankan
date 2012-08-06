@@ -28,9 +28,10 @@ package com.jack.llk.view.view
 		private var animateItems:Vector.<ItemVO>;
 
 		private var lastPoint:Point=new Point(-1, -1);
-		private var tempLastTime:int=0;
+		private var tmpLastTime:int=0;
 		private var numActivate:int;
 		private var _curCombo:int=0;
+		private var tmpLastBatterTime:Number=Number.MAX_VALUE;
 
 		public function GameContainer()
 		{
@@ -64,14 +65,20 @@ package com.jack.llk.view.view
 		{
 		}
 
-		// init the game visual
-		private function initGameCenter():void
+		private function resetData():void
 		{
-			// reset some data
 			lastPoint.x=-1;
 			lastPoint.y=-1;
 			numActivate=0;
 			curCombo=0;
+			tmpLastBatterTime=Number.MAX_VALUE;
+		}
+		
+		// init the game visual
+		private function initGameCenter():void
+		{
+			// reset some data
+			resetData();
 			if (canvas)
 			{
 				canvas.removeFromParent(true);
@@ -205,15 +212,20 @@ package com.jack.llk.view.view
 			}
 		}
 
-		public function refreshMap():void
+		public function refreshMap():Boolean
 		{
 			// refresh the map data
-			round.refreshMap();
+			var isOK:Boolean = round.refreshMap();
 
-			// refresh the items
-			initGameCenter();
-
-			SoundManager.play(SoundFactors.SHUA_XIN_MUSIC);
+			if(isOK)
+			{
+				// refresh the items
+				initGameCenter();
+				
+				SoundManager.play(SoundFactors.SHUA_XIN_MUSIC);
+			}
+			
+			return isOK;
 		}
 
 		public function bomb2Items():void
@@ -260,9 +272,9 @@ package com.jack.llk.view.view
 		public function showItemIdleAnimation():void
 		{
 			var t:int=getTimer();
-			if (t - tempLastTime >= INTERVAL_RANDOM_ANIMATE_ITEM)
+			if (t - tmpLastTime >= INTERVAL_RANDOM_ANIMATE_ITEM)
 			{
-				tempLastTime=t;
+				tmpLastTime=t;
 
 				var voItem:ItemVO;
 				var item:ItemMovieClip;
@@ -287,7 +299,7 @@ package com.jack.llk.view.view
 				var remain:int=round.nAvailableItems;
 				var nRandomItems:int=round.nFlicker;
 				animateItems=ArrayUtil.getRandomElements(round.availableItemVector, nRandomItems);
-				if (animateItems && animateItems.length > 0)
+				if (animateItems && animateItems.length >= nRandomItems)
 				{
 					for (i=0; i < nRandomItems; i++)
 					{
@@ -299,8 +311,6 @@ package com.jack.llk.view.view
 						}
 					}
 				}
-
-				Log.log("showItemDefAnimation");
 			}
 		}
 
@@ -319,12 +329,22 @@ package com.jack.llk.view.view
 
 		public function set curCombo(value:int):void
 		{
-			_curCombo = value;
-			
-			if(value >= 2)
+			var newBatterTime:Number = getTimer();
+			if(newBatterTime - tmpLastBatterTime <= round.batterInterval)
 			{
-				round.comboCur = value - 1;
+				_curCombo = value;
+				
+				if(value >= 2)
+				{
+					round.comboCur = value - 1;
+				}
+			}		
+			else
+			{
+				_curCombo = 1;
 			}
+			
+			tmpLastBatterTime = newBatterTime;
 		}
 
 	}

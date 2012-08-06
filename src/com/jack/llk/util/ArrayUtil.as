@@ -40,7 +40,6 @@ package com.jack.llk.util
 		{
 			if (isEmpty(array))
 				return array;
-			;
 
 			var i:uint=0;
 			var n:int=array.length;

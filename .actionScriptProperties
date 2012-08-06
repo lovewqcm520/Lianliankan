@@ -38,7 +38,6 @@
         </excludedEntries>
       </libraryPathEntry>
       <libraryPathEntry kind="1" linkType="1" path="libs"/>
-      <libraryPathEntry kind="5" linkType="2" path="src/assets/AIR3Extension.ane"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>

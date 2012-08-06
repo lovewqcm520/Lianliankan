@@ -4,7 +4,7 @@ package com.jack.llk.view.component.chain
 	import com.jack.llk.control.factors.SoundFactors;
 	import com.jack.llk.control.sound.SoundManager;
 	import com.jack.llk.view.OnceMovieClip;
-
+	
 	import starling.core.Starling;
 	import starling.display.Sprite;
 	import starling.textures.Texture;
@@ -17,9 +17,6 @@ package com.jack.llk.view.component.chain
 		private var itemExactHeight:Number;
 		private var itemGapX:Number;
 		private var itemGapY:Number;
-
-		private var tw:Number=66;
-		private var th:Number=59;
 
 		private var lightFrame:Sprite;
 
@@ -35,8 +32,9 @@ package com.jack.llk.view.component.chain
 			this.itemGapX=itemGapX;
 			this.itemGapY=itemGapY;
 
-			textures=Assets.getTextures("chain_thunder_blue");
-
+			//textures=Assets.getTextures("chain_thunder_blue");
+			textures=Assets.getTextures("HORIZONTAL_LINE_TYPE");
+			
 			lightFrame=new Sprite();
 			linkRoad(routeList);
 
@@ -70,11 +68,9 @@ package com.jack.llk.view.component.chain
 					col=minCol;
 					while (col < maxCol)
 					{
-						light=new OnceMovieClip(textures, null, true, 32);
-						if (col == maxCol - 1)
-							light.width=itemExactWidth + 10;
+						light=new OnceMovieClip(textures, null, false, 32);
 						light.x=(col - 1) * (itemExactWidth + itemGapX) + itemExactWidth / 2;
-						light.y=(obj1.y - 1) * (itemExactHeight + itemGapY);
+						light.y=(obj1.y - 1) * (itemExactHeight + itemGapY) + (itemExactHeight-light.height)/2;
 						lightFrame.addChild(light);
 
 						Starling.juggler.add(light);
@@ -90,10 +86,10 @@ package com.jack.llk.view.component.chain
 					row=minRow;
 					while (row < maxRow)
 					{
-						light=new OnceMovieClip(textures, null, true, 32);
+						light=new OnceMovieClip(textures, null, false, 32);
 						light.rotation=deg2rad(90);
-						light.y=(row - 1) * (itemExactHeight + itemGapY) + 15;
-						light.x=(obj1.x - 1) * (itemExactWidth + itemGapX) + itemExactWidth + 9;
+						light.y=(row - 1) * (itemExactHeight + itemGapY) + itemExactHeight/2;
+						light.x=(obj1.x - 1) * (itemExactWidth + itemGapX) + (itemExactWidth-light.width)/2;
 						lightFrame.addChild(light);
 
 						Starling.juggler.add(light);

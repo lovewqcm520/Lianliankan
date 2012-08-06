@@ -5,7 +5,8 @@ package com.jack.llk.view
 	import com.jack.llk.control.sound.SoundManager;
 	import com.jack.llk.util.Delay;
 	import com.jack.llk.util.GameUtil;
-
+	import com.jack.llk.vo.map.MapVO;
+	
 	import starling.core.Starling;
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
@@ -35,6 +36,14 @@ package com.jack.llk.view
 			this.itemIndex=itemIndex;
 
 			initialize();
+			
+			// 
+			if(itemIndex == MapVO.STONE)
+			{
+				this.touchable = false;
+				this.width = 36;
+				this.height = 38;
+			}
 		}
 
 		private function initialize():void

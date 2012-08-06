@@ -198,7 +198,7 @@ package com.jack.llk.view.view
 			Game.getInstance().container.addChild(gameView);
 
 			// endless mode always start from 1 round		
-			gameView.start(1);
+			gameView.start(30);
 			gameView.visible=true;
 
 			var t1:Tween=new Tween(gameView, 0.3);

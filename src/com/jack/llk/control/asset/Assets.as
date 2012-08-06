@@ -1,11 +1,11 @@
 package com.jack.llk.control.asset
 {
 	import com.jack.llk.view.BaseImage;
-
+	
 	import flash.display.Bitmap;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
-
+	
 	import starling.display.Image;
 	import starling.display.MovieClip;
 	import starling.textures.Texture;
@@ -48,6 +48,12 @@ package com.jack.llk.control.asset
 
 		[Embed(source="assets/textures/asset3.xml", mimeType="application/octet-stream")]
 		private static const asset3Xml:Class;
+		
+		[Embed(source="assets/textures/items.png")]
+		private static const items:Class;
+		
+		[Embed(source="assets/textures/items.xml", mimeType="application/octet-stream")]
+		private static const itemsXml:Class;
 
 
 		private static var mTextureDic:Dictionary=new Dictionary();
@@ -59,6 +65,7 @@ package com.jack.llk.control.asset
 			registeTextureAtlas("effect", "effectXml");
 			registeTextureAtlas("asset2", "asset2Xml");
 			registeTextureAtlas("asset3", "asset3Xml");
+			registeTextureAtlas("items", "itemsXml");
 		}
 
 		public static function getBitmap(name:String):Bitmap

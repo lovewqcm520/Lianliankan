@@ -1,6 +1,7 @@
 package com.jack.llk.vo
 {
 	import com.jack.llk.util.NumberUtil;
+	import com.jack.llk.util.RandomUtil;
 
 	public class MapFactory
 	{
@@ -33,6 +34,8 @@ package com.jack.llk.vo
 		public var row:int;
 		public var actualCol:int;
 		public var actualRow:int;
+		
+		public static const PROBABILITY_STONE:Number = 1.0;
 
 		// default min value
 		public static const TOTAL_TIME_MIN:int=35;
@@ -41,7 +44,7 @@ package com.jack.llk.vo
 		public static const ROW_MIN:int=6;
 		public static const ITEM_TYPE_MIN:int=5;
 		public static const AVAILABLE_ITEM_MIN:int=20;
-		public static const STONE_MIN:int=0;
+		public static const STONE_MIN:int=2;
 		public static const EGG_MIN:int=0;
 		public static const TOOL_REFRESH_MIN:int=1;
 		public static const TOOL_BOMB_MIN:int=1;
@@ -54,9 +57,9 @@ package com.jack.llk.vo
 		public static const WARNING_TIME_MAX:int=170;
 		public static const COL_MAX:int=10;
 		public static const ROW_MAX:int=10;
-		public static const ITEM_TYPE_MAX:int=32;
+		public static const ITEM_TYPE_MAX:int=23;
 		public static const AVAILABLE_ITEM_MAX:int=100;
-		public static const STONE_MAX:int=10;
+		public static const STONE_MAX:int=8;
 		public static const EGG_MAX:int=3;
 		public static const TOOL_REFRESH_MAX:int=1;
 		public static const TOOL_BOMB_MAX:int=1;
@@ -115,7 +118,17 @@ package com.jack.llk.vo
 				this.nAvailableItems++;
 
 			// get stone items
-			this.nStones=int(STONE_MIN + p * (STONE_MAX - STONE_MIN));
+			if(RandomUtil.isEnabledOnProbability(PROBABILITY_STONE))
+			{
+				this.nStones=int(STONE_MIN + p * (STONE_MAX - STONE_MIN));
+				// if nStones was odd make it a even
+				if (!NumberUtil.isEven(this.nStones))
+					this.nStones++;
+			}
+			else
+			{
+				this.nStones=0;
+			}
 
 			// get egg items
 			this.nPaintedEggs=int(EGG_MIN + p * (EGG_MAX - EGG_MIN));
@@ -132,6 +145,12 @@ package com.jack.llk.vo
 			// get flicker numbers
 			this.nFlicker=int(FLICKER_ITEM_MIN + p * (FLICKER_ITEM_MAX - FLICKER_ITEM_MIN));
 
+			// adjust items quantity
+			var nSize:int = col*row;
+			if(nAvailableItems + nStones > nSize)
+			{
+				nAvailableItems = nSize - nStones;
+			}
 
 			// set the round vo
 			var round:RoundVO=new RoundVO(this.level, col, row, nAvailableItems, nItemTypes);

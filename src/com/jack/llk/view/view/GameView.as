@@ -10,6 +10,7 @@ package com.jack.llk.view.view
 	import com.jack.llk.control.factors.SoundFactors;
 	import com.jack.llk.control.sound.SoundManager;
 	import com.jack.llk.log.Log;
+	import com.jack.llk.util.Delay;
 	import com.jack.llk.view.BatterTip;
 	import com.jack.llk.view.CountDownSprite;
 	import com.jack.llk.view.NumberSprite;
@@ -78,6 +79,7 @@ package com.jack.llk.view.view
 			EventController.e.addEventListener(GameEvent.GAME_WIN, onGameWin);
 			EventController.e.addEventListener(GameEvent.GAME_LOSE, onGameLose);
 			EventController.e.addEventListener(GameEvent.BATTER, onBatter);
+			EventController.e.addEventListener(GameEvent.GAME_REFRESH_MAP, onGameRefreshMap);
 		}
 
 		public function reset(nLevel:int):void
@@ -352,6 +354,11 @@ package com.jack.llk.view.view
 			t.onCompleteArgs = [tip];
 			Starling.juggler.add(t);
 		}
+		
+		private function onRefreshMap():void
+		{
+			gameCanvas.refreshMap();
+		}
 
 		private function onBackClick():void
 		{
@@ -449,6 +456,10 @@ package com.jack.llk.view.view
 			onBatterShow();
 		}
 		
+		private function onGameRefreshMap(event:GameEvent):void
+		{
+			Delay.doIt(1000, onRefreshMap);
+		}
 		
 		//////////////////  write functions for update some local ui /////////////////////////
 

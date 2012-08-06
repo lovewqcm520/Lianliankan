@@ -1,16 +1,21 @@
 package com.jack.llk.vo.map
 {
+	import com.jack.llk.control.events.EventController;
+	import com.jack.llk.control.events.GameEvent;
 	import com.jack.llk.log.Log;
 	import com.jack.llk.util.ArrayUtil;
 	import com.jack.llk.util.NumberUtil;
-
+	
 	import de.polygonal.ds.Array2;
-
+	
 	import flash.geom.Point;
 
 	public class MapVO
 	{
 		public static const EMPTY:int=-1;
+		public static const STONE:int = -2;
+		
+		public static const LIST:Array = [EMPTY, STONE];
 
 		private var _level:int; //游戏关卡对应的项目数量
 		private var _restBlock:int=0; //剩余的项目数量
@@ -23,6 +28,7 @@ package com.jack.llk.vo.map
 		public var row:int;
 		public var nAvailableItems:int;
 		public var nItemTypes:int;
+		public var nStones:int;	// 阻塞石头的数量
 
 		public var map:Array2;
 
@@ -60,7 +66,7 @@ package com.jack.llk.vo.map
 			//_countOfPerItem = int(availableItem / _level);
 			_restBlock=nAvailableItems;
 
-			_initMap();
+			initMap();
 		}
 
 		////////////////  public function  ////////////////////////////////
@@ -160,6 +166,8 @@ package com.jack.llk.vo.map
 			_restBlock-=2;
 
 			updateItemLayout();
+			
+			validateMap();
 		}
 
 		public function get count():int
@@ -167,16 +175,28 @@ package com.jack.llk.vo.map
 			return _restBlock <= 0 ? 0 : _restBlock;
 		}
 
-		public function refresh():void
+		public function refresh():Boolean
 		{
 			var num:uint=this.count;
 			if (num <= 0)
-				return;
+				return false;
 
 			_array=ArrayUtil.random(ArrayUtil.getWarppedMapArray(map));
 			ArrayUtil.drawWrappedMap(_array, map);
 
 			updateItemLayout();
+			
+			// check map
+			if(!isMapHasMatchedItems())
+			{
+				var e:GameEvent = new GameEvent(GameEvent.GAME_REFRESH_MAP);
+				EventController.e.dispatchEvent(e);
+				
+				trace("refresh", GameEvent.GAME_REFRESH_MAP);
+				return false;
+			}
+			
+			return true;
 		}
 
 		/**
@@ -209,7 +229,10 @@ package com.jack.llk.vo.map
 
 		////////////////  private function  ////////////////////////////////
 
-		private function _initMap():void
+		/**
+		 * Init the map data.
+		 */
+		private function initMap():void
 		{
 			// 初始化全部为空
 			for (var a:int=0; a < actualCol; a++)
@@ -219,7 +242,6 @@ package com.jack.llk.vo.map
 					map.set(a, m, EMPTY);
 				}
 			}
-
 
 			//一维数组初始化和乱序
 			for (var n:uint=0; n < _array.length; n++)
@@ -235,35 +257,86 @@ package com.jack.llk.vo.map
 
 			var start:int=_level * _countOfPerItem;
 			var left:int=nAvailableItems - start;
-
-			for (var k:int=start; k < nAvailableItems; k+=2)
+			var k:int;
+			for (k=start; k < nAvailableItems; k+=2)
 			{
 				var flag:int=Math.ceil(Math.random() * _level);
 				_array[k]=flag;
 				_array[k + 1]=flag;
+			}
+			
+			// add stones
+			for (k=nAvailableItems; k < nAvailableItems+nStones; k++)
+			{
+				_array[k]=STONE;
 			}
 
 			_array=ArrayUtil.random(_array);
 			ArrayUtil.drawWrappedMap(_array, map);
 			updateItemLayout();
 
+			validateMap();
+			
 			Log.traced("init map", nAvailableItems, items.length);
+		}
+		
+		private function validateMap():void
+		{
+			// check map
+			if(!isMapHasMatchedItems())
+			{
+				var e:GameEvent = new GameEvent(GameEvent.GAME_REFRESH_MAP);
+				EventController.e.dispatchEvent(e);
+			}
+		}
+		
+		/**
+		 * 判断当前游戏地图是否至少有一对item可以消除.
+		 * @return 
+		 */
+		private function isMapHasMatchedItems():Boolean
+		{
+			var len:int = _items.length;
+			var a:Point=new Point();
+			var b:Point=new Point();
+			for (var i:int = 0; i < len; i++) 
+			{
+				a.x = _items[i].x;
+				a.y = _items[i].y;
+				for (var j:int = i+1; j < len; j++) 
+				{
+					b.x = _items[j].x;
+					b.y = _items[j].y;
+					if(test(a, b))
+					{
+						return true;
+					}
+				}	
+			}			
+			
+			return false;
 		}
 
 		private function updateItemLayout():void
 		{
+			_items.length = 0;
 			//get the items vo
 			for (var i:uint=1; i <= col; i++)
 			{
 				for (var j:uint=1; j <= row; j++)
 				{
 					var index:int=int(map.get(i, j));
-					if (index != EMPTY)
+					if (isAvailableItem(index))
 					{
 						_items.push(new ItemVO(i, j, index));
 					}
 				}
 			}
+		}
+		
+		private function isAvailableItem(index:int):Boolean
+		{
+			return LIST.indexOf(index) == -1;
 		}
 
 		private function hTest(a:Point, b:Point):MatchResult
@@ -437,6 +510,7 @@ package com.jack.llk.vo.map
 
 			var w:int=m.getW();
 			var h:int=m.getH();
+			var index:int;
 
 			if (w >= h)
 			{
@@ -446,13 +520,15 @@ package com.jack.llk.vo.map
 
 					for (var y1:Number=0; y1 < max_y; y1++)
 					{
-						if (m.get(col, y1) != EMPTY)
+						index = int(m.get(col, y1));
+						if (isAvailableItem(index))
 							return new Point(col, y1);
 					}
 
 					for (var x1:Number=0; x1 < col; x1++)
 					{
-						if (m.get(x1, max_y - 1) != EMPTY)
+						index = int(m.get(x1, max_y - 1));
+						if (isAvailableItem(index))
 							return new Point(x1, max_y - 1);
 					}
 				}
@@ -465,13 +541,15 @@ package com.jack.llk.vo.map
 
 					for (var x2:Number=0; x2 < max_x; x2++)
 					{
-						if (m.get(x2, row) != EMPTY)
+						index = int(m.get(x2, row));
+						if (isAvailableItem(index))
 							return new Point(x2, row);
 					}
 
 					for (var y2:Number=0; y2 < row; y2++)
 					{
-						if (m.get(max_x - 1, y2) != EMPTY)
+						index = int(m.get(max_x - 1, y2));
+						if (isAvailableItem(index))
 							return new Point(max_x - 1, y2);
 					}
 				}
@@ -484,26 +562,26 @@ package com.jack.llk.vo.map
 			if (!a)
 				return null;
 
-			var tempMap:Array2=ArrayUtil.cloneArray2(map);
+			var tmpMap:Array2=ArrayUtil.cloneArray2(map);
 
-			tempMap.set(a.x, a.y, EMPTY);
+			tmpMap.set(a.x, a.y, EMPTY);
 
 			if (ignore_b_arr && ignore_b_arr.length)
 			{
 				for each (var bb:Point in ignore_b_arr)
-					tempMap.set(bb.x, bb.y, EMPTY);
+					tmpMap.set(bb.x, bb.y, EMPTY);
 			}
 
-			var b:Point=_findRestPointA(tempMap);
+			var b:Point=_findRestPointA(tmpMap);
 
 			if (!b)
 				return null;
 
 			while (map.get(a.x, a.y) != map.get(b.x, b.y))
 			{
-				tempMap.set(b.x, b.y, EMPTY);
+				tmpMap.set(b.x, b.y, EMPTY);
 
-				b=_findRestPointA(tempMap);
+				b=_findRestPointA(tmpMap);
 
 				if (!b)
 					return null;

@@ -85,15 +85,6 @@ package com.jack.llk.vo
 		}
 
 		/**
-		 * Set stone item in the map, which are unpathed.
-		 * @param nStoneItems
-		 */
-		public function setStones(nStoneItems:int):void
-		{
-			this.nStoneItems=nStoneItems;
-		}
-
-		/**
 		 *
 		 */
 		public function init():void
@@ -106,6 +97,7 @@ package com.jack.llk.vo
 			voMap.actualRow=actualRow;
 			voMap.nAvailableItems=nAvailableItems;
 			voMap.nItemTypes=nItemTypes;
+			voMap.nStones=nStoneItems;
 
 			voMap.init();
 		}
@@ -156,7 +148,6 @@ package com.jack.llk.vo
 		 */
 		public function isMapEmpty():Boolean
 		{
-			trace("isMapEmpty", voMap.count);
 			return voMap.count == 0;
 		}
 
@@ -211,9 +202,9 @@ package com.jack.llk.vo
 		/**
 		 * Refresh map based on current all available items.
 		 */
-		public function refreshMap():void
+		public function refreshMap():Boolean
 		{
-			voMap.refresh();
+			return voMap.refresh();
 		}
 
 		private function get map():Array2

@@ -15,6 +15,8 @@ package com.jack.llk.control.events
 
 		public static const GAME_LOSE:String="game_lose";
 		
+		public static const GAME_REFRESH_MAP:String="game_refresh_map";
+		
 		public static const BATTER:String = "batter";
 
 		public function GameEvent(type:String, bubbles:Boolean=false, params:Object=null)
