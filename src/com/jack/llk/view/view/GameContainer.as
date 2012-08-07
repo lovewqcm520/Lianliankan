@@ -1,5 +1,6 @@
 package com.jack.llk.view.view
 {
+	import com.jack.llk.Game;
 	import com.jack.llk.control.events.EventController;
 	import com.jack.llk.control.events.GameEvent;
 	import com.jack.llk.control.factors.SoundFactors;
@@ -44,8 +45,10 @@ package com.jack.llk.view.view
 			items=null;
 			animateItems=null;
 			lastPoint=null;
-
+			
 			super.dispose();
+			
+			Game.getInstance().gameCanvas=null;
 		}
 
 		public function reset():void
@@ -103,7 +106,7 @@ package com.jack.llk.view.view
 				for (var j:int=1; j <= row; j++)
 				{
 					var itemIndex:int=int(round.getItemIndex(i, j));
-					if (itemIndex != MapVO.EMPTY)
+					if (itemIndex != MapVO.EMPTY_ITEM)
 					{
 						var item:ItemMovieClip=new ItemMovieClip(itemIndex, i, j);
 						if (item)
@@ -212,8 +215,11 @@ package com.jack.llk.view.view
 			}
 		}
 
-		public function refreshMap():Boolean
+		public function refreshMap(useTool:Boolean=true):Boolean
 		{
+			if(useTool && round.nRefreshTool <= 0)
+				return false;
+			
 			// refresh the map data
 			var isOK:Boolean = round.refreshMap();
 
@@ -223,13 +229,19 @@ package com.jack.llk.view.view
 				initGameCenter();
 				
 				SoundManager.play(SoundFactors.SHUA_XIN_MUSIC);
+				
+				if(useTool)
+					round.nRefreshTool--;
 			}
 			
 			return isOK;
 		}
 
-		public function bomb2Items():void
+		public function bomb2Items(useTool:Boolean=true):void
 		{
+			if(useTool && round.nBombTool <= 0)
+				return;
+			
 			// find 2 items
 			var arr:Array=round.find2Items();
 			if (arr && arr.length == 2)
@@ -242,11 +254,17 @@ package com.jack.llk.view.view
 
 				// play bomb sound
 				SoundManager.play(SoundFactors.ZHA_DAN_MUSIC);
+				
+				if(useTool)
+					round.nBombTool--;
 			}
 		}
 
-		public function findLine():void
+		public function findLine(useTool:Boolean=true):void
 		{
+			if(useTool && round.nFindTool <= 0)
+				return;
+			
 			// find 2 items
 			var arr:Array=round.find2Items();
 			if (arr && arr.length == 2)
@@ -266,6 +284,9 @@ package com.jack.llk.view.view
 
 				// play the find match items sound
 				SoundManager.play(SoundFactors.DAO_JU_MUSIC);
+				
+				if(useTool)
+					round.nFindTool--;
 			}
 		}
 

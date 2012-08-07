@@ -1,7 +1,7 @@
 package com.jack.llk.view
 {
 	import com.jack.llk.control.Global;
-
+	
 	import starling.display.DisplayObject;
 	import starling.display.Sprite;
 	import starling.events.Touch;
@@ -20,7 +20,7 @@ package com.jack.llk.view
 			addEventListener(TouchEvent.TOUCH, onTouch);
 		}
 
-		public function addChildScaled(child:DisplayObject, childX:Number=-9999, childY:Number=-9999):void
+		public function addChildScaled(child:DisplayObject, childX:Number=-9999, childY:Number=-9999, index:int=-1):void
 		{
 			if (child)
 			{
@@ -33,6 +33,11 @@ package com.jack.llk.view
 				{
 					child.x=(childX * Global.contentScaleXFactor);
 					child.y=(childY * Global.contentScaleYFactor);
+				}
+				
+				if(index != -1 && index < numChildren)
+				{
+					setChildIndex(child, index);
 				}
 			}
 		}

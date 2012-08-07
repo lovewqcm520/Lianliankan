@@ -5,6 +5,7 @@ package com.jack.llk.vo.map
 	import com.jack.llk.log.Log;
 	import com.jack.llk.util.ArrayUtil;
 	import com.jack.llk.util.NumberUtil;
+	import com.jack.llk.util.RandomUtil;
 	
 	import de.polygonal.ds.Array2;
 	
@@ -12,10 +13,22 @@ package com.jack.llk.vo.map
 
 	public class MapVO
 	{
-		public static const EMPTY:int=-1;
-		public static const STONE:int = -2;
+		public static const EMPTY_ITEM:int=-1;
+		public static const STONE_ITEM:int = -2;
 		
-		public static const LIST:Array = [EMPTY, STONE];
+		// random choose on tool to add to user's tool chest or just use it when get
+		public static const EGG_ITEM:int = 30;
+		// add some time
+		public static const TIME_ITEM:int = 31;
+		// increase the number of find tools user have
+		public static const FIND_ITEM:int = 32;
+		// increase the number of refresh tools user have
+		public static const REFRESH_ITEM:int = 33;
+		// increase the number of bomb tools user have
+		public static const BOMB_ITEM:int = 34;
+		
+		public static const LIST:Array = [EMPTY_ITEM, STONE_ITEM];
+		public static const TOOLS:Array = [EGG_ITEM, TIME_ITEM, FIND_ITEM, REFRESH_ITEM, BOMB_ITEM];
 
 		private var _level:int; //游戏关卡对应的项目数量
 		private var _restBlock:int=0; //剩余的项目数量
@@ -29,12 +42,13 @@ package com.jack.llk.vo.map
 		public var nAvailableItems:int;
 		public var nItemTypes:int;
 		public var nStones:int;	// 阻塞石头的数量
+		public var nToolItems:int;	// tool items
 
 		public var map:Array2;
 
 		private var _array:Array; //辅助的一维数组
 		private var _lines:Vector.<Line>; //保存符合条件线段的地方
-		private var _items:Vector.<ItemVO>; // 保存当前存在的所有item的坐标和idex		
+		private var _items:Vector.<ItemVO>; // 保存当前存在的所有item的坐标和index		
 
 		public function MapVO()
 		{
@@ -64,13 +78,18 @@ package com.jack.llk.vo.map
 			//取得一个尽量大的偶数值
 			_countOfPerItem=NumberUtil.getFloorEven(nAvailableItems / _level);
 			//_countOfPerItem = int(availableItem / _level);
-			_restBlock=nAvailableItems;
+			_restBlock=nAvailableItems+nToolItems;
 
 			initMap();
 		}
 
 		////////////////  public function  ////////////////////////////////
 
+		public static function isToolItem(index:int):Boolean
+		{
+			return TOOLS.indexOf(index) != -1;
+		}
+		
 		public function findLine():MatchResult
 		{
 			var a:Point=_findRestPointA();
@@ -97,11 +116,11 @@ package com.jack.llk.vo.map
 					ignoreA.push(a);
 
 					var tempMap:Array2=ArrayUtil.cloneArray2(map);
-					tempMap.set(a.x, a.y, EMPTY);
+					tempMap.set(a.x, a.y, EMPTY_ITEM);
 
 					if (ignoreA.length)
 						for each (var p:Point in ignoreA)
-							tempMap.set(p.x, p.y, EMPTY);
+							tempMap.set(p.x, p.y, EMPTY_ITEM);
 
 					a=_findRestPointA(tempMap);
 					b=_findRestPointB(a);
@@ -141,11 +160,11 @@ package com.jack.llk.vo.map
 					ignoreA.push(a);
 
 					var tempMap:Array2=ArrayUtil.cloneArray2(map);
-					tempMap.set(a.x, a.y, EMPTY);
+					tempMap.set(a.x, a.y, EMPTY_ITEM);
 
 					if (ignoreA.length)
 						for each (var p:Point in ignoreA)
-							tempMap.set(p.x, p.y, EMPTY);
+							tempMap.set(p.x, p.y, EMPTY_ITEM);
 
 					a=_findRestPointA(tempMap);
 					b=_findRestPointB(a);
@@ -161,12 +180,13 @@ package com.jack.llk.vo.map
 
 		public function erase(a:Point, b:Point):void
 		{
-			map.set(a.x, a.y, EMPTY);
-			map.set(b.x, b.y, EMPTY);
+			// set 2 point to empty
+			map.set(a.x, a.y, EMPTY_ITEM);
+			map.set(b.x, b.y, EMPTY_ITEM);
 			_restBlock-=2;
 
+			// update data
 			updateItemLayout();
-			
 			validateMap();
 		}
 
@@ -239,13 +259,13 @@ package com.jack.llk.vo.map
 			{
 				for (var m:int=0; m < actualRow; m++)
 				{
-					map.set(a, m, EMPTY);
+					map.set(a, m, EMPTY_ITEM);
 				}
 			}
 
 			//一维数组初始化和乱序
 			for (var n:uint=0; n < _array.length; n++)
-				_array[n]=EMPTY;
+				_array[n]=EMPTY_ITEM;
 
 			for (var i:uint=0; i < _level; i++)
 			{
@@ -260,15 +280,22 @@ package com.jack.llk.vo.map
 			var k:int;
 			for (k=start; k < nAvailableItems; k+=2)
 			{
-				var flag:int=Math.ceil(Math.random() * _level);
-				_array[k]=flag;
-				_array[k + 1]=flag;
+				_array[k]=Math.ceil(Math.random() * _level);
+				_array[k + 1]=_array[k];
 			}
 			
+			var nCurAll:int = nAvailableItems+nStones;
 			// add stones
-			for (k=nAvailableItems; k < nAvailableItems+nStones; k++)
+			for (k=nAvailableItems; k < nCurAll; k++)
 			{
-				_array[k]=STONE;
+				_array[k]=STONE_ITEM;
+			}
+			
+			// add tool items
+			for (k=nCurAll; k < nCurAll + nToolItems; k+=2)
+			{
+				_array[k]=RandomUtil.randomGet(TOOLS);
+				_array[k + 1]=_array[k];
 			}
 
 			_array=ArrayUtil.random(_array);
@@ -277,7 +304,7 @@ package com.jack.llk.vo.map
 
 			validateMap();
 			
-			Log.traced("init map", nAvailableItems, items.length);
+			Log.traced("init map", nAvailableItems+nToolItems, items.length);
 		}
 		
 		private function validateMap():void
@@ -351,7 +378,7 @@ package com.jack.llk.vo.map
 			for (var x:uint=startX + 1; x < endX; x++)
 			{
 				//只要一个不是-1，直接返回false 
-				if (map.get(x, a.y) != EMPTY)
+				if (map.get(x, a.y) != EMPTY_ITEM)
 					return null;
 			}
 
@@ -371,7 +398,7 @@ package com.jack.llk.vo.map
 			for (var y:uint=startY + 1; y < endY; y++)
 			{
 				//只要一个不是-1，直接返回false 
-				if (map.get(a.x, y) != EMPTY)
+				if (map.get(a.x, y) != EMPTY_ITEM)
 					return null;
 			}
 
@@ -386,7 +413,7 @@ package com.jack.llk.vo.map
 
 			var matched:Boolean=false;
 
-			if (map.get(c.x, c.y) == EMPTY) //C 点上必须没有障碍
+			if (map.get(c.x, c.y) == EMPTY_ITEM) //C 点上必须没有障碍
 			{
 				matched=(hTest(b, c) && vTest(a, c));
 				if (matched)
@@ -397,7 +424,7 @@ package com.jack.llk.vo.map
 				}
 			}
 
-			if (map.get(d.x, d.y) == EMPTY) //D 点上必须没有障碍
+			if (map.get(d.x, d.y) == EMPTY_ITEM) //D 点上必须没有障碍
 			{
 				matched=(hTest(a, d) && vTest(b, d));
 				if (matched)
@@ -564,12 +591,12 @@ package com.jack.llk.vo.map
 
 			var tmpMap:Array2=ArrayUtil.cloneArray2(map);
 
-			tmpMap.set(a.x, a.y, EMPTY);
+			tmpMap.set(a.x, a.y, EMPTY_ITEM);
 
 			if (ignore_b_arr && ignore_b_arr.length)
 			{
 				for each (var bb:Point in ignore_b_arr)
-					tmpMap.set(bb.x, bb.y, EMPTY);
+					tmpMap.set(bb.x, bb.y, EMPTY_ITEM);
 			}
 
 			var b:Point=_findRestPointA(tmpMap);
@@ -579,7 +606,7 @@ package com.jack.llk.vo.map
 
 			while (map.get(a.x, a.y) != map.get(b.x, b.y))
 			{
-				tmpMap.set(b.x, b.y, EMPTY);
+				tmpMap.set(b.x, b.y, EMPTY_ITEM);
 
 				b=_findRestPointA(tmpMap);
 

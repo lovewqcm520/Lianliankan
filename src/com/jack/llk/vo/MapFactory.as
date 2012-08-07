@@ -13,6 +13,7 @@ package com.jack.llk.vo
 		public var nItemTypes:int;
 		public var nAvailableItems:int;
 		public var nStones:int;
+		public var nToolItems:int;
 		public var nPaintedEggs:int;
 		public var nRefreshTools:int;
 		public var nBombTools:int;
@@ -36,15 +37,17 @@ package com.jack.llk.vo
 		public var actualRow:int;
 		
 		public static const PROBABILITY_STONE:Number = 1.0;
+		public static const PROBABILITY_TOOL_ITEM:Number = 1.0;
 
 		// default min value
-		public static const TOTAL_TIME_MIN:int=35;
-		public static const WARNING_TIME_MIN:int=5;
-		public static const COL_MIN:int=5;
+		public static const TOTAL_TIME_MIN:int=40;
+		public static const WARNING_TIME_MIN:int=30;
+		public static const COL_MIN:int=8;
 		public static const ROW_MIN:int=6;
-		public static const ITEM_TYPE_MIN:int=5;
-		public static const AVAILABLE_ITEM_MIN:int=20;
+		public static const ITEM_TYPE_MIN:int=24;
+		public static const AVAILABLE_ITEM_MIN:int=46;
 		public static const STONE_MIN:int=2;
+		public static const TOOL_ITEM_MIN:int=2;
 		public static const EGG_MIN:int=0;
 		public static const TOOL_REFRESH_MIN:int=1;
 		public static const TOOL_BOMB_MIN:int=1;
@@ -53,13 +56,14 @@ package com.jack.llk.vo
 		public static const LEVEL_MIN:int=1;
 
 		// default max value
-		public static const TOTAL_TIME_MAX:int=200;
-		public static const WARNING_TIME_MAX:int=170;
+		public static const TOTAL_TIME_MAX:int=100;
+		public static const WARNING_TIME_MAX:int=85;
 		public static const COL_MAX:int=10;
 		public static const ROW_MAX:int=10;
-		public static const ITEM_TYPE_MAX:int=23;
+		public static const ITEM_TYPE_MAX:int=24;
 		public static const AVAILABLE_ITEM_MAX:int=100;
 		public static const STONE_MAX:int=8;
+		public static const TOOL_ITEM_MAX:int=50;
 		public static const EGG_MAX:int=3;
 		public static const TOOL_REFRESH_MAX:int=1;
 		public static const TOOL_BOMB_MAX:int=1;
@@ -109,7 +113,8 @@ package com.jack.llk.vo
 			this.warningTime=int(WARNING_TIME_MIN + p * (WARNING_TIME_MAX - WARNING_TIME_MIN));
 
 			// get item types
-			this.nItemTypes=int(ITEM_TYPE_MIN + p * (ITEM_TYPE_MAX - ITEM_TYPE_MIN));
+			//this.nItemTypes=int(ITEM_TYPE_MIN + p * (ITEM_TYPE_MAX - ITEM_TYPE_MIN));
+			this.nItemTypes=ITEM_TYPE_MIN;
 
 			// get available items
 			this.nAvailableItems=int(AVAILABLE_ITEM_MIN + p * (AVAILABLE_ITEM_MAX - AVAILABLE_ITEM_MIN));
@@ -129,6 +134,19 @@ package com.jack.llk.vo
 			{
 				this.nStones=0;
 			}
+			
+			// get tool items
+			if(RandomUtil.isEnabledOnProbability(PROBABILITY_TOOL_ITEM))
+			{
+				this.nToolItems=int(TOOL_ITEM_MIN + p * (TOOL_ITEM_MAX - TOOL_ITEM_MIN));
+				// if nToolItems was odd make it a even
+				if (!NumberUtil.isEven(this.nToolItems))
+					this.nToolItems++;
+			}
+			else
+			{
+				this.nToolItems=TOOL_ITEM_MIN;
+			}
 
 			// get egg items
 			this.nPaintedEggs=int(EGG_MIN + p * (EGG_MAX - EGG_MIN));
@@ -147,19 +165,17 @@ package com.jack.llk.vo
 
 			// adjust items quantity
 			var nSize:int = col*row;
-			if(nAvailableItems + nStones > nSize)
+			if(nAvailableItems + nStones + nToolItems > nSize)
 			{
-				nAvailableItems = nSize - nStones;
+				nAvailableItems = nSize - nStones - nToolItems;
 			}
 
 			// set the round vo
 			var round:RoundVO=new RoundVO(this.level, col, row, nAvailableItems, nItemTypes);
-
-			round.nRefreshTool=this.nRefreshTools;
-			round.nBombTool=this.nBombTools;
-			round.nFindTool=this.nFindTools;
+			
 			round.nFlicker=this.nFlicker;
 			round.nStoneItems=this.nStones;
+			round.nToolItems=this.nToolItems;
 			round.nPaintedEggs=this.nPaintedEggs;
 			round.totalTime=this.totalTime;
 			round.warningTime=this.warningTime;
@@ -176,6 +192,11 @@ package com.jack.llk.vo
 
 			// init the round
 			round.init();
+			
+			// init the tools
+			round.nRefreshTool=this.nRefreshTools;
+			round.nBombTool=this.nBombTools;
+			round.nFindTool=this.nFindTools;
 
 			return round;
 		}

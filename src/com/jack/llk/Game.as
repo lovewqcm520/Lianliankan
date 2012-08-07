@@ -11,15 +11,14 @@ package com.jack.llk
 	import com.jack.llk.view.view.AboutView;
 	import com.jack.llk.view.view.BaseView;
 	import com.jack.llk.view.view.GameContainer;
-	import com.jack.llk.view.view.GameView;
 	import com.jack.llk.view.view.InitView;
 	import com.jack.llk.view.view.ModelView;
-
+	
 	import flash.desktop.NativeApplication;
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
-
+	
 	import starling.core.Starling;
 	import starling.display.Sprite;
 
@@ -34,7 +33,6 @@ package com.jack.llk
 		public var initView:InitView;
 		public var aboutView:AboutView;
 		public var modelView:ModelView;
-		public var gameView:GameView;
 		public var previousView:BaseView;
 		public var gameCanvas:GameContainer;
 
@@ -54,7 +52,6 @@ package com.jack.llk
 			container=new Sprite();
 			Starling.current.stage.addChild(container);
 
-			initSplashScreen();
 			initGame();
 
 			// add stage keyboard event
@@ -67,18 +64,6 @@ package com.jack.llk
 
 			// add enter_frame event
 			Starling.current.nativeStage.addEventListener(Event.ENTER_FRAME, onEnterFrame);
-		}
-
-		private function initSplashScreen():void
-		{
-//			var splash:SplashScreen = new SplashScreen();
-//			container.addChild(splash);
-//			splash.setBackground("asset_bg_splash");
-//			splash.setTime(showGame, 3);
-//			splash.start();
-
-//			var splash:Splash = new Splash(Assets.getBitmap("asset_bg_splash"), showGame, 3000, Splash.SCALE_MODE_NONE);
-//			Starling.current.nativeStage.addChild(splash);
 		}
 
 		private function initGame():void

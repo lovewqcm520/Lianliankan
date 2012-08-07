@@ -105,7 +105,7 @@ package com.jack.llk.control.asset
 				{
 					var data:Object=new Assets[name]();
 					if (data is Bitmap)
-						mTextureDic[name]=Texture.fromBitmap(data as Bitmap, true, false, scale);
+						mTextureDic[name]=Texture.fromBitmap(data as Bitmap, true, true, scale);
 					else if (data is ByteArray)
 						mTextureDic[name]=Texture.fromAtfData(data as ByteArray, scale);
 				}

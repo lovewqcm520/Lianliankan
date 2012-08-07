@@ -5,13 +5,13 @@ package com.jack.llk.view
 	import com.jack.llk.control.factors.GameStatusFactors;
 	import com.jack.llk.control.factors.SoundFactors;
 	import com.jack.llk.control.sound.SoundManager;
-
+	
 	import flash.utils.getTimer;
-
+	
 	import org.josht.starling.foxhole.controls.ProgressBar;
 	import org.josht.starling.foxhole.extensions.MyProgressBar;
 	import org.josht.starling.motion.GTween;
-
+	
 	import starling.core.Starling;
 	import starling.display.Image;
 	import starling.display.MovieClip;
@@ -98,6 +98,26 @@ package com.jack.llk.view
 			progress.backgroundSkin=regularBgSkin;
 
 			pTween.beginning();
+			pTween.duration=totalTime;
+			pTween.paused=false;
+		}
+		
+		/**
+		 * Update total time.
+		 * @param newTotalTime
+		 */
+		public function updateTotalTime(newTotalTime:int):void
+		{
+			// update the new total time
+			var add:Number = newTotalTime - totalTime;
+			warningPercentage=warningStartTime / newTotalTime;
+			progress.value = (progress.value*totalTime)/newTotalTime;
+			totalTime=newTotalTime;
+			isWarningActivate = (progress.value >= warningPercentage);
+			isWarningActivate ? progress.backgroundSkin=warningBgSkin : progress.backgroundSkin=regularBgSkin;
+			
+			// restart at the last position
+			pTween.paused=true;
 			pTween.duration=totalTime;
 			pTween.paused=false;
 		}
@@ -192,22 +212,16 @@ package com.jack.llk.view
 
 		override public function dispose():void
 		{
-			if (mcMovingIcon)
-			{
-				mcMovingIcon.removeFromParent(true);
-				mcMovingIcon=null;
-			}
-
-			progress.removeFromParent(true);
-			progress=null;
-
 			regularBgSkin=null;
 			warningBgSkin=null;
-
-			Starling.juggler.remove(pTween);
-			pTween.paused=true;
-			pTween=null;
-
+			
+			if(pTween)
+			{
+				Starling.juggler.remove(pTween);
+				pTween.paused=true;
+				pTween=null;
+			}
+			
 			super.dispose();
 		}
 

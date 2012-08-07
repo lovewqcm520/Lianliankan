@@ -2,9 +2,9 @@ package com.jack.llk.view.panel
 {
 	import com.jack.llk.control.Global;
 	import com.jack.llk.view.button.SettingButton;
-
+	
 	import flash.geom.Rectangle;
-
+	
 	import starling.animation.Tween;
 	import starling.core.Starling;
 	import starling.extensions.ClippedSprite;

@@ -9,7 +9,7 @@ package com.jack.llk.view.panel
 	import com.jack.llk.view.BaseSprite;
 	import com.jack.llk.view.button.BaseButton;
 	import com.jack.llk.view.button.CommonButton;
-
+	
 	import starling.animation.Transitions;
 	import starling.animation.Tween;
 	import starling.core.Starling;
@@ -32,17 +32,6 @@ package com.jack.llk.view.panel
 
 		override public function dispose():void
 		{
-			if (musicXIcon)
-			{
-				musicXIcon.dispose();
-				musicXIcon=null;
-			}
-
-			if (soundXIcon)
-			{
-				soundXIcon.dispose();
-				soundXIcon=null;
-			}
 
 			super.dispose();
 		}

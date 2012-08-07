@@ -5,7 +5,7 @@ package com.jack.llk.view.view
 	import com.jack.llk.control.events.ViewEvent;
 	import com.jack.llk.log.Log;
 	import com.jack.llk.view.BaseSprite;
-
+	
 	import starling.core.Starling;
 	import starling.display.Image;
 	import starling.events.Event;
@@ -62,8 +62,8 @@ package com.jack.llk.view.view
 
 		public function prepareShow():void
 		{
-			if (isFlattened)
-				this.unflatten();
+//			if (isFlattened)
+//				this.unflatten();
 
 			if (!hasPreviousViewEvent)
 			{
@@ -80,8 +80,8 @@ package com.jack.llk.view.view
 
 		public function prepareHide():void
 		{
-			if (!isFlattened)
-				this.flatten();
+//			if (!isFlattened)
+//				this.flatten();
 
 			if (hasPreviousViewEvent)
 			{
@@ -96,14 +96,8 @@ package com.jack.llk.view.view
 			if (hasPreviousViewEvent)
 			{
 				EventController.e.removeEventListener(ViewEvent.GOTO_PREVIOUS_VIEW, onGotoPreviousView);
-				Log.log("dispose", this);
+				//Log.log("dispose", this);
 			}
-
-			backgroundImage.removeFromParent(true);
-			backgroundImage=null;
-
-			backgroundTexture.dispose();
-			backgroundTexture=null;
 
 			super.dispose();
 		}

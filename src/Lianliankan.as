@@ -6,14 +6,15 @@ package
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.log.Log;
 	import com.jack.llk.view.view.Splash;
-
+	
 	import flash.display.Sprite;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
 	import flash.geom.Rectangle;
-
+	
 	import starling.core.Starling;
+	import starling.events.Event;
 	import starling.events.ResizeEvent;
 
 	[SWF(width="320", height="480", frameRate="30", backgroundColor="#000000")]
@@ -28,17 +29,17 @@ package
 			stage.align=StageAlign.TOP_LEFT;
 			stage.scaleMode=StageScaleMode.NO_SCALE;
 
-			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+			addEventListener(flash.events.Event.ADDED_TO_STAGE, onAddedToStage);
 			stage.addEventListener(ResizeEvent.RESIZE, onResize);
 
 			// show the splash view
-			var splash:Splash=new Splash(Assets.getBitmap("asset_bg_splash"), Game.getInstance().showGame, 1000, Splash.SCALE_MODE_STRETCH);
+			var splash:Splash=new Splash(Assets.getBitmap("asset_bg_splash"), Game.getInstance().showGame, 2000, Splash.SCALE_MODE_STRETCH);
 			stage.addChild(splash);
 		}
 
-		protected function onAddedToStage(event:Event):void
+		protected function onAddedToStage(event:flash.events.Event):void
 		{
-			removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+			removeEventListener(flash.events.Event.ADDED_TO_STAGE, onAddedToStage);
 
 			Starling.handleLostContext=true;
 			Starling.multitouchEnabled=true;
@@ -53,9 +54,16 @@ package
 
 			Global.contentScaleXFactor=stage.fullScreenWidth / Constant.DEFAULT_WIDTH;
 			Global.contentScaleYFactor=stage.fullScreenHeight / Constant.DEFAULT_HEIGHT;
+			
+			Starling.current.addEventListener(starling.events.Event.CONTEXT3D_CREATE, onContextCreated);
 		}
-
-		protected function onResize(event:Event):void
+		
+		private function onContextCreated(e:starling.events.Event):void
+		{
+			trace("onContextCreated");
+		}
+		
+		protected function onResize(event:flash.events.Event):void
 		{
 //			var viewPort:Rectangle = new Rectangle();
 //			

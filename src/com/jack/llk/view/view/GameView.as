@@ -9,8 +9,8 @@ package com.jack.llk.view.view
 	import com.jack.llk.control.factors.GameStatusFactors;
 	import com.jack.llk.control.factors.SoundFactors;
 	import com.jack.llk.control.sound.SoundManager;
-	import com.jack.llk.log.Log;
 	import com.jack.llk.util.Delay;
+	import com.jack.llk.view.BaseSprite;
 	import com.jack.llk.view.BatterTip;
 	import com.jack.llk.view.CountDownSprite;
 	import com.jack.llk.view.NumberSprite;
@@ -27,7 +27,6 @@ package com.jack.llk.view.view
 	import starling.animation.Tween;
 	import starling.core.Starling;
 	import starling.display.Image;
-	import starling.display.Sprite;
 	import starling.events.Event;
 	import starling.textures.Texture;
 
@@ -37,7 +36,7 @@ package com.jack.llk.view.view
 		private var gameCanvas:GameContainer;
 		private var round:RoundVO;
 
-		private var spTop:Sprite;
+		private var spTop:BaseSprite;
 		private var levelNumBg:Image;
 		private var spLevel:NumberSprite;
 		private var topBg:Image;
@@ -46,10 +45,11 @@ package com.jack.llk.view.view
 		private var npFind:NumberSprite;
 		private var refreshBtn:BaseButton;
 		private var bombBtn:BaseButton;
-		private var searchBtn:BaseButton;
+		private var findBtn:BaseButton;
 		private var pausePanel:PausePanel;
 		private var pauseBtn:BaseButton;
 
+		private var model:int;
 		// these data will update on every different level
 		// 当局游戏等级
 		private var level:int;
@@ -58,30 +58,33 @@ package com.jack.llk.view.view
 		// 当局游戏用时
 		private var usedTime:int;
 		// 当局游戏最大连击数
-		private var maxCombo:int;
+		private var maxBatter:int;
 
-		public function GameView()
+		public function GameView(model:int)
 		{
+			this.model = model;
 			super();
 		}
-
+		
+		private function onRemoveFromStage(event:Event):void
+		{
+			removeEventListener(Event.REMOVED_FROM_STAGE, onRemoveFromStage);
+			
+			// remove event listener
+			removeEvents();
+		}
+		
 		override protected function onAddedToStage(event:Event):void
 		{
 			super.onAddedToStage(event);
 
+			addEventListener(Event.REMOVED_FROM_STAGE, onRemoveFromStage);
 			setBackground("asset_bg_game");
 
 			// add event listener
-			EventController.e.addEventListener(GameEvent.GAME_RESUME, onGameResume);
-			EventController.e.addEventListener(GameEvent.GAME_PAUSE, onGamePause);
-			EventController.e.addEventListener(GameEvent.GAME_RESTART, onGameRestart);
-			EventController.e.addEventListener(GameEvent.GAME_NEXT, onGameNext);
-			EventController.e.addEventListener(GameEvent.GAME_WIN, onGameWin);
-			EventController.e.addEventListener(GameEvent.GAME_LOSE, onGameLose);
-			EventController.e.addEventListener(GameEvent.BATTER, onBatter);
-			EventController.e.addEventListener(GameEvent.GAME_REFRESH_MAP, onGameRefreshMap);
+			addEvents();
 		}
-
+		
 		public function reset(nLevel:int):void
 		{
 			this.level=nLevel;
@@ -94,7 +97,7 @@ package com.jack.llk.view.view
 
 			refreshBtn.onClick=gameCanvas.refreshMap;
 			bombBtn.onClick=gameCanvas.bomb2Items;
-			searchBtn.onClick=gameCanvas.findLine;
+			findBtn.onClick=gameCanvas.findLine;
 
 			// set the game status
 			Game.getInstance().gameStatus=GameStatusFactors.STATUS_PLAYING;
@@ -109,7 +112,7 @@ package com.jack.llk.view.view
 			resetData();
 			initialize();
 			initGameCenter();
-			setTools();
+			initTools();
 			updateUis();
 
 			// set the game status
@@ -120,13 +123,15 @@ package com.jack.llk.view.view
 		{
 			curScores=0;
 			usedTime=0;
-			maxCombo=0;
+			maxBatter=0;
 		}
 
 		private function initGameCenter():void
 		{
+			var oldIndex:int = -1;
 			if (gameCanvas)
 			{
+				oldIndex = getChildIndex(gameCanvas);
 				gameCanvas.removeFromParent(true);
 				gameCanvas=null;
 				Game.getInstance().gameCanvas=null;
@@ -136,10 +141,12 @@ package com.jack.llk.view.view
 			gameCanvas.init(round);
 			gameCanvas.scaleX=gameCanvas.scaleY=1.2;
 			addChildScaled(gameCanvas);
-			gameCanvas.x=(width - gameCanvas.width) / 2;
-			gameCanvas.y=(height - gameCanvas.height) / 2;
+			gameCanvas.x=(backgroundImage.width - gameCanvas.width) / 2;
+			gameCanvas.y=(backgroundImage.height - gameCanvas.height) / 2;
 
 			Game.getInstance().gameCanvas=gameCanvas;
+			
+			setChildIndex(gameCanvas, oldIndex);
 		}
 
 		private function initialize():void
@@ -147,7 +154,7 @@ package com.jack.llk.view.view
 			var w:Number=this.width;
 			var h:Number=this.height;
 
-			spTop=new Sprite();
+			spTop=new BaseSprite();
 			// set the game_board
 			topBg=Assets.getImage("game_board");
 			topBg.width=Constant.DEFAULT_WIDTH;
@@ -193,7 +200,7 @@ package com.jack.llk.view.view
 			pauseBtn.visible=true;
 
 			// refresh the map
-			gameCanvas.refreshMap();
+			gameCanvas.refreshMap(false);
 
 			// set the game status
 			Game.getInstance().gameStatus=GameStatusFactors.STATUS_PLAYING;
@@ -204,9 +211,18 @@ package com.jack.llk.view.view
 		 */
 		private function onNext():void
 		{
+			var nOldRefreshTools:int = round.nRefreshTool;
+			var nOldBombTools:int = round.nBombTool;
+			var nOldFindTools:int = round.nFindTool;
+			
 			// goto next level and reset game
 			this.reset(++level);
 
+			// remain the tools 
+			round.nRefreshTool = nOldRefreshTools;
+			round.nBombTool = nOldBombTools;
+			round.nFindTool = nOldFindTools;
+			
 			// set the game status
 			Game.getInstance().gameStatus=GameStatusFactors.STATUS_PLAYING;
 		}
@@ -225,21 +241,22 @@ package com.jack.llk.view.view
 			// get use time
 			usedTime=countDown.passedTime;
 			// get the max combo
-			maxCombo=round.comboMax;
+			maxBatter=round.comboMax;
 			// get final scores
-			curScores=getFinalScores();
+			curScores=round.scores;
+			curScores+= (Constant.BATTER_SCORE*maxBatter + 5*(100 * (round.totalTime + 10 * round.nEggItems / 2 - round.timeUsed) / 1000));
 
 			// show the win reward panel
 			var rewardPanel:RewardPanel=new RewardPanel();
 			rewardPanel.curScores=curScores;
 			rewardPanel.usedTime=usedTime;
-			rewardPanel.maxCombo=maxCombo;
+			rewardPanel.maxCombo=maxBatter;
 			rewardPanel.showWin();
 			rewardPanel.scaleX*=0.75;
 			rewardPanel.scaleY*=0.75;
 			addChildScaled(rewardPanel, 0, 0);
 			// set reward ui on top
-			setChildIndex(npRefresh, this.numChildren - 1);
+			setChildIndex(rewardPanel, this.numChildren - 1);
 
 			// set the game status
 			Game.getInstance().gameStatus=GameStatusFactors.STATUS_OVER;
@@ -257,8 +274,15 @@ package com.jack.llk.view.view
 			// play sound
 			SoundManager.play(SoundFactors.LOST_BACK_MUSIC);
 			
+			// get the max combo
+			maxBatter=round.comboMax;
+			
 			// get final scores
-			curScores=getFinalScores();
+			curScores = round.scores;
+			if(model == Constant.GAME_MODEL_ENDLESS)
+			{
+				curScores += (Constant.BATTER_SCORE*maxBatter);
+			}
 
 			// show the win reward panel
 			var rewardPanel:RewardPanel=new RewardPanel();
@@ -269,7 +293,7 @@ package com.jack.llk.view.view
 			rewardPanel.scaleY*=0.75;
 			addChildScaled(rewardPanel, 0, 0);
 			// set reward ui on top
-			setChildIndex(npRefresh, this.numChildren - 1);
+			setChildIndex(rewardPanel, this.numChildren - 1);
 
 			// set the game status
 			Game.getInstance().gameStatus=GameStatusFactors.STATUS_OVER;
@@ -317,10 +341,11 @@ package com.jack.llk.view.view
 				pausePanel=new PausePanel();
 				addChildScaled(pausePanel, 65, Constant.DEFAULT_HEIGHT);
 				pausePanel.y=Constant.DEFAULT_HEIGHT;
+				setChildIndex(pausePanel, numChildren-1);
 			}
 			else
 			{
-
+				setChildIndex(pausePanel, numChildren-1);
 			}
 
 			// pause the game
@@ -357,13 +382,14 @@ package com.jack.llk.view.view
 		
 		private function onRefreshMap():void
 		{
-			gameCanvas.refreshMap();
+			gameCanvas.refreshMap(false);
 		}
 
 		private function onBackClick():void
 		{
 			var t1:Tween=new Tween(this, 0.3);
 			t1.animate("x", Starling.current.nativeStage.fullScreenWidth);
+			t1.onComplete=onMoveToHideComplete;
 			Starling.juggler.add(t1);
 
 			this.prepareHide();
@@ -374,7 +400,12 @@ package com.jack.llk.view.view
 
 			Game.getInstance().previousView.prepareShow();
 		}
-
+		
+		private function onMoveToHideComplete():void
+		{
+			dispose();
+		}
+		
 		protected function onStatusEvent(event:StatusEvent):void
 		{
 			if (event.level == "ok")
@@ -390,7 +421,7 @@ package com.jack.llk.view.view
 			onBackClick();
 		}
 
-		private function setTools():void
+		private function initTools():void
 		{
 			var toolY:Number=700;
 			var gapX:Number=120;
@@ -416,9 +447,9 @@ package com.jack.llk.view.view
 			var upState2:Texture=Assets.getTexture("find_n");
 			var text2:String="";
 			var downState2:Texture=Assets.getTexture("find_p");
-			searchBtn=new BaseButton(upState2, text2, downState2);
-			addChildScaled(searchBtn, firstX + gapX * 2, toolY);
-			searchBtn.onClick=gameCanvas.findLine;
+			findBtn=new BaseButton(upState2, text2, downState2);
+			addChildScaled(findBtn, firstX + gapX * 2, toolY);
+			findBtn.onClick=gameCanvas.findLine;
 		}
 
 		private function onGameResume(event:GameEvent):void
@@ -459,6 +490,92 @@ package com.jack.llk.view.view
 		private function onGameRefreshMap(event:GameEvent):void
 		{
 			Delay.doIt(1000, onRefreshMap);
+		}
+		
+		private function onGetToolTime(event:GameEvent):void
+		{
+			if(!round)	return;
+			// update total time
+			round.totalTime = round.totalTime + Constant.TOOL_TIME_ADD;
+			
+			// update the count down timer
+			if(countDown)
+			{
+				countDown.updateTotalTime(round.totalTime);
+			}
+			
+			////////////////////// to be continued ///////////////////
+			//  show some animation or tip?
+		}
+		
+		private function onGetToolRefresh(event:GameEvent):void
+		{
+			// update refresh tool num tip
+			if(round)
+				updateToolRefresh();
+		}
+		
+		private function onGetToolFind(event:GameEvent):void
+		{
+			// update find tool num tip
+			if(round)
+				updateToolFind();
+		}
+		
+		// 彩蛋触发后随即产生一种效果
+		private function onGetToolEgg(event:GameEvent):void
+		{
+			var r:Number = Math.random();
+			var probability:Number = 0.2;
+			if(r <= probability)
+			{
+				round.nRefreshTool++;	
+			}
+			else if(r <= probability*2)
+			{
+				round.nBombTool++;	
+			}
+			else if(r <= probability*3)
+			{
+				round.nFindTool++;	
+			}
+			else if(r <= probability*4)
+			{
+				gameCanvas.refreshMap(false);
+			}
+			else if(r <= 1)
+			{
+				gameCanvas.bomb2Items(false);
+			}
+		}
+		
+		private function onGetToolBomb(event:GameEvent):void
+		{
+			// update bomb tool num tip
+			if(round)
+				updateToolBomb();
+		}
+		
+		
+		private function onUseToolBomb(event:GameEvent):void
+		{
+			// update bomb tool num tip
+			if(round)
+				updateToolBomb();
+		}
+		
+		private function onUseToolRefresh(event:GameEvent):void
+		{
+			// update refresh tool num tip
+			if(round)
+				updateToolRefresh();
+		}
+		
+		private function onUseToolFind(event:GameEvent):void
+		{
+			// update find tool num tip
+			if(round)
+				updateToolFind();
 		}
 		
 		//////////////////  write functions for update some local ui /////////////////////////
@@ -534,7 +651,7 @@ package com.jack.llk.view.view
 
 			npRefresh=new NumberSprite(nRefreshTool);
 			npRefresh.scaleX=npRefresh.scaleY=0.5;
-			addChildScaled(npRefresh, 163, 745);
+			addChildScaled(npRefresh, 163, 745, getChildIndex(refreshBtn));
 		}
 
 		private function updateToolBomb():void
@@ -546,7 +663,7 @@ package com.jack.llk.view.view
 
 			npBomb=new NumberSprite(npBombTool);
 			npBomb.scaleX=npBomb.scaleY=0.5;
-			addChildScaled(npBomb, 285, 745);
+			addChildScaled(npBomb, 285, 745, getChildIndex(bombBtn));
 		}
 
 		private function updateToolFind():void
@@ -558,30 +675,10 @@ package com.jack.llk.view.view
 
 			npFind=new NumberSprite(nFindTool);
 			npFind.scaleX=npFind.scaleY=0.5;
-			addChildScaled(npFind, 385, 745);
+			addChildScaled(npFind, 385, 745, getChildIndex(findBtn));
 		}
 
 		//////////////////  write functions for calculate scores /////////////////////////
-
-		// calculate the final scores when game is over
-		private function getFinalScores():int
-		{
-			var one_pair_score:int=100;
-			var one_combo_max_score:int=50;
-
-			var timeScoreFactor:Number=0.5;
-
-			var nErasedItems:int=round.nAvailableItems - round.nRestItems;
-
-			var baseScore:int=nErasedItems * one_pair_score;
-			var comboScore:int=maxCombo * one_combo_max_score;
-			var timeScore:int=(1 - usedTime / round.totalTime) * (baseScore + comboScore) * timeScoreFactor;
-
-			var totalScore:int=baseScore + comboScore + timeScore;
-
-			Log.traced("getFinalScores", baseScore, comboScore, timeScore);
-			return totalScore;
-		}
 
 		// fade out the tip and then dipose the tip
 		private function onBatterTipMoveStop(tip:BatterTip):void
@@ -605,6 +702,64 @@ package com.jack.llk.view.view
 				tip.removeFromParent(true);
 				tip = null;
 			}
+		}
+		
+		//////////////////  write functions for add and remove event /////////////////////////
+		
+		private function addEvents():void
+		{
+			// add event listener
+			EventController.e.addEventListener(GameEvent.GAME_RESUME, onGameResume);
+			EventController.e.addEventListener(GameEvent.GAME_PAUSE, onGamePause);
+			EventController.e.addEventListener(GameEvent.GAME_RESTART, onGameRestart);
+			EventController.e.addEventListener(GameEvent.GAME_NEXT, onGameNext);
+			EventController.e.addEventListener(GameEvent.GAME_WIN, onGameWin);
+			EventController.e.addEventListener(GameEvent.GAME_LOSE, onGameLose);
+			EventController.e.addEventListener(GameEvent.BATTER, onBatter);
+			EventController.e.addEventListener(GameEvent.GAME_REFRESH_MAP, onGameRefreshMap);
+			
+			EventController.e.addEventListener(GameEvent.GET_TOOL_BOMB, onGetToolBomb);
+			EventController.e.addEventListener(GameEvent.GET_TOOL_EGG, onGetToolEgg);
+			EventController.e.addEventListener(GameEvent.GET_TOOL_FIND, onGetToolFind);
+			EventController.e.addEventListener(GameEvent.GET_TOOL_REFRESH, onGetToolRefresh);
+			EventController.e.addEventListener(GameEvent.GET_TOOL_TIME, onGetToolTime);
+			
+			EventController.e.addEventListener(GameEvent.USE_TOOL_FIND, onUseToolFind);
+			EventController.e.addEventListener(GameEvent.USE_TOOL_REFRESH, onUseToolRefresh);
+			EventController.e.addEventListener(GameEvent.USE_TOOL_BOMB, onUseToolBomb);
+		}
+		
+		private function removeEvents():void
+		{
+			// remove event listener
+			EventController.e.removeEventListener(GameEvent.GAME_RESUME, onGameResume);
+			EventController.e.removeEventListener(GameEvent.GAME_PAUSE, onGamePause);
+			EventController.e.removeEventListener(GameEvent.GAME_RESTART, onGameRestart);
+			EventController.e.removeEventListener(GameEvent.GAME_NEXT, onGameNext);
+			EventController.e.removeEventListener(GameEvent.GAME_WIN, onGameWin);
+			EventController.e.removeEventListener(GameEvent.GAME_LOSE, onGameLose);
+			EventController.e.removeEventListener(GameEvent.BATTER, onBatter);
+			EventController.e.removeEventListener(GameEvent.GAME_REFRESH_MAP, onGameRefreshMap);
+			
+			EventController.e.removeEventListener(GameEvent.GET_TOOL_BOMB, onGetToolBomb);
+			EventController.e.removeEventListener(GameEvent.GET_TOOL_EGG, onGetToolEgg);
+			EventController.e.removeEventListener(GameEvent.GET_TOOL_FIND, onGetToolFind);
+			EventController.e.removeEventListener(GameEvent.GET_TOOL_REFRESH, onGetToolRefresh);
+			EventController.e.removeEventListener(GameEvent.GET_TOOL_TIME, onGetToolTime);
+			
+			EventController.e.removeEventListener(GameEvent.USE_TOOL_FIND, onUseToolFind);
+			EventController.e.removeEventListener(GameEvent.USE_TOOL_REFRESH, onUseToolRefresh);
+			EventController.e.removeEventListener(GameEvent.USE_TOOL_BOMB, onUseToolBomb);
+		}
+		
+		//////////////////  dispose function  /////////////////////////
+		
+		override public function dispose():void
+		{
+			removeEvents();
+			round = null;
+			
+			super.dispose();
 		}
 	}
 }

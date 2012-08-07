@@ -38,7 +38,7 @@ package com.jack.llk.view
 			initialize();
 			
 			// 
-			if(itemIndex == MapVO.STONE)
+			if(itemIndex == MapVO.STONE_ITEM)
 			{
 				this.touchable = false;
 				this.width = 36;
@@ -86,15 +86,11 @@ package com.jack.llk.view
 			if (smallItem)
 			{
 				Starling.juggler.remove(smallItem);
-				smallItem.removeFromParent(true);
-				smallItem=null;
 			}
 
 			if (bigItem)
 			{
 				Starling.juggler.remove(bigItem);
-				bigItem.removeFromParent(true);
-				bigItem=null;
 			}
 
 			super.dispose();

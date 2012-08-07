@@ -124,6 +124,16 @@ package com.jack.llk.util
 		}
 
 		/**
+		 * 随即获取数组中的一个元素
+		 * @param arr
+		 * @return 
+		 */
+		public static function randomGet(arr:Array):*
+		{
+			return arr[integer(0, arr.length)];
+		}
+		
+		/**
 		 * 以均等的几率从多个参数中选择一个
 		 *
 		 * @param reg	数组

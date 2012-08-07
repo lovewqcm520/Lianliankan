@@ -1,5 +1,6 @@
 package com.jack.llk.vo
 {
+	import com.jack.llk.control.Constant;
 	import com.jack.llk.control.events.EventController;
 	import com.jack.llk.control.events.GameEvent;
 	import com.jack.llk.vo.map.ItemVO;
@@ -9,9 +10,9 @@ package com.jack.llk.vo
 	import de.polygonal.ds.Array2;
 	
 	import flash.geom.Point;
-
+	
 	/**
-	 *
+	 * 
 	 * @author Jack
 	 */
 	public class RoundVO
@@ -52,17 +53,21 @@ package com.jack.llk.vo
 		public var comboMax:int;
 		// cur combo
 		private var _comboCur:int;
+		// current level user scores
+		public var scores:int=0;
 
 		// other functional item (like stone, block or something)
 		public var nStoneItems:int;
+		public var nToolItems:int;
 		public var nPaintedEggs:int;
+		public var nEggItems:int;
 
 		public var nFlicker:int;
 
 		// tools
-		public var nRefreshTool:int;
-		public var nBombTool:int;
-		public var nFindTool:int;
+		private var _nRefreshTool:int=0;
+		private var _nBombTool:int=0;
+		private var _nFindTool:int=0;
 
 		/**
 		 *
@@ -98,6 +103,7 @@ package com.jack.llk.vo
 			voMap.nAvailableItems=nAvailableItems;
 			voMap.nItemTypes=nItemTypes;
 			voMap.nStones=nStoneItems;
+			voMap.nToolItems=nToolItems;
 
 			voMap.init();
 		}
@@ -178,7 +184,55 @@ package com.jack.llk.vo
 		 */
 		public function erase2Items(a:Point, b:Point):void
 		{
+			// 判断消除的一对item是否是特殊物品
+			var aIndex:int = int(map.get(a.x, a.y));
+			var bIndex:int = int(map.get(b.x, b.y));
+			if(aIndex == bIndex)
+			{
+				var e:GameEvent;
+				switch(aIndex)
+				{
+					case MapVO.EGG_ITEM:
+					{
+						e = new GameEvent(GameEvent.GET_TOOL_EGG);
+						nEggItems++;
+						break;
+					}
+						
+					case MapVO.FIND_ITEM:
+					{
+						nFindTool++;
+						break;
+					}
+						
+					case MapVO.BOMB_ITEM:
+					{
+						nBombTool++;
+						break;
+					}
+						
+					case MapVO.REFRESH_ITEM:
+					{
+						nRefreshTool++;
+						break;
+					}
+						
+					case MapVO.TIME_ITEM:
+					{
+						e = new GameEvent(GameEvent.GET_TOOL_TIME);
+						break;
+					}
+				}
+				// dispatch the event
+				if(e)
+					EventController.e.dispatchEvent(e);
+			}
+			
+			// erase 2 items
 			voMap.erase(a, b);
+			
+			// update current level scores
+			scores += Constant.ITEM_SCORE;
 		}
 
 		/**
@@ -228,6 +282,76 @@ package com.jack.llk.vo
 			var e:GameEvent=new GameEvent(GameEvent.BATTER);
 			EventController.e.dispatchEvent(e);
 		}
+
+		public function get nRefreshTool():int
+		{
+			return _nRefreshTool;
+		}
+
+		public function set nRefreshTool(value:int):void
+		{
+			if(_nRefreshTool != value && value >= 0)
+			{
+				var e:GameEvent;
+				if(_nRefreshTool > value)
+				{
+					e = new GameEvent(GameEvent.USE_TOOL_REFRESH);
+				}
+				else
+				{
+					e = new GameEvent(GameEvent.GET_TOOL_REFRESH);
+				}
+				_nRefreshTool = value;	
+				EventController.e.dispatchEvent(e);
+			}
+		}
+
+		public function get nBombTool():int
+		{
+			return _nBombTool;
+		}
+
+		public function set nBombTool(value:int):void
+		{
+			if(_nBombTool != value && value >= 0)
+			{
+				var e:GameEvent;
+				if(_nBombTool > value)
+				{
+					e = new GameEvent(GameEvent.USE_TOOL_BOMB);
+				}
+				else
+				{
+					e = new GameEvent(GameEvent.GET_TOOL_BOMB);
+				}
+				_nBombTool = value;	
+				EventController.e.dispatchEvent(e);
+			}
+		}
+
+		public function get nFindTool():int
+		{
+			return _nFindTool;
+		}
+
+		public function set nFindTool(value:int):void
+		{
+			if(_nFindTool != value && value >= 0)
+			{
+				var e:GameEvent;
+				if(_nFindTool > value)
+				{
+					e = new GameEvent(GameEvent.USE_TOOL_FIND);
+				}
+				else
+				{
+					e = new GameEvent(GameEvent.GET_TOOL_FIND);
+				}
+				_nFindTool = value;	
+				EventController.e.dispatchEvent(e);
+			}
+		}
+
 
 	}
 }
