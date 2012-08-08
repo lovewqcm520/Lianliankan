@@ -23,6 +23,8 @@ package com.jack.llk.view.panel
 		private var musicXIcon:Image;
 		private var soundXIcon:Image;
 
+		private var playBtn:BaseButton;
+
 		public function PausePanel()
 		{
 			super();
@@ -49,7 +51,7 @@ package com.jack.llk.view.panel
 			var upState:Texture=Assets.getTexture("startgamebt");
 			var text:String="";
 			var downState:Texture=Assets.getTexture("startgamebted");
-			var playBtn:BaseButton=new BaseButton(upState, text, downState);
+			playBtn=new BaseButton(upState, text, downState);
 			playBtn.x=bg.x + (bg.width - playBtn.width) / 2;
 			playBtn.y=-playBtn.height / 2;
 			addChild(playBtn);
@@ -194,8 +196,6 @@ package com.jack.llk.view.panel
 		{
 			var e:GameEvent=new GameEvent(GameEvent.GAME_RESUME);
 			EventController.e.dispatchEvent(e);
-
-			hide();
 		}
 
 		public function show():void
@@ -209,7 +209,7 @@ package com.jack.llk.view.panel
 		public function hide():void
 		{
 			var t:Tween=new Tween(this, 0.6, Transitions.EASE_IN_BACK);
-			t.animate("y", Constant.DEFAULT_HEIGHT);
+			t.animate("y", Starling.current.stage.stageHeight-playBtn.bounds.y + 100);
 			Starling.juggler.add(t);
 		}
 	}

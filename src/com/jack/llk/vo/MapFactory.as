@@ -42,15 +42,17 @@ package com.jack.llk.vo
 		// default min value
 		public static const TOTAL_TIME_MIN:int=40;
 		public static const WARNING_TIME_MIN:int=30;
+//		public static const TOTAL_TIME_MIN:int=10;
+//		public static const WARNING_TIME_MIN:int=8;
 		public static const COL_MIN:int=8;
 		public static const ROW_MIN:int=6;
 		public static const ITEM_TYPE_MIN:int=24;
-		public static const AVAILABLE_ITEM_MIN:int=46;
+		public static const AVAILABLE_ITEM_MIN:int=30;
 		public static const STONE_MIN:int=2;
 		public static const TOOL_ITEM_MIN:int=2;
 		public static const EGG_MIN:int=0;
 		public static const TOOL_REFRESH_MIN:int=1;
-		public static const TOOL_BOMB_MIN:int=1;
+		public static const TOOL_BOMB_MIN:int=100;
 		public static const TOOL_FIND_MIN:int=1;
 		public static const FLICKER_ITEM_MIN:int=3;
 		public static const LEVEL_MIN:int=1;

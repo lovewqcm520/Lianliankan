@@ -1,4 +1,4 @@
-package com.jack.llk.view.view
+package com.jack.llk.view.module.endless
 {
 	import com.jack.llk.Game;
 	import com.jack.llk.control.Constant;
@@ -9,32 +9,26 @@ package com.jack.llk.view.view
 	import com.jack.llk.view.button.CommonButton;
 	import com.jack.llk.view.button.PlayButton;
 	import com.jack.llk.view.panel.SettingPanel;
-	import com.jack.llk.vo.gameModel.EndlessModelVO;
+	import com.jack.llk.vo.model.EndlessModelVO;
 	
 	import starling.animation.Tween;
 	import starling.core.Starling;
 	import starling.display.Image;
 	import starling.display.Sprite;
 	import starling.events.Event;
+	import com.jack.llk.view.view.BaseView;
+	import com.jack.llk.view.view.GameView;
 
 	public class EndlessModelChapterView extends BaseView
 	{
 		private var dialog:Sprite;
-
 		private var highScoreTxt:Image;
-
 		private var diTxt:Image;
-
 		private var levelTxt:NumberSprite;
-
 		private var guanTxt:Image;
-
 		private var scoreTitleTxt:Image;
-
 		private var fenTxt:Image;
-
 		private var scoreTxt:NumberSprite;
-		
 		private var inited:Boolean=false;
 
 		public function EndlessModelChapterView()
@@ -48,7 +42,7 @@ package com.jack.llk.view.view
 		{
 			super.onAddedToStage(event);
 
-			initialize1();
+			initialize();
 		}
 		
 		override public function prepareShow():void
@@ -66,7 +60,7 @@ package com.jack.llk.view.view
 			}
 		}
 
-		private function initialize1():void
+		private function initialize():void
 		{
 			var w:Number=this.width;
 			var h:Number=this.height;

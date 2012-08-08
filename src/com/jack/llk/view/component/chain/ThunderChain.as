@@ -122,8 +122,6 @@ package com.jack.llk.view.component.chain
 
 		override public function dispose():void
 		{
-			textures=null;
-
 			super.dispose();
 		}
 	}

@@ -8,15 +8,18 @@ package com.jack.llk.view.view
 	import com.jack.llk.view.BaseImage;
 	import com.jack.llk.view.button.CommonButton;
 	import com.jack.llk.view.panel.SettingPanel;
-
+	
 	import org.josht.starling.foxhole.controls.ScrollContainer;
 	import org.josht.starling.foxhole.layout.HorizontalLayout;
-
+	
 	import starling.animation.Tween;
 	import starling.core.Starling;
 	import starling.display.Image;
 	import starling.events.Event;
 	import starling.textures.Texture;
+	import com.jack.llk.view.module.endless.EndlessModelChapterView;
+	import com.jack.llk.view.module.classic.ClassicModelChapterView;
+	import com.jack.llk.view.module.time.TimeModelChapterView;
 
 	public class ModelView extends BaseView
 	{
@@ -34,7 +37,6 @@ package com.jack.llk.view.view
 		private var diff:Number=30;
 		private var lastDescIndex:int=-1;
 
-		private var classicModelView:ClassicModelChapterView;
 		private var timeModelView:TimeModelChapterView;
 		private var endlessModelView:EndlessModelChapterView;
 
@@ -126,6 +128,19 @@ package com.jack.llk.view.view
 			backBtn.onClick=onBackClick;
 		}
 
+		private function onClassicModelSelected():void
+		{
+			Log.log("onClassicModelSelected");
+			var classicModelView:ClassicModelChapterView=new ClassicModelChapterView();
+			Game.getInstance().container.addChild(classicModelView);
+			// show classic model screen
+			classicModelView.visible=true;
+			classicModelView.prepareShow();
+			// hide model selecte screen
+			this.visible=false;
+			this.prepareHide();
+		}
+		
 		private function onEndlessModelSelected():void
 		{
 			Log.log("onEndlessModelSelected");
@@ -157,26 +172,6 @@ package com.jack.llk.view.view
 			// show time model screen
 			timeModelView.visible=true;
 			timeModelView.prepareShow();
-			// hide model selecte screen
-			this.visible=false;
-			this.prepareHide();
-		}
-
-		private function onClassicModelSelected():void
-		{
-			Log.log("onClassicModelSelected");
-			if (!classicModelView)
-			{
-				classicModelView=new ClassicModelChapterView();
-				Game.getInstance().container.addChild(classicModelView);
-			}
-			else
-			{
-				classicModelView.addChapterContainerToStage();
-			}
-			// show classic model screen
-			classicModelView.visible=true;
-			classicModelView.prepareShow();
 			// hide model selecte screen
 			this.visible=false;
 			this.prepareHide();

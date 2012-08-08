@@ -15,11 +15,15 @@ package com.jack.llk.view.view
 	import com.jack.llk.view.CountDownSprite;
 	import com.jack.llk.view.NumberSprite;
 	import com.jack.llk.view.button.BaseButton;
+	import com.jack.llk.view.module.classic.ClassicModelChapterView;
+	import com.jack.llk.view.module.classic.ClassicModelRewardPanel;
+	import com.jack.llk.view.module.endless.EndlessModelRewardPanel;
 	import com.jack.llk.view.panel.PausePanel;
 	import com.jack.llk.view.panel.RewardPanel;
 	import com.jack.llk.vo.MapFactory;
 	import com.jack.llk.vo.RoundVO;
-	import com.jack.llk.vo.gameModel.EndlessModelVO;
+	import com.jack.llk.vo.model.ClassicModelVO;
+	import com.jack.llk.vo.model.EndlessModelVO;
 	
 	import flash.desktop.NativeApplication;
 	import flash.events.StatusEvent;
@@ -59,6 +63,10 @@ package com.jack.llk.view.view
 		private var usedTime:int;
 		// 当局游戏最大连击数
 		private var maxBatter:int;
+		// 当局游戏win时得到多少star
+		private var stars:int;
+		
+		private var gameover:Boolean;
 
 		public function GameView(model:int)
 		{
@@ -124,6 +132,8 @@ package com.jack.llk.view.view
 			curScores=0;
 			usedTime=0;
 			maxBatter=0;
+			stars=0;
+			gameover=false;
 		}
 
 		private function initGameCenter():void
@@ -232,6 +242,7 @@ package com.jack.llk.view.view
 		 */
 		private function onWin():void
 		{
+			gameover=true;
 			// play sound
 			SoundManager.play(SoundFactors.WIN_BACK_MUSIC);
 			
@@ -247,23 +258,38 @@ package com.jack.llk.view.view
 			curScores+= (Constant.BATTER_SCORE*maxBatter + 5*(100 * (round.totalTime + 10 * round.nEggItems / 2 - round.timeUsed) / 1000));
 
 			// show the win reward panel
-			var rewardPanel:RewardPanel=new RewardPanel();
-			rewardPanel.curScores=curScores;
-			rewardPanel.usedTime=usedTime;
-			rewardPanel.maxCombo=maxBatter;
-			rewardPanel.showWin();
-			rewardPanel.scaleX*=0.75;
-			rewardPanel.scaleY*=0.75;
-			addChildScaled(rewardPanel, 0, 0);
+			var reward:RewardPanel;
+			if(model == Constant.GAME_MODEL_ENDLESS)
+			{ 
+				reward=new EndlessModelRewardPanel();
+				EndlessModelRewardPanel(reward).curScores=curScores;
+				EndlessModelRewardPanel(reward).usedTime=usedTime;
+				EndlessModelRewardPanel(reward).maxCombo=maxBatter;
+				
+				// flush data to local shared object
+				EndlessModelVO.getInstance().addScores(level, curScores);
+				EndlessModelVO.getInstance().flushToCache();
+			}
+			else if(model == Constant.GAME_MODEL_CLASSIC)
+			{
+				stars = 3;
+				reward=new ClassicModelRewardPanel();
+				ClassicModelRewardPanel(reward).stars = stars;
+				ClassicModelRewardPanel(reward).usedTime=usedTime;
+				ClassicModelRewardPanel(reward).maxCombo=maxBatter;
+				
+				// flush data to local shared object
+				ClassicModelVO.getInstance().flushAt(level, stars);
+			}
+			reward.showWin();
+			reward.scaleX*=0.75;
+			reward.scaleY*=0.75;
+			addChildScaled(reward, 0, 0);
 			// set reward ui on top
-			setChildIndex(rewardPanel, this.numChildren - 1);
+			setChildIndex(reward, this.numChildren - 1);
 
 			// set the game status
 			Game.getInstance().gameStatus=GameStatusFactors.STATUS_OVER;
-			
-			// flush data to local shared object
-			EndlessModelVO.getInstance().addScores(level, curScores);
-			EndlessModelVO.getInstance().flushToCache();
 		}
 
 		/**
@@ -271,6 +297,7 @@ package com.jack.llk.view.view
 		 */
 		private function onLose():void
 		{
+			gameover=true;
 			// play sound
 			SoundManager.play(SoundFactors.LOST_BACK_MUSIC);
 			
@@ -284,23 +311,31 @@ package com.jack.llk.view.view
 				curScores += (Constant.BATTER_SCORE*maxBatter);
 			}
 
-			// show the win reward panel
-			var rewardPanel:RewardPanel=new RewardPanel();
-			rewardPanel.highestHistoryScores=EndlessModelVO.getInstance().maxScore;
-			rewardPanel.curScores=curScores;
-			rewardPanel.showLose();
-			rewardPanel.scaleX*=0.75;
-			rewardPanel.scaleY*=0.75;
-			addChildScaled(rewardPanel, 0, 0);
+			// show the lose reward panel
+			var reward:RewardPanel;
+			if(model == Constant.GAME_MODEL_ENDLESS)
+			{ 
+				reward=new EndlessModelRewardPanel();
+				EndlessModelRewardPanel(reward).highestHistoryScores=EndlessModelVO.getInstance().maxScore;
+				EndlessModelRewardPanel(reward).curScores=curScores;
+				
+				// flush data to local shared object
+				EndlessModelVO.getInstance().addScores(level, curScores);
+				EndlessModelVO.getInstance().flushToCache();
+			}
+			else if(model == Constant.GAME_MODEL_CLASSIC)
+			{
+				reward=new ClassicModelRewardPanel();
+			}
+			reward.showLose();
+			reward.scaleX*=0.75;
+			reward.scaleY*=0.75;
+			addChildScaled(reward, 0, 0);
 			// set reward ui on top
-			setChildIndex(rewardPanel, this.numChildren - 1);
+			setChildIndex(reward, this.numChildren - 1);
 
 			// set the game status
 			Game.getInstance().gameStatus=GameStatusFactors.STATUS_OVER;
-			
-			// flush data to local shared object
-			EndlessModelVO.getInstance().addScores(level, curScores);
-			EndlessModelVO.getInstance().flushToCache();
 		}
 
 		/**
@@ -308,24 +343,20 @@ package com.jack.llk.view.view
 		 */
 		private function onResume():void
 		{
-			// hide the pause menu
-			if (pausePanel)
+			if(!gameover)
 			{
-
+				// resume the game
+				
+				// show the pause button
+				pauseBtn.visible=true;
+				//  pause the count time timer
+				countDown.resume();
+				// show the game canvas sprite
+				gameCanvas.visible=true;
+				
+				// set the game status
+				Game.getInstance().gameStatus=GameStatusFactors.STATUS_PLAYING;
 			}
-
-			// resume the game
-
-			// show the pause button
-			pauseBtn.visible=true;
-			//  pause the count time timer
-			countDown.resume();
-			// show the game canvas sprite
-			gameCanvas.visible=true;
-
-			// set the game status
-			Game.getInstance().gameStatus=GameStatusFactors.STATUS_PLAYING;
-
 			// start the hide animation
 			pausePanel.hide();
 		}
@@ -335,6 +366,9 @@ package com.jack.llk.view.view
 		 */
 		private function onPause():void
 		{
+			if(gameover)
+				return;
+			
 			// open the pause menu
 			if (!pausePanel)
 			{
@@ -387,23 +421,37 @@ package com.jack.llk.view.view
 
 		private function onBackClick():void
 		{
+			// hide current view
 			var t1:Tween=new Tween(this, 0.3);
 			t1.animate("x", Starling.current.nativeStage.fullScreenWidth);
 			t1.onComplete=onMoveToHideComplete;
 			Starling.juggler.add(t1);
-
 			this.prepareHide();
 
+			// show previous view
 			var t2:Tween=new Tween(Game.getInstance().previousView, 0.3);
 			t2.animate("x", 0);
+			if(model == Constant.GAME_MODEL_CLASSIC || model == Constant.GAME_MODEL_TIME)
+			{
+				t2.onUpdate=onPreviousViewMoveUpdate;
+			}
 			Starling.juggler.add(t2);
-
+			Game.getInstance().previousView.visible=true;
 			Game.getInstance().previousView.prepareShow();
+		}
+		
+		private function onPreviousViewMoveUpdate():void
+		{
+			if(Starling.current.nativeStage.fullScreenWidth - Math.abs(Game.getInstance().previousView.x) >= 10)
+			{
+				if(model == Constant.GAME_MODEL_CLASSIC)
+					(Game.getInstance().previousView as ClassicModelChapterView).recoverChapterContainer();
+			}
 		}
 		
 		private function onMoveToHideComplete():void
 		{
-			dispose();
+			this.removeFromParent(true);
 		}
 		
 		protected function onStatusEvent(event:StatusEvent):void

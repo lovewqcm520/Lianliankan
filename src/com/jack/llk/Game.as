@@ -98,6 +98,10 @@ package com.jack.llk
 
 			// mute all the sound and music
 			SoundManager.muteAll();
+			
+			// dispatch game pause event
+			var e:GameEvent=new GameEvent(GameEvent.GAME_PAUSE);
+			EventController.e.dispatchEvent(e);
 		}
 
 		/**

@@ -1,4 +1,4 @@
-package com.jack.llk.vo.gameModel
+package com.jack.llk.vo.model
 {
 	import com.jack.llk.control.Constant;
 	import com.jack.llk.control.LocalCache;

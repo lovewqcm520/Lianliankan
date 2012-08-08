@@ -98,7 +98,7 @@ package com.jack.llk.view.view
 				EventController.e.removeEventListener(ViewEvent.GOTO_PREVIOUS_VIEW, onGotoPreviousView);
 				//Log.log("dispose", this);
 			}
-
+			
 			super.dispose();
 		}
 

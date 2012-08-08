@@ -5,7 +5,7 @@ package com.jack.llk.view.panel
 	import com.jack.llk.view.ChapterStars;
 	import com.jack.llk.view.NumberSprite;
 	import com.jack.llk.vo.ChapterVO;
-
+	
 	import starling.display.Image;
 
 	/**
@@ -30,6 +30,13 @@ package com.jack.llk.view.panel
 			addChild(bg);
 		}
 
+		override public function dispose():void
+		{
+			voChapter = null;
+			
+			super.dispose();
+		}
+		
 		public function init(voChapter:ChapterVO):void
 		{
 			this.voChapter=voChapter;
@@ -61,14 +68,6 @@ package com.jack.llk.view.panel
 				lock.y=bg.y + (bg.height - lock.height);
 				addChild(lock);
 			}
-			else
-			{
-				this.onClick(startGameAtChapter);
-			}
-		}
-
-		private function startGameAtChapter():void
-		{
 		}
 	}
 }
