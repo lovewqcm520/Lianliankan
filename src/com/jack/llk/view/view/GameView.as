@@ -2,6 +2,7 @@ package com.jack.llk.view.view
 {
 	import com.jack.llk.Game;
 	import com.jack.llk.control.Constant;
+	import com.jack.llk.control.Global;
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.control.events.EventController;
 	import com.jack.llk.control.events.GameEvent;
@@ -10,6 +11,8 @@ package com.jack.llk.view.view
 	import com.jack.llk.control.factors.SoundFactors;
 	import com.jack.llk.control.sound.SoundManager;
 	import com.jack.llk.util.Delay;
+	import com.jack.llk.util.GameUtil;
+	import com.jack.llk.view.BaseMovieClip;
 	import com.jack.llk.view.BaseSprite;
 	import com.jack.llk.view.BatterTip;
 	import com.jack.llk.view.CountDownSprite;
@@ -22,11 +25,13 @@ package com.jack.llk.view.view
 	import com.jack.llk.view.panel.RewardPanel;
 	import com.jack.llk.vo.MapFactory;
 	import com.jack.llk.vo.RoundVO;
+	import com.jack.llk.vo.map.MapVO;
 	import com.jack.llk.vo.model.ClassicModelVO;
 	import com.jack.llk.vo.model.EndlessModelVO;
 	
 	import flash.desktop.NativeApplication;
 	import flash.events.StatusEvent;
+	import flash.geom.Point;
 	
 	import starling.animation.Tween;
 	import starling.core.Starling;
@@ -65,6 +70,7 @@ package com.jack.llk.view.view
 		private var maxBatter:int;
 		// 当局游戏win时得到多少star
 		private var stars:int;
+		private var gameCanvasScale:Number=1.2;
 		
 		private var gameover:Boolean;
 
@@ -149,7 +155,7 @@ package com.jack.llk.view.view
 
 			gameCanvas=new GameContainer();
 			gameCanvas.init(round);
-			gameCanvas.scaleX=gameCanvas.scaleY=1.2;
+			gameCanvas.scaleX=gameCanvas.scaleY=gameCanvasScale;
 			addChildScaled(gameCanvas);
 			gameCanvas.x=(backgroundImage.width - gameCanvas.width) / 2;
 			gameCanvas.y=(backgroundImage.height - gameCanvas.height) / 2;
@@ -558,16 +564,66 @@ package com.jack.llk.view.view
 		
 		private function onGetToolRefresh(event:GameEvent):void
 		{
-			// update refresh tool num tip
-			if(round)
-				updateToolRefresh();
+			// start animation move a refresh tool from last point to the static refresh icon
+			var p:Point = event.params as Point;
+			if(!p)	
+			{
+				// update refresh tool num tip
+				if(round)
+					updateToolRefresh();
+				return;
+			}
+			
+			// new a refresh tool
+			var item:BaseMovieClip=GameUtil.getSmallItemAt(MapVO.REFRESH_ITEM, 3);
+			item.loop=true;
+			item.play();
+			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + gameCanvasScale*((p.x - 1) * (round.nTileWidth + round.nGapHorizontal));
+			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + gameCanvasScale*((p.y - 1) * (round.nTileHeight + round.nGapVertical));
+			item.scaleX=item.scaleY=gameCanvasScale;
+			addChildScaled(item, itemX, itemY);
+			
+			var t:Tween = new Tween(item, 0.5);
+			t.animate("x", refreshBtn.x);
+			t.animate("y", refreshBtn.y);
+			t.animate("width", refreshBtn.width);
+			t.animate("height", refreshBtn.height);
+			t.onComplete=onToolMoveComplete;
+			t.onCompleteArgs=[item, MapVO.REFRESH_ITEM];
+			
+			Starling.juggler.add(t);
 		}
 		
 		private function onGetToolFind(event:GameEvent):void
 		{
-			// update find tool num tip
-			if(round)
-				updateToolFind();
+			// start animation move a find tool from last point to the static find icon
+			var p:Point = event.params as Point;
+			if(!p)	
+			{
+				// update find tool num tip
+				if(round)
+					updateToolFind();
+				return;
+			}
+			
+			// new a find tool
+			var item:BaseMovieClip=GameUtil.getSmallItemAt(MapVO.FIND_ITEM, 3);
+			item.loop=true;
+			item.play();
+			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + gameCanvasScale*((p.x - 1) * (round.nTileWidth + round.nGapHorizontal));
+			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + gameCanvasScale*((p.y - 1) * (round.nTileHeight + round.nGapVertical));
+			item.scaleX=item.scaleY=gameCanvasScale;
+			addChildScaled(item, itemX, itemY);
+			
+			var t:Tween = new Tween(item, 0.5);
+			t.animate("x", findBtn.x);
+			t.animate("y", findBtn.y);
+			t.animate("width", findBtn.width);
+			t.animate("height", findBtn.height);
+			t.onComplete=onToolMoveComplete;
+			t.onCompleteArgs=[item, MapVO.FIND_ITEM];
+			
+			Starling.juggler.add(t);
 		}
 		
 		// 彩蛋触发后随即产生一种效果
@@ -599,11 +655,48 @@ package com.jack.llk.view.view
 		
 		private function onGetToolBomb(event:GameEvent):void
 		{
-			// update bomb tool num tip
-			if(round)
-				updateToolBomb();
+			// start animation move a bomb tool from last point to the static bomb icon
+			var p:Point = event.params as Point;
+			if(!p)	
+			{
+				// update bomb tool num tip
+				if(round)
+					updateToolBomb();
+				return;
+			}
+			
+			// new a bomb tool
+			var item:BaseMovieClip=GameUtil.getSmallItemAt(MapVO.BOMB_ITEM, 3);
+			item.loop=true;
+			item.play();
+			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + gameCanvasScale*((p.x - 1) * (round.nTileWidth + round.nGapHorizontal));
+			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + gameCanvasScale*((p.y - 1) * (round.nTileHeight + round.nGapVertical));
+			item.scaleX=item.scaleY=gameCanvasScale;
+			addChildScaled(item, itemX, itemY);
+			
+			var t:Tween = new Tween(item, 0.5);
+			t.animate("x", bombBtn.x);
+			t.animate("y", bombBtn.y);
+			t.animate("width", bombBtn.width);
+			t.animate("height", bombBtn.height);
+			t.onComplete=onToolMoveComplete;
+			t.onCompleteArgs=[item, MapVO.BOMB_ITEM];
+			
+			Starling.juggler.add(t);
 		}
 		
+		private function onToolMoveComplete(item:BaseMovieClip, itemType:int):void
+		{
+			item.removeFromParent(true);
+			item = null;
+			
+			if(itemType == MapVO.BOMB_ITEM)
+				updateToolBomb();
+			else if(itemType == MapVO.FIND_ITEM)
+				updateToolFind();
+			else if(itemType == MapVO.REFRESH_ITEM)
+				updateToolRefresh();
+		}		
 		
 		private function onUseToolBomb(event:GameEvent):void
 		{

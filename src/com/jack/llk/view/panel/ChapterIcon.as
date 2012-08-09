@@ -14,12 +14,10 @@ package com.jack.llk.view.panel
 	 */
 	public class ChapterIcon extends BaseSprite
 	{
-		private var voChapter:ChapterVO;
+		private var _voChapter:ChapterVO;
 		private var bg:Image;
 
-		private var locked:Boolean;
 		private var nStar:int;
-		private var level:int;
 
 		public function ChapterIcon()
 		{
@@ -32,17 +30,14 @@ package com.jack.llk.view.panel
 
 		override public function dispose():void
 		{
-			voChapter = null;
-			
 			super.dispose();
 		}
 		
-		public function init(voChapter:ChapterVO):void
+		public function init(vo:ChapterVO):void
 		{
-			this.voChapter=voChapter;
+			_voChapter=vo;
 
 			// set the level number
-			level=voChapter.level;
 			var numSprite:NumberSprite=new NumberSprite(level);
 			numSprite.scaleY=1.75;
 			numSprite.x=bg.x + (bg.width - numSprite.width) / 2;
@@ -60,14 +55,29 @@ package com.jack.llk.view.panel
 			}
 
 			// set the lock
-			locked=voChapter.locked;
 			if (locked)
 			{
 				var lock:Image=Assets.getImage("smalllock");
+				lock.scaleX = lock.scaleY = 0.75;
 				lock.x=bg.x + (bg.width - lock.width) / 2;
 				lock.y=bg.y + (bg.height - lock.height);
 				addChild(lock);
 			}
+		}
+
+		public function get voChapter():ChapterVO
+		{
+			return _voChapter;
+		}
+
+		public function get locked():Boolean
+		{
+			return _voChapter.locked;
+		}
+		
+		public function get level():int
+		{
+			return _voChapter.level;
 		}
 	}
 }

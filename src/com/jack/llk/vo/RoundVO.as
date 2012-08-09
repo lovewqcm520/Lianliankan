@@ -69,6 +69,8 @@ package com.jack.llk.vo
 		private var _nBombTool:int=0;
 		private var _nFindTool:int=0;
 
+		private var lastToolItemPoint:Point;
+
 		/**
 		 *
 		 * @param nLevel
@@ -187,14 +189,23 @@ package com.jack.llk.vo
 			// 判断消除的一对item是否是特殊物品
 			var aIndex:int = int(map.get(a.x, a.y));
 			var bIndex:int = int(map.get(b.x, b.y));
+			
+			// erase 2 items
+			voMap.erase(a, b);
+			
+			// update current level scores
+			scores += Constant.ITEM_SCORE;
+			
+			// detect the item type
 			if(aIndex == bIndex)
 			{
+				lastToolItemPoint = b.clone();
 				var e:GameEvent;
 				switch(aIndex)
 				{
 					case MapVO.EGG_ITEM:
 					{
-						e = new GameEvent(GameEvent.GET_TOOL_EGG);
+						e = new GameEvent(GameEvent.GET_TOOL_EGG, lastToolItemPoint);
 						nEggItems++;
 						break;
 					}
@@ -219,7 +230,7 @@ package com.jack.llk.vo
 						
 					case MapVO.TIME_ITEM:
 					{
-						e = new GameEvent(GameEvent.GET_TOOL_TIME);
+						e = new GameEvent(GameEvent.GET_TOOL_TIME, lastToolItemPoint);
 						break;
 					}
 				}
@@ -227,12 +238,6 @@ package com.jack.llk.vo
 				if(e)
 					EventController.e.dispatchEvent(e);
 			}
-			
-			// erase 2 items
-			voMap.erase(a, b);
-			
-			// update current level scores
-			scores += Constant.ITEM_SCORE;
 		}
 
 		/**
@@ -299,7 +304,7 @@ package com.jack.llk.vo
 				}
 				else
 				{
-					e = new GameEvent(GameEvent.GET_TOOL_REFRESH);
+					e = new GameEvent(GameEvent.GET_TOOL_REFRESH, lastToolItemPoint);
 				}
 				_nRefreshTool = value;	
 				EventController.e.dispatchEvent(e);
@@ -322,7 +327,7 @@ package com.jack.llk.vo
 				}
 				else
 				{
-					e = new GameEvent(GameEvent.GET_TOOL_BOMB);
+					e = new GameEvent(GameEvent.GET_TOOL_BOMB, lastToolItemPoint);
 				}
 				_nBombTool = value;	
 				EventController.e.dispatchEvent(e);
@@ -345,7 +350,7 @@ package com.jack.llk.vo
 				}
 				else
 				{
-					e = new GameEvent(GameEvent.GET_TOOL_FIND);
+					e = new GameEvent(GameEvent.GET_TOOL_FIND, lastToolItemPoint);
 				}
 				_nFindTool = value;	
 				EventController.e.dispatchEvent(e);

@@ -30,9 +30,9 @@ package com.jack.llk.control.events
 		public static const USE_TOOL_REFRESH:String = 	"use_tool_refresh";		
 		public static const USE_TOOL_BOMB:String = 		"use_tool_bomb";
 
-		public function GameEvent(type:String, bubbles:Boolean=false, params:Object=null)
+		public function GameEvent(type:String, params:Object=null, bubbles:Boolean=false)
 		{
-			super(type, bubbles, params);
+			super(type, params, bubbles);
 		}
 	}
 }

@@ -1,6 +1,5 @@
 package com.jack.llk.view.panel
 {
-	import com.jack.llk.control.Constant;
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.control.events.EventController;
 	import com.jack.llk.control.events.GameEvent;
@@ -36,6 +35,12 @@ package com.jack.llk.view.panel
 		{
 
 			super.dispose();
+		}
+		
+		public function updateMusicSoundEnable():void
+		{
+			onSwitchMusicStatus();
+			onSwitchSoundStatus();
 		}
 
 		private function initialize():void
@@ -81,7 +86,7 @@ package com.jack.llk.view.panel
 			musicBtn=new CommonButton("music_white");
 			musicBtn.x=fx + 2 * (btnW + gap);
 			musicBtn.y=btnY;
-			musicBtn.onClick=onMusic;
+			musicBtn.onClick=onSwitchMusicStatus;
 			addChild(musicBtn);
 			if (!SoundManager.musicEnabled)
 			{
@@ -95,7 +100,7 @@ package com.jack.llk.view.panel
 			soundBtn=new CommonButton("sound_white");
 			soundBtn.x=fx + 3 * (btnW + gap);
 			soundBtn.y=btnY;
-			soundBtn.onClick=onSound;
+			soundBtn.onClick=onSwitchSoundStatus;
 			addChild(soundBtn);
 			if (!SoundManager.musicEnabled)
 			{
@@ -104,14 +109,32 @@ package com.jack.llk.view.panel
 				soundXIcon.y=(soundBtn.height - soundXIcon.height) / 2;
 				soundBtn.addChild(soundXIcon);
 			}
+			
+			// init sound music status
+			updateMusicXIcon(SoundManager.musicEnabled);
+			updateSoundXIcon(SoundManager.soundEnabled);
 		}
-
+		
 		/**
 		 * Enable or disable the sound.
 		 */
-		private function onSound():void
+		private function onSwitchSoundStatus():void
 		{
 			if (SoundManager.soundEnabled)
+			{
+				updateSoundXIcon(false);
+				SoundManager.soundEnabled=false;
+			}
+			else
+			{
+				updateSoundXIcon(true);
+				SoundManager.soundEnabled=true;
+			}
+		}
+		
+		private function updateSoundXIcon(soundEnable:Boolean):void
+		{
+			if(!soundEnable)
 			{
 				if (!soundXIcon)
 				{
@@ -124,24 +147,17 @@ package com.jack.llk.view.panel
 				{
 					soundBtn.addChild(soundXIcon);
 				}
-
-				SoundManager.soundEnabled=false;
 			}
 			else
 			{
 				if (soundXIcon)
 					soundXIcon.removeFromParent();
-
-				SoundManager.soundEnabled=true;
 			}
 		}
-
-		/**
-		 * Enable or disable the music.
-		 */
-		private function onMusic():void
+		
+		private function updateMusicXIcon(musicEnable:Boolean):void
 		{
-			if (SoundManager.musicEnabled)
+			if(!musicEnable)
 			{
 				if (!musicXIcon)
 				{
@@ -154,14 +170,27 @@ package com.jack.llk.view.panel
 				{
 					musicBtn.addChild(musicXIcon);
 				}
-
-				SoundManager.musicEnabled=false;
 			}
 			else
 			{
 				if (musicXIcon)
 					musicXIcon.removeFromParent();
+			}
+		}
 
+		/**
+		 * Enable or disable the music.
+		 */
+		private function onSwitchMusicStatus():void
+		{
+			if (SoundManager.musicEnabled)
+			{
+				updateMusicXIcon(false);
+				SoundManager.musicEnabled=false;
+			}
+			else
+			{
+				updateMusicXIcon(true);
 				SoundManager.musicEnabled=true;
 			}
 		}

@@ -10,6 +10,7 @@ package com.jack.llk.vo.map
 	import de.polygonal.ds.Array2;
 	
 	import flash.geom.Point;
+	import flash.utils.getTimer;
 
 	public class MapVO
 	{
@@ -136,46 +137,29 @@ package com.jack.llk.vo.map
 
 		public function find2Items():Array
 		{
-			var a:Point=_findRestPointA();
-			if (!a)
-				return null;
-
-			var b:Point=_findRestPointB(a);
-			if (!b)
-				return null;
-
-			var ignoreA:Array=[];
-			var ignoreB:Array=[];
-
-			while (a && b && !this.test(a, b))
+			var oldTime:Number=getTimer();
+			
+			var len:int = _items.length;
+			var a:Point=new Point();
+			var b:Point=new Point();
+			var tmp:Vector.<ItemVO> = RandomUtil.randomArray(_items);
+			for (var i:int = 0; i < len; i++) 
 			{
-				ignoreB.push(b);
-
-				b=_findRestPointB(a, ignoreB);
-
-				//基于A没有可以连通的点了, 换一个A试试
-				if (!b)
+				a.x = tmp[i].x;
+				a.y = tmp[i].y;
+				for (var j:int = i+1; j < len; j++) 
 				{
-					ignoreB=[];
-					ignoreA.push(a);
-
-					var tempMap:Array2=ArrayUtil.cloneArray2(map);
-					tempMap.set(a.x, a.y, EMPTY_ITEM);
-
-					if (ignoreA.length)
-						for each (var p:Point in ignoreA)
-							tempMap.set(p.x, p.y, EMPTY_ITEM);
-
-					a=_findRestPointA(tempMap);
-					b=_findRestPointB(a);
-				}
-			}
-
-			//找不到可以连通的B点
-			if (!b)
-				return null;
-
-			return [a, b];
+					b.x = tmp[j].x;
+					b.y = tmp[j].y;
+					if(test(a, b))
+					{
+						trace("find2Items takes",getTimer()-oldTime);
+						return [a, b];
+					}
+				}	
+			}			
+			
+			return null;
 		}
 
 		public function erase(a:Point, b:Point):void
@@ -183,11 +167,13 @@ package com.jack.llk.vo.map
 			// set 2 point to empty
 			map.set(a.x, a.y, EMPTY_ITEM);
 			map.set(b.x, b.y, EMPTY_ITEM);
-			_restBlock-=2;
+			_restBlock -= 2;
 
 			// update data
 			updateItemLayout();
 			validateMap();
+			
+			trace("erase", _restBlock, _items.length);
 		}
 
 		public function get count():int
@@ -347,12 +333,13 @@ package com.jack.llk.vo.map
 		private function updateItemLayout():void
 		{
 			_items.length = 0;
+			var index:int;
 			//get the items vo
 			for (var i:uint=1; i <= col; i++)
 			{
 				for (var j:uint=1; j <= row; j++)
 				{
-					var index:int=int(map.get(i, j));
+					index=int(map.get(i, j));
 					if (isAvailableItem(index))
 					{
 						_items.push(new ItemVO(i, j, index));
@@ -535,8 +522,8 @@ package com.jack.llk.vo.map
 		{
 			var m:Array2=tmpMap || map;
 
-			var w:int=m.getW();
-			var h:int=m.getH();
+			var w:int=m.width;
+			var h:int=m.height;
 			var index:int;
 
 			if (w >= h)

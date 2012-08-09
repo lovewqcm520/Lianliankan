@@ -28,10 +28,13 @@ package com.jack.llk.vo.model
 		 */
 		public function init():void
 		{
-			// first read from cache, if cache has nothing, init manually
-			if (initChapterListFromCache() == false)
+			if(!_chapterList)
 			{
-				initChapterList();
+				// first read from cache, if cache has nothing, init manually
+				if (initChapterListFromCache() == false)
+				{
+					initChapterList();
+				}
 			}
 		}
 
@@ -104,11 +107,35 @@ package com.jack.llk.vo.model
 
 		private function initChapterListFromCache():Boolean
 		{
-			var arr:Vector.<ChapterVO>=LocalCache.getInstance().getValue(Constant.CACHE_CLASSIC_MODEL) as Vector.<ChapterVO>;
-
+			var arr:Vector.<Object>=LocalCache.getInstance().getValue(Constant.CACHE_CLASSIC_MODEL);
 			if (arr && arr.length > 0)
 			{
-				_chapterList=arr.concat();
+				var obj:Object;
+				var cha:ChapterVO;
+				var len:int = arr.length;
+				
+				if(!_chapterList)
+					_chapterList = new Vector.<ChapterVO>(MAX_LEVEL);
+					
+				for (var i:int = 0; i < len; i++) 
+				{
+					obj = arr[i];
+					if(_chapterList[i] == undefined)
+					{
+						cha = new ChapterVO();
+						cha.level = obj.level;
+						cha.locked = obj.locked;
+						cha.star = obj.star;
+						_chapterList[i] = cha;
+					}
+					else
+					{
+						ChapterVO(_chapterList[i]).level = obj.level;
+						ChapterVO(_chapterList[i]).locked = obj.locked;
+						ChapterVO(_chapterList[i]).star = obj.star;
+					}
+				}
+				
 				return true;
 			}
 

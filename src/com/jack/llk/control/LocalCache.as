@@ -1,7 +1,5 @@
 package com.jack.llk.control
 {
-	import com.jack.llk.log.Log;
-	
 	import flash.net.SharedObject;
 
 	/**
@@ -42,15 +40,10 @@ package com.jack.llk.control
 		{
 			cache.data[key]=value;
 			cache.flush();
-			
-			Log.traced("Local SharedObject Flush", key, value.toString());
 		}
 
 		public function getValue(key:String):*
 		{
-			if(cache.data[key])
-				Log.traced("Local SharedObject Get", key, cache.data[key].toString());
-			
 			return cache.data[key];			
 		}
 

@@ -6,7 +6,7 @@ package com.jack.llk.control.events
 	{
 		public var params:Object;
 		
-		public function MyStarlingEvent(type:String, bubbles:Boolean=false, params:Object=null)
+		public function MyStarlingEvent(type:String, params:Object=null, bubbles:Boolean=false)
 		{
 			this.params = params;
 			super(type, bubbles);

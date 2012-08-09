@@ -11,7 +11,7 @@ package com.jack.llk.control.factors
 		/**
 		 * 游戏停留在 关卡选择界面 或者 等待界面.
 		 */
-		public static const FPS_IDLE:int=10;
+		public static const FPS_IDLE:int=60;
 
 		/**
 		 * 游戏正常进行阶段(连连看),需要提高framerate使游戏运行流畅.
@@ -21,11 +21,11 @@ package com.jack.llk.control.factors
 		/**
 		 * 游戏暂停阶段(此暂停由切换出游戏界面触发)
 		 */
-		public static const FPS_PAUSE_BY_DEACTIVATE:int=5;
+		public static const FPS_PAUSE_BY_DEACTIVATE:int=60;
 
 		/**
 		 * 游戏暂停阶段(此暂停由用户主动点击游戏暂停按钮触发，只可能发生在 STATUS_PLAYING 状态下)
 		 */
-		public static const FPS_PAUSE_BY_USER:int=10;
+		public static const FPS_PAUSE_BY_USER:int=60;
 	}
 }

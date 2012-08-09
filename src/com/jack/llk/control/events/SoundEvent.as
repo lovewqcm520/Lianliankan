@@ -8,9 +8,9 @@ package com.jack.llk.control.events
 		public static const SOUND_ON:String="sound_on";
 		public static const SOUND_OFF:String="sound_off";
 
-		public function SoundEvent(type:String, bubbles:Boolean=false, params:Object=null)
+		public function SoundEvent(type:String, params:Object=null, bubbles:Boolean=false)
 		{
-			super(type, bubbles, params);
+			super(type, params, bubbles);
 		}
 	}
 }
