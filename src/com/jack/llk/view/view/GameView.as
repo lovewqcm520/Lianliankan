@@ -256,7 +256,7 @@ package com.jack.llk.view.view
 			countDown.pause();
 
 			// get use time
-			usedTime=countDown.passedTime;
+			round.timeUsed = usedTime = countDown.passedTime;
 			// get the max combo
 			maxBatter=round.comboMax;
 			// get final scores
@@ -278,7 +278,7 @@ package com.jack.llk.view.view
 			}
 			else if(model == Constant.GAME_MODEL_CLASSIC)
 			{
-				stars = 3;
+				stars = calculateRating();
 				reward=new ClassicModelRewardPanel();
 				ClassicModelRewardPanel(reward).stars = stars;
 				ClassicModelRewardPanel(reward).usedTime=usedTime;
@@ -891,6 +891,29 @@ package com.jack.llk.view.view
 			EventController.e.removeEventListener(GameEvent.USE_TOOL_FIND, onUseToolFind);
 			EventController.e.removeEventListener(GameEvent.USE_TOOL_REFRESH, onUseToolRefresh);
 			EventController.e.removeEventListener(GameEvent.USE_TOOL_BOMB, onUseToolBomb);
+		}
+		
+		private function calculateRating():int
+		{
+			var poker:int = round.nAvailableItems + round.nToolItems;
+			var f:Number = 0.4*(2.0*this.maxBatter/poker) + 
+				0.6*((round.totalTime-round.timeUsed)/(round.totalTime-10*poker/4));
+			
+			var n:int;
+			if(f > 0.6666667)
+			{
+				n = 3;
+			}
+			else if(f > 0.3333333)
+			{
+				n = 2;
+			}
+			else
+			{
+				n = 1;
+			}
+			
+			return n;
 		}
 		
 		//////////////////  dispose function  /////////////////////////

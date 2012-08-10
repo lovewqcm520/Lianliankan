@@ -40,21 +40,21 @@ package com.jack.llk.vo
 		public static const PROBABILITY_TOOL_ITEM:Number = 1.0;
 
 		// default min value
-		public static const TOTAL_TIME_MIN:int=60;
-		public static const WARNING_TIME_MIN:int=50;
+		public static const TOTAL_TIME_MIN:int=40;
+		public static const WARNING_TIME_MIN:int=35;
 //		public static const TOTAL_TIME_MIN:int=10;
 //		public static const WARNING_TIME_MIN:int=8;
-		public static const COL_MIN:int=8;
+		public static const COL_MIN:int=6;
 		public static const ROW_MIN:int=6;
 		public static const ITEM_TYPE_MIN:int=24;
-		public static const AVAILABLE_ITEM_MIN:int=30;
+		public static const AVAILABLE_ITEM_MIN:int=24;
 		public static const STONE_MIN:int=2;
-		public static const TOOL_ITEM_MIN:int=30;
+		public static const TOOL_ITEM_MIN:int=2;
 		public static const EGG_MIN:int=0;
 		public static const TOOL_REFRESH_MIN:int=1;
 		public static const TOOL_BOMB_MIN:int=1;
 		public static const TOOL_FIND_MIN:int=1;
-		public static const FLICKER_ITEM_MIN:int=3;
+		public static const FLICKER_ITEM_MIN:int=5;
 		public static const LEVEL_MIN:int=1;
 
 		// default max value
@@ -65,21 +65,54 @@ package com.jack.llk.vo
 		public static const ITEM_TYPE_MAX:int=24;
 		public static const AVAILABLE_ITEM_MAX:int=100;
 		public static const STONE_MAX:int=8;
-		public static const TOOL_ITEM_MAX:int=50;
+		public static const TOOL_ITEM_MAX:int=10;
 		public static const EGG_MAX:int=3;
 		public static const TOOL_REFRESH_MAX:int=1;
 		public static const TOOL_BOMB_MAX:int=1;
 		public static const TOOL_FIND_MAX:int=1;
-		public static const FLICKER_ITEM_MAX:int=8;
+		public static const FLICKER_ITEM_MAX:int=20;
 		public static const LEVEL_MAX:int=999;
 
 		public static const factor:Number=3;
 
 		private static var _instance:MapFactory;
+		
+		public var class_times:Array;
 
 		public function MapFactory()
 		{
-
+			var arrayOfInt1:Array = new Array(30);
+			arrayOfInt1[0] = 40;
+			arrayOfInt1[1] = 40;
+			arrayOfInt1[2] = 40;
+			arrayOfInt1[3] = 40;
+			arrayOfInt1[4] = 40;
+			arrayOfInt1[5] = 45;
+			arrayOfInt1[6] = 45;
+			arrayOfInt1[7] = 45;
+			arrayOfInt1[8] = 45;
+			arrayOfInt1[9] = 55;
+			arrayOfInt1[10] = 55;
+			arrayOfInt1[11] = 60;
+			arrayOfInt1[12] = 60;
+			arrayOfInt1[13] = 60;
+			arrayOfInt1[14] = 60;
+			arrayOfInt1[15] = 65;
+			arrayOfInt1[16] = 65;
+			arrayOfInt1[17] = 65;
+			arrayOfInt1[18] = 65;
+			arrayOfInt1[19] = 65;
+			arrayOfInt1[20] = 70;
+			arrayOfInt1[21] = 70;
+			arrayOfInt1[22] = 70;
+			arrayOfInt1[23] = 70;
+			arrayOfInt1[24] = 65;
+			arrayOfInt1[25] = 65;
+			arrayOfInt1[26] = 60;
+			arrayOfInt1[27] = 60;
+			arrayOfInt1[28] = 55;
+			arrayOfInt1[29] = 55;
+			class_times = arrayOfInt1;
 		}
 
 		public static function getInstance():MapFactory
@@ -90,12 +123,12 @@ package com.jack.llk.vo
 			return _instance;
 		}
 
-		public function createGameRound(level:int):RoundVO
+		public function createGameRound(l:int):RoundVO
 		{
 			// testonly
 			var realMaxLevel:int = 30;
 			
-			this.level=level > realMaxLevel ? realMaxLevel : level;
+			this.level=l > realMaxLevel ? realMaxLevel : l;
 			
 			var add:int=this.level - LEVEL_MIN;			
 			var p:Number=add/(realMaxLevel - LEVEL_MIN);
@@ -110,9 +143,11 @@ package com.jack.llk.vo
 
 			// get total time that give to user first
 			this.totalTime=int(TOTAL_TIME_MIN + p * (TOTAL_TIME_MAX - TOTAL_TIME_MIN));
+			//this.totalTime = class_times[this.level];
 
 			// get warning time that give to user first
 			this.warningTime=int(WARNING_TIME_MIN + p * (WARNING_TIME_MAX - WARNING_TIME_MIN));
+			//this.warningTime = this.totalTime*0.85;
 
 			// get item types
 			//this.nItemTypes=int(ITEM_TYPE_MIN + p * (ITEM_TYPE_MAX - ITEM_TYPE_MIN));
