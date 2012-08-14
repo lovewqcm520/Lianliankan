@@ -211,8 +211,8 @@ package com.jack.llk.vo
 			var round:RoundVO=new RoundVO(this.level, col, row, nAvailableItems, nItemTypes);
 			
 			round.nFlicker=this.nFlicker;
-			round.nStoneItems=this.nStones;
-			round.nToolItems=this.nToolItems;
+			round.numStoneItems=this.nStones;
+			round.numToolItems=this.nToolItems;
 			round.nPaintedEggs=this.nPaintedEggs;
 			round.totalTime=this.totalTime;
 			round.warningTime=this.warningTime;
@@ -228,12 +228,12 @@ package com.jack.llk.vo
 			round.nPaddingRight=this.nPaddingRight;
 
 			// init the round
-			round.init();
+			//round.init();
 			
 			// init the tools
-			round.nRefreshTool=this.nRefreshTools;
-			round.nBombTool=this.nBombTools;
-			round.nFindTool=this.nFindTools;
+			round.numRefreshTool=this.nRefreshTools;
+			round.numBombTool=this.nBombTools;
+			round.numFindTool=this.nFindTools;
 
 			return round;
 		}

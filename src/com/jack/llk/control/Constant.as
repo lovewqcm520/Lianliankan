@@ -22,5 +22,10 @@ package com.jack.llk.control
 		public static const GAME_MODEL_CLASSIC:int = 1;
 		public static const GAME_MODEL_TIME:int = 2;
 		public static const GAME_MODEL_ENDLESS:int = 3;
+		
+		public static const ITEM_SMALL_WIDTH:Number=54;
+		public static const ITEM_SMALL_HEIGHT:Number=57;
+		public static const ITEM_BIG_WIDTH:Number=81;
+		public static const ITEM_BIG_HEIGHT:Number=86;
 	}
 }

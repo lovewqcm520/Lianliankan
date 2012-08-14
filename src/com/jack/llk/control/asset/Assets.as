@@ -30,7 +30,6 @@ package com.jack.llk.control.asset
 		private static const asset_bg_game:Class;
 
 		// texture atlas
-
 		[Embed(source="assets/textures/effect.png")]
 		private static const effect:Class;
 
@@ -54,7 +53,6 @@ package com.jack.llk.control.asset
 		
 		[Embed(source="assets/textures/items.xml", mimeType="application/octet-stream")]
 		private static const itemsXml:Class;
-
 
 		private static var mTextureDic:Dictionary=new Dictionary();
 		private static var mTexturesDic:Dictionary=new Dictionary();

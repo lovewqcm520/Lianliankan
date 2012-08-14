@@ -2,7 +2,6 @@ package com.jack.llk.vo.map
 {
 	import com.jack.llk.control.events.EventController;
 	import com.jack.llk.control.events.GameEvent;
-	import com.jack.llk.log.Log;
 	import com.jack.llk.util.ArrayUtil;
 	import com.jack.llk.util.NumberUtil;
 	import com.jack.llk.util.RandomUtil;
@@ -31,39 +30,49 @@ package com.jack.llk.vo.map
 		public static const LIST:Array = [EMPTY_ITEM, STONE_ITEM];
 		public static const TOOLS:Array = [EGG_ITEM, TIME_ITEM, FIND_ITEM, REFRESH_ITEM, BOMB_ITEM];
 
-		private var _level:int; //游戏关卡对应的项目数量
+		private var _nDiffItems:int; //游戏关卡对应的项目数量
 		private var _restBlock:int=0; //剩余的项目数量
 		private var _countOfPerItem:int; //每个项目出现的次数(偶数)
 		private var _result:MatchResult; //暂存符合条件的结果
 
-		public var actualCol:int;
-		public var actualRow:int;
-		public var col:int;
-		public var row:int;
+		public var actualWidth:int;
+		public var actualHeight:int;
+		public var width:int;
+		public var height:int;
 		public var nAvailableItems:int;
+		public var numTotalItems:int;
 		public var nItemTypes:int;
-		public var nStones:int;	// 阻塞石头的数量
+		public var nStoneItems:int;	// 阻塞石头的数量
 		public var nToolItems:int;	// tool items
 
 		public var map:Array2;
 
 		private var _array:Array; //辅助的一维数组
 		private var _lines:Vector.<Line>; //保存符合条件线段的地方
-		private var _items:Vector.<ItemVO>; // 保存当前存在的所有item的坐标和index		
+		private var _items:Vector.<ItemVO>; // 保存当前存在的所有item的坐标和index	
+		private var _allItemIndexs:Array; // 保存当前存在的所有item的index	
 
 		public function MapVO()
 		{
 
 		}
 
-		public function init():void
+		public function init(data:String):void
 		{
-			map=new Array2(actualCol, actualRow);
-			_array=new Array(col * row);
+			map=new Array2(actualWidth, actualHeight);
+			_array=new Array(width * height);
 			_lines=new Vector.<Line>();
 			_result=new MatchResult();
 			_items=new Vector.<ItemVO>();
-			this.level=nItemTypes;
+			_allItemIndexs=[];
+			this.nDiffItems=nItemTypes;
+			
+			//取得一个尽量大的偶数值
+			_countOfPerItem=NumberUtil.getFloorEven(nAvailableItems / _nDiffItems);
+			//_countOfPerItem = int(availableItem / _nDiffItems);
+			_restBlock=nAvailableItems+nToolItems;
+			
+			initMap(data);
 		}
 
 		public function get result():MatchResult
@@ -73,15 +82,9 @@ package com.jack.llk.vo.map
 
 		/********************** getter & setter **********************/
 
-		public function set level(value:uint):void
+		public function set nDiffItems(value:uint):void
 		{
-			_level=value;
-			//取得一个尽量大的偶数值
-			_countOfPerItem=NumberUtil.getFloorEven(nAvailableItems / _level);
-			//_countOfPerItem = int(availableItem / _level);
-			_restBlock=nAvailableItems+nToolItems;
-
-			initMap();
+			_nDiffItems=value;
 		}
 
 		////////////////  public function  ////////////////////////////////
@@ -187,9 +190,23 @@ package com.jack.llk.vo.map
 			if (num <= 0)
 				return false;
 
-			_array=ArrayUtil.random(ArrayUtil.getWarppedMapArray(map));
-			ArrayUtil.drawWrappedMap(_array, map);
+			var flag:int=0;
+			// random 
+			_allItemIndexs = ArrayUtil.random(_allItemIndexs);			
+			// random map with same position, just change item index
+			for (var i:int = 1; i <= width; i++) 
+			{
+				for (var j:int = 1; j <= height; j++) 
+				{
+					if(int(map.get(i, j)) != EMPTY_ITEM)
+					{
+						map.set(i, j, _allItemIndexs[flag]);
+						flag++;
+					}
+				}				
+			}
 
+			// update item layout
 			updateItemLayout();
 			
 			// check map
@@ -238,59 +255,65 @@ package com.jack.llk.vo.map
 		/**
 		 * Init the map data.
 		 */
-		private function initMap():void
+		private function initMap(data:String):void
 		{
-			// 初始化全部为空
-			for (var a:int=0; a < actualCol; a++)
+			var allItems:int = nAvailableItems+nToolItems+nStoneItems;
+			var i:int;
+			var j:int;
+			
+			var tmp:Array=new Array(numTotalItems);
+			for (i=0; i < _nDiffItems; i++)
 			{
-				for (var m:int=0; m < actualRow; m++)
+				for (j=0; j < _countOfPerItem; j++)
 				{
-					map.set(a, m, EMPTY_ITEM);
+					tmp[i * _countOfPerItem + j]=i + 1;
 				}
-			}
-
-			//一维数组初始化和乱序
-			for (var n:uint=0; n < _array.length; n++)
-				_array[n]=EMPTY_ITEM;
-
-			for (var i:uint=0; i < _level; i++)
-			{
-				for (var j:uint=0; j < _countOfPerItem; j++)
-				{
-					_array[i * _countOfPerItem + j]=i + 1;
-				}
-			}
-
-			var start:int=_level * _countOfPerItem;
-			var left:int=nAvailableItems - start;
-			var k:int;
-			for (k=start; k < nAvailableItems; k+=2)
-			{
-				_array[k]=Math.ceil(Math.random() * _level);
-				_array[k + 1]=_array[k];
 			}
 			
-			var nCurAll:int = nAvailableItems+nStones;
-			// add stones
-			for (k=nAvailableItems; k < nCurAll; k++)
+			var start:int=_nDiffItems * _countOfPerItem;
+			var left:int=nAvailableItems - start;
+			for (i=start; i < nAvailableItems; i+=2)
 			{
-				_array[k]=STONE_ITEM;
+				tmp[i]=Math.ceil(Math.random() * _nDiffItems);
+				tmp[i + 1]=tmp[i];
+			}
+			
+			var nCurAll:int = nAvailableItems+nStoneItems;
+			// add stones
+			for (i=nAvailableItems; i < nCurAll; i++)
+			{
+				tmp[i]=STONE_ITEM;
 			}
 			
 			// add tool items
-			for (k=nCurAll; k < nCurAll + nToolItems; k+=2)
+			for (i=nCurAll; i < nCurAll + nToolItems; i+=2)
 			{
-				_array[k]=RandomUtil.randomGet(TOOLS);
-				_array[k + 1]=_array[k];
+				tmp[i]=RandomUtil.randomGet(TOOLS);
+				tmp[i + 1]=tmp[i];
 			}
-
-			_array=ArrayUtil.random(_array);
-			ArrayUtil.drawWrappedMap(_array, map);
-			updateItemLayout();
-
-			validateMap();
 			
-			Log.traced("init map", nAvailableItems+nToolItems, items.length);
+			tmp=ArrayUtil.random(tmp);
+			
+			// set map data
+			var arr:Array = data.split(",");
+			var index:int;
+			var flag:int=0;
+			for (i=0; i < actualHeight; i++) 
+			{
+				for (j= 0; j < actualWidth; j++) 
+				{
+					index = int(arr[i*actualWidth + j]);
+					if(index != EMPTY_ITEM)
+					{
+						index = tmp[flag];
+						flag++;
+					}
+					map.set(j, i, index);
+				}				
+			}	
+			
+			updateItemLayout();
+			validateMap();			
 		}
 		
 		private function validateMap():void
@@ -333,17 +356,22 @@ package com.jack.llk.vo.map
 		private function updateItemLayout():void
 		{
 			_items.length = 0;
+			_allItemIndexs.length = 0;
 			var index:int;
 			//get the items vo
-			for (var i:uint=1; i <= col; i++)
+			for (var i:uint=1; i <= width; i++)
 			{
-				for (var j:uint=1; j <= row; j++)
+				for (var j:uint=1; j <= height; j++)
 				{
 					index=int(map.get(i, j));
-					if (isAvailableItem(index))
+					if (index != EMPTY_ITEM)
 					{
-						_items.push(new ItemVO(i, j, index));
-					}
+						_allItemIndexs.push(index);
+						if (index != STONE_ITEM)
+						{
+							_items.push(new ItemVO(i, j, index));
+						}
+					}					
 				}
 			}
 		}
@@ -451,7 +479,7 @@ package com.jack.llk.vo.map
 			}
 
 			// 扫描 A 点右边的所有线
-			for (x=a.x; x < actualCol; x++)
+			for (x=a.x; x < actualWidth; x++)
 			{
 				if (map.get(x, a.y) == -1 && map.get(x, b.y) == -1 && vTest(new Point(x, a.y), new Point(x, b.y)))
 				{
@@ -471,7 +499,7 @@ package com.jack.llk.vo.map
 			}
 
 			// 扫描 A 点下面的所有线
-			for (y=a.y; y < actualRow; y++)
+			for (y=a.y; y < actualHeight; y++)
 			{
 				if (map.get(a.x, y) == -1 && map.get(b.x, y) == -1 && hTest(new Point(a.x, y), new Point(b.x, y)))
 				{

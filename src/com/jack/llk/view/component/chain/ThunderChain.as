@@ -18,9 +18,6 @@ package com.jack.llk.view.component.chain
 		private var itemGapX:Number;
 		private var itemGapY:Number;
 
-		private var tw:Number=66;
-		private var th:Number=59;
-
 		private var lightFrame:Sprite;
 
 		public function ThunderChain()

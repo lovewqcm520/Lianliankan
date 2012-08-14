@@ -4,6 +4,7 @@ package com.jack.llk.view.view
 	import com.jack.llk.control.Constant;
 	import com.jack.llk.control.Global;
 	import com.jack.llk.control.asset.Assets;
+	import com.jack.llk.control.asset.Maps;
 	import com.jack.llk.control.events.EventController;
 	import com.jack.llk.control.events.GameEvent;
 	import com.jack.llk.control.events.ViewEvent;
@@ -23,7 +24,6 @@ package com.jack.llk.view.view
 	import com.jack.llk.view.module.endless.EndlessModelRewardPanel;
 	import com.jack.llk.view.panel.PausePanel;
 	import com.jack.llk.view.panel.RewardPanel;
-	import com.jack.llk.vo.MapFactory;
 	import com.jack.llk.vo.RoundVO;
 	import com.jack.llk.vo.map.MapVO;
 	import com.jack.llk.vo.model.ClassicModelVO;
@@ -70,7 +70,6 @@ package com.jack.llk.view.view
 		private var maxBatter:int;
 		// 当局游戏win时得到多少star
 		private var stars:int;
-		private var gameCanvasScale:Number=1.2;
 		
 		private var gameover:Boolean;
 
@@ -103,7 +102,7 @@ package com.jack.llk.view.view
 		{
 			this.level=nLevel;
 			EndlessModelVO.getInstance().maxLevel = this.level;
-			this.round=MapFactory.getInstance().createGameRound(level);
+			this.round=Maps.getRoundAt(level);
 
 			resetData();
 			initGameCenter();
@@ -121,7 +120,7 @@ package com.jack.llk.view.view
 		{
 			this.level=nLevel;
 			EndlessModelVO.getInstance().maxLevel = this.level;
-			this.round=MapFactory.getInstance().createGameRound(level);
+			this.round=Maps.getRoundAt(level);
 
 			resetData();
 			initialize();
@@ -155,10 +154,9 @@ package com.jack.llk.view.view
 
 			gameCanvas=new GameContainer();
 			gameCanvas.init(round);
-			gameCanvas.scaleX=gameCanvas.scaleY=gameCanvasScale;
-			addChildScaled(gameCanvas);
-			gameCanvas.x=(backgroundImage.width - gameCanvas.width) / 2;
-			gameCanvas.y=(backgroundImage.height - gameCanvas.height) / 2;
+			var tx:Number = (Constant.DEFAULT_WIDTH - gameCanvas.width) / 2;
+			var ty:Number = (Constant.DEFAULT_HEIGHT - gameCanvas.height) / 2;
+			addChildScaled(gameCanvas, tx, ty);				
 
 			Game.getInstance().gameCanvas=gameCanvas;
 			
@@ -227,17 +225,17 @@ package com.jack.llk.view.view
 		 */
 		private function onNext():void
 		{
-			var nOldRefreshTools:int = round.nRefreshTool;
-			var nOldBombTools:int = round.nBombTool;
-			var nOldFindTools:int = round.nFindTool;
+			var nOldRefreshTools:int = round.numRefreshTool;
+			var nOldBombTools:int = round.numBombTool;
+			var nOldFindTools:int = round.numFindTool;
 			
 			// goto next level and reset game
 			this.reset(++level);
 
 			// remain the tools 
-			round.nRefreshTool = nOldRefreshTools;
-			round.nBombTool = nOldBombTools;
-			round.nFindTool = nOldFindTools;
+			round.numRefreshTool = nOldRefreshTools;
+			round.numBombTool = nOldBombTools;
+			round.numFindTool = nOldFindTools;
 			
 			// set the game status
 			Game.getInstance().gameStatus=GameStatusFactors.STATUS_PLAYING;
@@ -578,9 +576,8 @@ package com.jack.llk.view.view
 			var item:BaseMovieClip=GameUtil.getSmallItemAt(MapVO.REFRESH_ITEM, 3);
 			item.loop=true;
 			item.play();
-			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + gameCanvasScale*((p.x - 1) * (round.nTileWidth + round.nGapHorizontal));
-			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + gameCanvasScale*((p.y - 1) * (round.nTileHeight + round.nGapVertical));
-			item.scaleX=item.scaleY=gameCanvasScale;
+			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + ((p.x - 1) * (round.nTileWidth + round.nGapHorizontal));
+			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + ((p.y - 1) * (round.nTileHeight + round.nGapVertical));
 			addChildScaled(item, itemX, itemY);
 			
 			var t:Tween = new Tween(item, 0.5);
@@ -610,9 +607,8 @@ package com.jack.llk.view.view
 			var item:BaseMovieClip=GameUtil.getSmallItemAt(MapVO.FIND_ITEM, 3);
 			item.loop=true;
 			item.play();
-			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + gameCanvasScale*((p.x - 1) * (round.nTileWidth + round.nGapHorizontal));
-			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + gameCanvasScale*((p.y - 1) * (round.nTileHeight + round.nGapVertical));
-			item.scaleX=item.scaleY=gameCanvasScale;
+			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + ((p.x - 1) * (round.nTileWidth + round.nGapHorizontal));
+			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + ((p.y - 1) * (round.nTileHeight + round.nGapVertical));
 			addChildScaled(item, itemX, itemY);
 			
 			var t:Tween = new Tween(item, 0.5);
@@ -633,15 +629,15 @@ package com.jack.llk.view.view
 			var probability:Number = 0.2;
 			if(r <= probability)
 			{
-				round.nRefreshTool++;	
+				round.numRefreshTool++;	
 			}
 			else if(r <= probability*2)
 			{
-				round.nBombTool++;	
+				round.numBombTool++;	
 			}
 			else if(r <= probability*3)
 			{
-				round.nFindTool++;	
+				round.numFindTool++;	
 			}
 			else if(r <= probability*4)
 			{
@@ -669,9 +665,8 @@ package com.jack.llk.view.view
 			var item:BaseMovieClip=GameUtil.getSmallItemAt(MapVO.BOMB_ITEM, 3);
 			item.loop=true;
 			item.play();
-			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + gameCanvasScale*((p.x - 1) * (round.nTileWidth + round.nGapHorizontal));
-			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + gameCanvasScale*((p.y - 1) * (round.nTileHeight + round.nGapVertical));
-			item.scaleX=item.scaleY=gameCanvasScale;
+			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + ((p.x - 1) * (round.nTileWidth + round.nGapHorizontal));
+			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + ((p.y - 1) * (round.nTileHeight + round.nGapVertical));
 			addChildScaled(item, itemX, itemY);
 			
 			var t:Tween = new Tween(item, 0.5);
@@ -788,7 +783,7 @@ package com.jack.llk.view.view
 			if (npRefresh)
 				npRefresh.removeFromParent(true);
 
-			var nRefreshTool:String=round.nRefreshTool.toString();
+			var nRefreshTool:String=round.numRefreshTool.toString();
 
 			npRefresh=new NumberSprite(nRefreshTool);
 			npRefresh.scaleX=npRefresh.scaleY=0.5;
@@ -800,7 +795,7 @@ package com.jack.llk.view.view
 			if (npBomb)
 				npBomb.removeFromParent(true);
 
-			var npBombTool:String=round.nBombTool.toString();
+			var npBombTool:String=round.numBombTool.toString();
 
 			npBomb=new NumberSprite(npBombTool);
 			npBomb.scaleX=npBomb.scaleY=0.5;
@@ -812,7 +807,7 @@ package com.jack.llk.view.view
 			if (npFind)
 				npFind.removeFromParent(true);
 
-			var nFindTool:String=round.nFindTool.toString();
+			var nFindTool:String=round.numFindTool.toString();
 
 			npFind=new NumberSprite(nFindTool);
 			npFind.scaleX=npFind.scaleY=0.5;
@@ -895,7 +890,7 @@ package com.jack.llk.view.view
 		
 		private function calculateRating():int
 		{
-			var poker:int = round.nAvailableItems + round.nToolItems;
+			var poker:int = round.nAvailableItems + round.numToolItems;
 			var f:Number = 0.4*(2.0*this.maxBatter/poker) + 
 				0.6*((round.totalTime-round.timeUsed)/(round.totalTime-10*poker/4));
 			

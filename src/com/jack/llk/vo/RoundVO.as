@@ -3,6 +3,7 @@ package com.jack.llk.vo
 	import com.jack.llk.control.Constant;
 	import com.jack.llk.control.events.EventController;
 	import com.jack.llk.control.events.GameEvent;
+	import com.jack.llk.log.Log;
 	import com.jack.llk.vo.map.ItemVO;
 	import com.jack.llk.vo.map.MapVO;
 	import com.jack.llk.vo.map.MatchResult;
@@ -21,34 +22,37 @@ package com.jack.llk.vo
 		public var voMap:MapVO;
 
 		// game round parameter
-		public var nLevel:int;
+		public var name:String;
+		public var level:int;
 		public var nStar:int;
 		public var totalTime:Number;
 		public var warningTime:Number;
 		public var timeUsed:Number;
-		public var batterInterval:Number;
+		public var batterInterval:Number=3000;
 
 		// how many different type items are using
-		public var nItemTypes:int;
+		public var nItemTypes:int = 20;		
+		public var nFlicker:int=6;
 
 		// map layout
-		public var nTileWidth:Number;
-		public var nTileHeight:Number;
-		public var nGapHorizontal:Number;
-		public var nGapVertical:Number;
-		public var nPaddingTop:Number;
-		public var nPaddingBottom:Number;
-		public var nPaddingLeft:Number;
-		public var nPaddingRight:Number;
+		public var nTileWidth:Number=Constant.ITEM_SMALL_WIDTH;
+		public var nTileHeight:Number=Constant.ITEM_SMALL_HEIGHT;
+		public var nGapHorizontal:Number=0;
+		public var nGapVertical:Number=0;
+		public var nPaddingTop:Number=0;
+		public var nPaddingBottom:Number=0;
+		public var nPaddingLeft:Number=0;
+		public var nPaddingRight:Number=0;
 
 		// map size
-		public var col:int;
-		public var row:int;
-		public var actualCol:int;
-		public var actualRow:int;
+		public var width:int;
+		public var height:int;
+		public var actualWidth:int;
+		public var actualHeight:int;
 
 		// available item
 		public var nAvailableItems:int;
+		public var numTotalItems:int;
 		// max combo
 		public var comboMax:int;
 		// cur combo
@@ -57,13 +61,11 @@ package com.jack.llk.vo
 		public var scores:int=0;
 
 		// other functional item (like stone, block or something)
-		public var nStoneItems:int;
-		public var nToolItems:int;
+		public var numStoneItems:int;
+		public var numToolItems:int;
 		public var nPaintedEggs:int;
 		public var nEggItems:int;
-
-		public var nFlicker:int;
-
+		
 		// tools
 		private var _nRefreshTool:int=0;
 		private var _nBombTool:int=0;
@@ -71,43 +73,58 @@ package com.jack.llk.vo
 
 		private var lastToolItemPoint:Point;
 
-		/**
-		 *
-		 * @param nLevel
-		 * @param col
-		 * @param row
-		 * @param nAvailableItems
-		 * @param nItemTypes
-		 */
-		public function RoundVO(nLevel:int, col:int, row:int, nAvailableItems:int, nItemTypes:int)
+		public function RoundVO()
 		{
-			this.nLevel=nLevel;
-			this.col=col;
-			this.row=row;
-			this.nAvailableItems=nAvailableItems;
-			this.nItemTypes=nItemTypes;
-
-			this.actualCol=col + 2;
-			this.actualRow=row + 2;
 		}
 
+		public function importFromXML(x:XML):void
+		{
+			var data:String;
+			
+			name = 				x.name;
+			level = 			x.level;
+			width = 			x.width;
+			height = 			x.height;
+			actualWidth = 		x.actualWidth;
+			actualHeight = 		x.actualHeight;
+			numTotalItems =		x.numTotalItems;
+			numToolItems = 		x.numToolItems;
+			numStoneItems =	 	x.numStoneItems;
+			numRefreshTool = 	x.numRefreshTool;
+			numBombTool = 		x.numBombTool;
+			numFindTool = 		x.numFindTool;
+			totalTime = 		x.totalTime;
+			warningTime = 		x.warningTime;
+			data = 				x.data;
+			
+			// testonly
+			numRefreshTool = 100;
+			
+			nAvailableItems = numTotalItems - numToolItems - numStoneItems;
+			// init the map data
+			init(data);
+			
+			Log.log("Init map from xml data", x);
+		}
+		
 		/**
 		 *
 		 */
-		public function init():void
+		private function init(data:String):void
 		{
 			voMap=new MapVO();
 
-			voMap.col=col;
-			voMap.row=row;
-			voMap.actualCol=actualCol;
-			voMap.actualRow=actualRow;
+			voMap.width=width;
+			voMap.height=height;
+			voMap.actualWidth=actualWidth;
+			voMap.actualHeight=actualHeight;
 			voMap.nAvailableItems=nAvailableItems;
 			voMap.nItemTypes=nItemTypes;
-			voMap.nStones=nStoneItems;
-			voMap.nToolItems=nToolItems;
+			voMap.nStoneItems=numStoneItems;
+			voMap.nToolItems=numToolItems;
+			voMap.numTotalItems=numTotalItems;
 
-			voMap.init();
+			voMap.init(data);
 		}
 
 		/**
@@ -212,19 +229,19 @@ package com.jack.llk.vo
 						
 					case MapVO.FIND_ITEM:
 					{
-						nFindTool++;
+						numFindTool++;
 						break;
 					}
 						
 					case MapVO.BOMB_ITEM:
 					{
-						nBombTool++;
+						numBombTool++;
 						break;
 					}
 						
 					case MapVO.REFRESH_ITEM:
 					{
-						nRefreshTool++;
+						numRefreshTool++;
 						break;
 					}
 						
@@ -288,12 +305,12 @@ package com.jack.llk.vo
 			EventController.e.dispatchEvent(e);
 		}
 
-		public function get nRefreshTool():int
+		public function get numRefreshTool():int
 		{
 			return _nRefreshTool;
 		}
 
-		public function set nRefreshTool(value:int):void
+		public function set numRefreshTool(value:int):void
 		{
 			if(_nRefreshTool != value && value >= 0)
 			{
@@ -311,12 +328,12 @@ package com.jack.llk.vo
 			}
 		}
 
-		public function get nBombTool():int
+		public function get numBombTool():int
 		{
 			return _nBombTool;
 		}
 
-		public function set nBombTool(value:int):void
+		public function set numBombTool(value:int):void
 		{
 			if(_nBombTool != value && value >= 0)
 			{
@@ -334,12 +351,12 @@ package com.jack.llk.vo
 			}
 		}
 
-		public function get nFindTool():int
+		public function get numFindTool():int
 		{
 			return _nFindTool;
 		}
 
-		public function set nFindTool(value:int):void
+		public function set numFindTool(value:int):void
 		{
 			if(_nFindTool != value && value >= 0)
 			{

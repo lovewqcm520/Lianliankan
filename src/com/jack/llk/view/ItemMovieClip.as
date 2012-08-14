@@ -1,5 +1,6 @@
 package com.jack.llk.view
 {
+	import com.jack.llk.control.Constant;
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.control.factors.SoundFactors;
 	import com.jack.llk.control.sound.SoundManager;
@@ -41,8 +42,8 @@ package com.jack.llk.view
 			if(itemIndex == MapVO.STONE_ITEM)
 			{
 				this.touchable = false;
-				this.width = 36;
-				this.height = 38;
+				this.width = Constant.ITEM_SMALL_WIDTH;
+				this.height = Constant.ITEM_SMALL_HEIGHT;
 			}
 		}
 
@@ -51,6 +52,8 @@ package com.jack.llk.view
 			smallItem=GameUtil.getSmallItemAt(itemIndex, 3);
 			smallItem.loop=true;
 			smallItem.stop();
+			smallItem.width=Constant.ITEM_SMALL_WIDTH;
+			smallItem.height=Constant.ITEM_SMALL_HEIGHT;
 			addChild(smallItem);
 			Starling.juggler.add(smallItem);
 		}
@@ -68,7 +71,7 @@ package com.jack.llk.view
 
 				// show the explosion
 				var mcExplosion:OnceMovieClip=new OnceMovieClip(t, dispose, true, 20);
-				mcExplosion.scaleX=mcExplosion.scaleY=0.5;
+				mcExplosion.scaleX=mcExplosion.scaleY=0.8;
 				mcExplosion.x=(smallItem.width - mcExplosion.width) / 2;
 				mcExplosion.y=(smallItem.height - mcExplosion.height) / 2;
 				addChild(mcExplosion);
@@ -198,6 +201,8 @@ package com.jack.llk.view
 			if (!bigItem)
 			{
 				bigItem=GameUtil.getBigItemAt(itemIndex);
+				bigItem.width=Constant.ITEM_BIG_WIDTH;
+				bigItem.height=Constant.ITEM_BIG_HEIGHT;
 				bigItem.x=(smallItem.width - bigItem.width) / 2;
 				bigItem.y=(smallItem.height - bigItem.height) / 2;
 			}

@@ -2,6 +2,7 @@ package
 {
 	import com.jack.llk.Game;
 	import com.jack.llk.control.asset.Assets;
+	import com.jack.llk.control.asset.Maps;
 	
 	import starling.display.Sprite;
 	import starling.events.Event;
@@ -12,6 +13,8 @@ package
 		{
 			super();
 
+			// map
+			Maps.init();
 			// asset
 			Assets.init();
 

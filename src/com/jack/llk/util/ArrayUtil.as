@@ -117,7 +117,10 @@ package com.jack.llk.util
 
 			if (n <= 0)
 			{
-				return [];
+				if(arr is Array)
+					return [];
+				
+				return null;
 			}
 
 			return RandomUtil.chooseMuti(arr, n);

@@ -7,6 +7,7 @@ package com.jack.llk.view.view
 	import com.jack.llk.control.sound.SoundManager;
 	import com.jack.llk.log.Log;
 	import com.jack.llk.util.ArrayUtil;
+	import com.jack.llk.util.DrawUtil;
 	import com.jack.llk.view.BaseSprite;
 	import com.jack.llk.view.ItemMovieClip;
 	import com.jack.llk.view.component.chain.ThunderChain;
@@ -18,6 +19,8 @@ package com.jack.llk.view.view
 	
 	import flash.geom.Point;
 	import flash.utils.getTimer;
+	
+	import starling.display.Image;
 
 	public class GameContainer extends BaseSprite
 	{
@@ -59,6 +62,7 @@ package com.jack.llk.view.view
 		public function init(roundData:RoundVO):void
 		{
 			this.round=roundData;
+			setGameContainerSize();
 			//initGameRoundParameters();
 			initGameCenter();
 		}
@@ -95,12 +99,12 @@ package com.jack.llk.view.view
 			var itemH:Number=round.nTileHeight;
 			var gapX:Number=round.nGapHorizontal;
 			var gapY:Number=round.nGapVertical;
-			var col:int=round.col;
-			var row:int=round.row;
+			var col:int=round.width;
+			var row:int=round.height;
 
 			// draw the items
 			canvas=new BaseSprite();
-			items=new Array2(round.actualCol, round.actualRow);
+			items=new Array2(round.actualWidth, round.actualHeight);
 			for (var i:int=1; i <= col; i++)
 			{
 				for (var j:int=1; j <= row; j++)
@@ -217,7 +221,7 @@ package com.jack.llk.view.view
 
 		public function refreshMap(useTool:Boolean=true):Boolean
 		{
-			if(useTool && round.nRefreshTool <= 0)
+			if(useTool && round.numRefreshTool <= 0)
 				return false;
 			
 			// refresh the map data
@@ -231,7 +235,7 @@ package com.jack.llk.view.view
 				SoundManager.play(SoundFactors.SHUA_XIN_MUSIC);
 				
 				if(useTool)
-					round.nRefreshTool--;
+					round.numRefreshTool--;
 			}
 			
 			return isOK;
@@ -239,7 +243,7 @@ package com.jack.llk.view.view
 
 		public function bomb2Items(useTool:Boolean=true):void
 		{
-			if(useTool && round.nBombTool <= 0)
+			if(useTool && round.numBombTool <= 0)
 				return;
 			
 			// find 2 items
@@ -256,13 +260,13 @@ package com.jack.llk.view.view
 				SoundManager.play(SoundFactors.ZHA_DAN_MUSIC);
 				
 				if(useTool)
-					round.nBombTool--;
+					round.numBombTool--;
 			}
 		}
 
 		public function findLine(useTool:Boolean=true):void
 		{
-			if(useTool && round.nFindTool <= 0)
+			if(useTool && round.numFindTool <= 0)
 				return;
 			
 			// find 2 items
@@ -286,7 +290,7 @@ package com.jack.llk.view.view
 				SoundManager.play(SoundFactors.DAO_JU_MUSIC);
 				
 				if(useTool)
-					round.nFindTool--;
+					round.numFindTool--;
 			}
 		}
 
@@ -317,7 +321,6 @@ package com.jack.llk.view.view
 				}
 
 				// play new animation then
-				var remain:int=round.nAvailableItems;
 				var nRandomItems:int=round.nFlicker;
 				animateItems=ArrayUtil.getRandomElements(round.availableItemVector, nRandomItems);
 				if (animateItems && animateItems.length >= nRandomItems)
@@ -341,6 +344,15 @@ package com.jack.llk.view.view
 			var chain:ThunderChain=new ThunderChain();
 			canvas.addChild(chain);
 			chain.initialize(list, round.nTileWidth, round.nTileHeight, round.nGapHorizontal, round.nGapVertical);
+		}
+		
+		private function setGameContainerSize():void
+		{
+			var w:Number = round.nPaddingLeft + round.width*(round.nTileWidth+round.nGapHorizontal) - round.nGapHorizontal + round.nPaddingRight;
+			var h:Number = round.nPaddingTop + round.height*(round.nTileHeight+round.nGapVertical) - round.nGapVertical + round.nPaddingBottom;
+			var transparentImgBg:Image = DrawUtil.drawTransparentImage(w, h);
+			
+			this.addChildAt(transparentImgBg, 0);
 		}
 
 		public function get curCombo():int
