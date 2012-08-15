@@ -271,13 +271,16 @@ package com.jack.llk.vo.map
 			}
 			
 			var start:int=_nDiffItems * _countOfPerItem;
-			var left:int=nAvailableItems - start;
-			for (i=start; i < nAvailableItems; i+=2)
+			for (i=start; i < nAvailableItems-2; i+=2)
 			{
 				tmp[i]=Math.ceil(Math.random() * _nDiffItems);
 				tmp[i + 1]=tmp[i];
 			}
 			
+			// add one pair eggs or time
+			tmp[nAvailableItems-2]= RandomUtil.isEnabledOnProbability(0.5) ? TIME_ITEM : EGG_ITEM;
+			tmp[nAvailableItems-1]= tmp[nAvailableItems-2];
+
 			var nCurAll:int = nAvailableItems+nStoneItems;
 			// add stones
 			for (i=nAvailableItems; i < nCurAll; i++)
@@ -286,10 +289,29 @@ package com.jack.llk.vo.map
 			}
 			
 			// add tool items
-			for (i=nCurAll; i < nCurAll + nToolItems; i+=2)
+			var m:int = int(nToolItems/6);
+			var n:int = nToolItems - m*6;
+			if(m > 0)
 			{
-				tmp[i]=RandomUtil.randomGet(TOOLS);
-				tmp[i + 1]=tmp[i];
+				for (i = 0; i < m; i++) 
+				{
+					tmp[nCurAll] = REFRESH_ITEM;
+					tmp[++nCurAll] = REFRESH_ITEM;
+					
+					tmp[++nCurAll] = BOMB_ITEM;
+					tmp[++nCurAll] = BOMB_ITEM;
+					
+					tmp[++nCurAll] = FIND_ITEM;
+					tmp[++nCurAll] = FIND_ITEM;
+				}				
+			}
+			if(n > 0)
+			{
+				for (i=nCurAll; i < nCurAll + nToolItems; i+=2)
+				{
+					tmp[i]=RandomUtil.randomGet(TOOLS);
+					tmp[i + 1]=tmp[i];
+				}
 			}
 			
 			tmp=ArrayUtil.random(tmp);

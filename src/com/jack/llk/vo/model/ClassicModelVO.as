@@ -2,11 +2,12 @@ package com.jack.llk.vo.model
 {
 	import com.jack.llk.control.Constant;
 	import com.jack.llk.control.LocalCache;
+	import com.jack.llk.control.asset.Maps;
 	import com.jack.llk.vo.ChapterVO;
 
 	public class ClassicModelVO
 	{
-		private var MAX_LEVEL:int = 30;
+		private var MAX_LEVEL:int;
 		private var _chapterList:Vector.<ChapterVO>;
 		
 		private static var _instance:ClassicModelVO;	
@@ -28,6 +29,7 @@ package com.jack.llk.vo.model
 		 */
 		public function init():void
 		{
+			MAX_LEVEL = Maps.totalClassicMaps;
 			if(!_chapterList)
 			{
 				// first read from cache, if cache has nothing, init manually

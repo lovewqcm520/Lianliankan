@@ -102,7 +102,7 @@ package com.jack.llk.view.view
 		{
 			this.level=nLevel;
 			EndlessModelVO.getInstance().maxLevel = this.level;
-			this.round=Maps.getRoundAt(level);
+			this.round=Maps.getClassicRoundAt(level);
 
 			resetData();
 			initGameCenter();
@@ -120,7 +120,7 @@ package com.jack.llk.view.view
 		{
 			this.level=nLevel;
 			EndlessModelVO.getInstance().maxLevel = this.level;
-			this.round=Maps.getRoundAt(level);
+			this.round=Maps.getClassicRoundAt(level);
 
 			resetData();
 			initialize();
@@ -240,12 +240,30 @@ package com.jack.llk.view.view
 			// set the game status
 			Game.getInstance().gameStatus=GameStatusFactors.STATUS_PLAYING;
 		}
+		
+		private function pauseGame():void
+		{
+			//  pause the count time timer
+			countDown.pause();
+			// disable mouse 
+			this.touchable=false;
+		}
+		
+		private function resumeGame():void
+		{
+			//  resume the count time timer
+			countDown.resume();
+			// enable mouse 
+			this.touchable=true;
+		}
 
 		/**
 		 * When game over and user win.
 		 */
 		private function onWin():void
 		{
+			resumeGame();
+			
 			gameover=true;
 			// play sound
 			SoundManager.play(SoundFactors.WIN_BACK_MUSIC);
@@ -301,9 +319,14 @@ package com.jack.llk.view.view
 		 */
 		private function onLose():void
 		{
+			resumeGame();
+			
 			gameover=true;
 			// play sound
 			SoundManager.play(SoundFactors.LOST_BACK_MUSIC);
+			
+			//  pause the count time timer
+			countDown.pause();
 			
 			// get the max combo
 			maxBatter=round.comboMax;
@@ -526,12 +549,16 @@ package com.jack.llk.view.view
 
 		private function onGameWin(event:GameEvent):void
 		{
-			onWin();
+			// delay 1s to show the win reward panel
+			pauseGame();
+			Delay.doIt(1000, onWin);
 		}
 
 		private function onGameLose(event:GameEvent):void
 		{
-			onLose();
+			// delay 0.5s to show the lose reward panel
+			pauseGame();
+			Delay.doIt(500, onLose);
 		}
 		
 		private function onBatter(event:GameEvent):void
@@ -547,13 +574,10 @@ package com.jack.llk.view.view
 		private function onGetToolTime(event:GameEvent):void
 		{
 			if(!round)	return;
-			// update total time
-			round.totalTime = round.totalTime + Constant.TOOL_TIME_ADD;
-			
 			// update the count down timer
 			if(countDown)
 			{
-				countDown.updateTotalTime(round.totalTime);
+				countDown.updateTotalTime(round.totalTime + Constant.TOOL_TIME_ADD);
 			}
 			
 			////////////////////// to be continued ///////////////////
@@ -890,9 +914,9 @@ package com.jack.llk.view.view
 		
 		private function calculateRating():int
 		{
-			var poker:int = round.nAvailableItems + round.numToolItems;
-			var f:Number = 0.4*(2.0*this.maxBatter/poker) + 
-				0.6*((round.totalTime-round.timeUsed)/(round.totalTime-10*poker/4));
+			var pokerNumber:int = round.nAvailableItems + round.numToolItems;
+			var f:Number = 0.4*(2.0*this.maxBatter/pokerNumber) + 
+				0.6*((round.totalTime-round.timeUsed)/(round.totalTime - pokerNumber/4));
 			
 			var n:int;
 			if(f > 0.6666667)

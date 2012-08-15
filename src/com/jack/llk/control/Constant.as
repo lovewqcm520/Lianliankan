@@ -17,7 +17,7 @@ package com.jack.llk.control
 		public static const BATTER_SCORE:int = 5;
 		
 		// when get a time tool, user get more 5 seconds game time
-		public static const TOOL_TIME_ADD:Number=10;
+		public static const TOOL_TIME_ADD:Number=5;
 		
 		public static const GAME_MODEL_CLASSIC:int = 1;
 		public static const GAME_MODEL_TIME:int = 2;

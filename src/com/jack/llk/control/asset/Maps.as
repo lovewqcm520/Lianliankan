@@ -8,9 +8,14 @@ package com.jack.llk.control.asset
 	{
 		// map data
 		[Embed(source="assets/data/MapProject.xml", mimeType="application/octet-stream")]
-		private static const mapsXml:Class;
+		private static const classicMapXml:Class;
 		
-		private static const dicXmls:Dictionary = new Dictionary();
+		private static const dicClassicMapXmls:Dictionary = new Dictionary();
+		public static var totalClassicMaps:int;
+		
+		private static var projectName:String;
+		private static var maxMapCol:int;
+		private static var maxMapRow:int;
 		
 		public function Maps()
 		{
@@ -19,21 +24,29 @@ package com.jack.llk.control.asset
 		
 		public static function init():void
 		{
-			var xml:XML=XML(new mapsXml());
+			// init the classic model map data
 			
+			var xml:XML=XML(new classicMapXml());			
+			// get the project base info
+			projectName = 		xml.attribute("name");
+			totalClassicMaps = xml.attribute("totalMaps");
+			maxMapCol = xml.attribute("maxMapCol");
+			maxMapRow = xml.attribute("maxMapRow");			
 			// parse the project xml
 			var xmlList:XMLList = xml.children();				
 			for each (var x:XML in xmlList) 
 			{
-				dicXmls[int(x.level)] = x;
+				dicClassicMapXmls[int(x.attribute("level"))] = x;
 			}				
+			
+			// init the time model map data
 		}
 		
-		public static function getRoundAt(level:int):RoundVO
+		public static function getClassicRoundAt(level:int):RoundVO
 		{
-			if(dicXmls[level])
+			if(dicClassicMapXmls[level])
 			{
-				var xml:XML = dicXmls[level];
+				var xml:XML = dicClassicMapXmls[level];
 				if(xml)
 				{
 					var r:RoundVO = new RoundVO();

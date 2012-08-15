@@ -31,7 +31,7 @@ package com.jack.llk.vo
 		public var batterInterval:Number=3000;
 
 		// how many different type items are using
-		public var nItemTypes:int = 20;		
+		public var nItemTypes:int = 24;		
 		public var nFlicker:int=6;
 
 		// map layout
@@ -81,24 +81,26 @@ package com.jack.llk.vo
 		{
 			var data:String;
 			
-			name = 				x.name;
-			level = 			x.level;
-			width = 			x.width;
-			height = 			x.height;
-			actualWidth = 		x.actualWidth;
-			actualHeight = 		x.actualHeight;
-			numTotalItems =		x.numTotalItems;
-			numToolItems = 		x.numToolItems;
-			numStoneItems =	 	x.numStoneItems;
-			numRefreshTool = 	x.numRefreshTool;
-			numBombTool = 		x.numBombTool;
-			numFindTool = 		x.numFindTool;
-			totalTime = 		x.totalTime;
-			warningTime = 		x.warningTime;
-			data = 				x.data;
+			name = 				x.attribute("name");
+			level = 			x.attribute("level");
+			width = 			x.attribute("width");
+			height = 			x.attribute("height");
+			actualWidth = 		x.attribute("actualWidth");
+			actualHeight = 		x.attribute("actualHeight");
+			numTotalItems =		x.attribute("numTotalItems");
+			numToolItems = 		x.attribute("numToolItems");
+			numStoneItems =	 	x.attribute("numStoneItems");
+			numRefreshTool = 	x.attribute("numRefreshTool");
+			numBombTool = 		x.attribute("numBombTool");
+			numFindTool = 		x.attribute("numFindTool");
+			totalTime = 		x.attribute("totalTime");
+			warningTime = 		x.attribute("warningTime");
+			data = 				x.attribute("data");
 			
 			// testonly
-			numRefreshTool = 100;
+			numRefreshTool = 1000;
+			numBombTool = 1000;
+			numFindTool = 1000;
 			
 			nAvailableItems = numTotalItems - numToolItems - numStoneItems;
 			// init the map data
