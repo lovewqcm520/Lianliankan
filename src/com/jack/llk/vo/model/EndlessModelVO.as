@@ -1,6 +1,6 @@
 package com.jack.llk.vo.model
 {
-	import com.jack.llk.control.Constant;
+	import com.jack.llk.control.Common;
 	import com.jack.llk.control.LocalCache;
 	import com.jack.llk.vo.EndlessModelRecordVO;
 
@@ -48,7 +48,7 @@ package com.jack.llk.vo.model
 			// flush the data to local shared object
 			voRecord.maxScore = allLevelScors > voRecord.maxScore ? allLevelScors : voRecord.maxScore;
 			voRecord.maxLevel = curMaxLevel > voRecord.maxLevel ? curMaxLevel : voRecord.maxLevel;
-			LocalCache.getInstance().addValue(Constant.CACHE_ENDLESS_MODEL, voRecord);
+			LocalCache.getInstance().addValue(Common.CACHE_ENDLESS_MODEL, voRecord);
 		}
 
 		public function get maxLevel():int
@@ -89,7 +89,7 @@ package com.jack.llk.vo.model
 
 		private function initFromCache():Boolean
 		{
-			var v:EndlessModelRecordVO=LocalCache.getInstance().getValue(Constant.CACHE_ENDLESS_MODEL) as EndlessModelRecordVO;
+			var v:EndlessModelRecordVO=LocalCache.getInstance().getValue(Common.CACHE_ENDLESS_MODEL) as EndlessModelRecordVO;
 
 			if (v)
 			{

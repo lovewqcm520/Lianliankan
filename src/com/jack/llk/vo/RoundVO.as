@@ -1,9 +1,8 @@
 package com.jack.llk.vo
 {
-	import com.jack.llk.control.Constant;
+	import com.jack.llk.control.Common;
 	import com.jack.llk.control.events.EventController;
 	import com.jack.llk.control.events.GameEvent;
-	import com.jack.llk.log.Log;
 	import com.jack.llk.vo.map.ItemVO;
 	import com.jack.llk.vo.map.MapVO;
 	import com.jack.llk.vo.map.MatchResult;
@@ -35,8 +34,8 @@ package com.jack.llk.vo
 		public var nFlicker:int=6;
 
 		// map layout
-		public var nTileWidth:Number=Constant.ITEM_SMALL_WIDTH;
-		public var nTileHeight:Number=Constant.ITEM_SMALL_HEIGHT;
+		public var nTileWidth:Number=Common.ITEM_SMALL_WIDTH;
+		public var nTileHeight:Number=Common.ITEM_SMALL_HEIGHT;
 		public var nGapHorizontal:Number=0;
 		public var nGapVertical:Number=0;
 		public var nPaddingTop:Number=0;
@@ -72,9 +71,11 @@ package com.jack.llk.vo
 		private var _nFindTool:int=0;
 
 		private var lastToolItemPoint:Point;
+		private var gameMode:int;
 
-		public function RoundVO()
+		public function RoundVO(gameMode:int)
 		{
+			this.gameMode = gameMode;
 		}
 
 		public function importFromXML(x:XML):void
@@ -101,12 +102,18 @@ package com.jack.llk.vo
 			numRefreshTool = 1000;
 			numBombTool = 1000;
 			numFindTool = 1000;
+			if(gameMode == Common.GAME_MODEL_TIME)
+			{
+				totalTime = Common.TIME_MODEL_TIMES[level-1];
+			}
+			else if(gameMode == Common.GAME_MODEL_ENDLESS)
+			{
+				totalTime = Common.ENDLESS_MODEL_TIME;
+			}
 			
 			nAvailableItems = numTotalItems - numToolItems - numStoneItems;
 			// init the map data
 			init(data);
-			
-			Log.log("Init map from xml data", x);
 		}
 		
 		/**
@@ -126,7 +133,7 @@ package com.jack.llk.vo
 			voMap.nToolItems=numToolItems;
 			voMap.numTotalItems=numTotalItems;
 
-			voMap.init(data);
+			voMap.init(data, gameMode);
 		}
 
 		/**
@@ -213,7 +220,7 @@ package com.jack.llk.vo
 			voMap.erase(a, b);
 			
 			// update current level scores
-			scores += Constant.ITEM_SCORE;
+			scores += Common.ITEM_SCORE;
 			
 			// detect the item type
 			if(aIndex == bIndex)

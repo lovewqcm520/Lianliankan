@@ -22,7 +22,7 @@ package com.jack.llk.control
 			}
 			else
 			{
-				cache=SharedObject.getLocal(Constant.MAIN_SHAREDOBJECT);
+				cache=SharedObject.getLocal(Common.MAIN_SHAREDOBJECT);
 			}
 		}
 

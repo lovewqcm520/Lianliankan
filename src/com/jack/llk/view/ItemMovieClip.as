@@ -1,6 +1,6 @@
 package com.jack.llk.view
 {
-	import com.jack.llk.control.Constant;
+	import com.jack.llk.control.Common;
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.control.factors.SoundFactors;
 	import com.jack.llk.control.sound.SoundManager;
@@ -42,8 +42,8 @@ package com.jack.llk.view
 			if(itemIndex == MapVO.STONE_ITEM)
 			{
 				this.touchable = false;
-				this.width = Constant.ITEM_SMALL_WIDTH;
-				this.height = Constant.ITEM_SMALL_HEIGHT;
+				this.width = Common.ITEM_SMALL_WIDTH;
+				this.height = Common.ITEM_SMALL_HEIGHT;
 			}
 		}
 
@@ -52,8 +52,8 @@ package com.jack.llk.view
 			smallItem=GameUtil.getSmallItemAt(itemIndex, 3);
 			smallItem.loop=true;
 			smallItem.stop();
-			smallItem.width=Constant.ITEM_SMALL_WIDTH;
-			smallItem.height=Constant.ITEM_SMALL_HEIGHT;
+			smallItem.width=Common.ITEM_SMALL_WIDTH;
+			smallItem.height=Common.ITEM_SMALL_HEIGHT;
 			addChild(smallItem);
 			Starling.juggler.add(smallItem);
 		}
@@ -201,8 +201,8 @@ package com.jack.llk.view
 			if (!bigItem)
 			{
 				bigItem=GameUtil.getBigItemAt(itemIndex);
-				bigItem.width=Constant.ITEM_BIG_WIDTH;
-				bigItem.height=Constant.ITEM_BIG_HEIGHT;
+				bigItem.width=Common.ITEM_BIG_WIDTH;
+				bigItem.height=Common.ITEM_BIG_HEIGHT;
 				bigItem.x=(smallItem.width - bigItem.width) / 2;
 				bigItem.y=(smallItem.height - bigItem.height) / 2;
 			}

@@ -3,9 +3,9 @@ package com.jack.llk.view.module.classic
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.view.NumberSprite;
 	import com.jack.llk.view.component.RewardStarList;
+	import com.jack.llk.view.panel.RewardPanel;
 	
 	import starling.display.Image;
-	import com.jack.llk.view.panel.RewardPanel;
 
 	public class ClassicModelRewardPanel extends RewardPanel
 	{

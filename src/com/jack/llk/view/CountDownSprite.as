@@ -25,6 +25,8 @@ package com.jack.llk.view
 		private var isWarningActivate:Boolean;
 		private var tmpGetTime:Number=0;
 		private var progressWidth:Number;
+		private var _usedTime:Number;
+		private var tempTime:Number;
 
 		private var progress:MyProgressBar;
 		private var pTween:GTween;
@@ -85,12 +87,16 @@ package com.jack.llk.view
 			mcMovingIcon.y=regularBgSkin.height / 2;
 			addChild(mcMovingIcon);
 			Starling.juggler.add(mcMovingIcon);
+			
+			_usedTime = 0;
+			tempTime = getTimer();
 		}
 
 		public function reset(totalTime:int, warningStartTime:int):void
 		{
 			this.totalTime=totalTime;
 			this.warningStartTime=warningStartTime;
+			_usedTime=0;
 			warningPercentage=warningStartTime / totalTime;
 			isWarningActivate=false;
 
@@ -100,26 +106,23 @@ package com.jack.llk.view
 			pTween.beginning();
 			pTween.duration=totalTime;
 			pTween.paused=false;
+			
+			tempTime = getTimer();
 		}
 		
-		/**
-		 * Update total time.
-		 * @param newTotalTime
-		 */
-		public function updateTotalTime(newTotalTime:int):void
+		public function updateCurTime(t:int):void
 		{
-			// update the new total time
-			var add:Number = newTotalTime - totalTime;
-			warningPercentage=warningStartTime / newTotalTime;
-			progress.value = (progress.value*totalTime)/newTotalTime;
-			totalTime=newTotalTime;
+			progress.value = t/totalTime;
 			isWarningActivate = (progress.value >= warningPercentage);
 			isWarningActivate ? progress.backgroundSkin=warningBgSkin : progress.backgroundSkin=regularBgSkin;
 			
 			// restart at the last position
-			pTween.paused=true;
-			pTween.duration=totalTime;
+			pTween.position = t;
+			pTween.paused = true;
 			pTween.paused=false;
+			
+			_usedTime += (getTimer()-tempTime);
+			tempTime = getTimer();
 		}
 
 		private function onProgress():void
@@ -171,6 +174,9 @@ package com.jack.llk.view
 			{
 				onFinishFunc.apply();
 			}
+			
+			_usedTime += (getTimer()-tempTime);
+			tempTime = getTimer();
 		}
 
 
@@ -189,11 +195,13 @@ package com.jack.llk.view
 			{
 				SoundManager.play(SoundFactors.DAO_JI_SHI_MUSIC, false, true);
 			}
+			
+			tempTime = getTimer();
 		}
 
-		public function get passedTime():int
+		public function get currentTime():int
 		{
-			return int(progress.value * totalTime);
+			return pTween.position;
 		}
 
 		/**
@@ -208,6 +216,9 @@ package com.jack.llk.view
 
 			// stop warning sound
 			SoundManager.stop(SoundFactors.DAO_JI_SHI_MUSIC);
+			
+			_usedTime += (getTimer()-tempTime);
+			tempTime = getTimer();
 		}
 
 		override public function dispose():void
@@ -225,6 +236,10 @@ package com.jack.llk.view
 			super.dispose();
 		}
 
+		public function get usedTime():int
+		{
+			return Math.round(_usedTime/1000);
+		}
 
 	}
 }

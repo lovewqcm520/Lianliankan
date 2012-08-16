@@ -1,7 +1,7 @@
 package com.jack.llk.view.module.classic
 {
 	import com.jack.llk.Game;
-	import com.jack.llk.control.Constant;
+	import com.jack.llk.control.Common;
 	import com.jack.llk.control.Global;
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.control.events.ViewEvent;
@@ -72,7 +72,7 @@ package com.jack.llk.view.module.classic
 		 */
 		private function onStartGameAt(level:int):void
 		{
-			var gameView:GameView=new GameView(Constant.GAME_MODEL_CLASSIC);
+			var gameView:GameView=new GameView(Common.GAME_MODEL_CLASSIC);
 			gameView.x=Starling.current.nativeStage.fullScreenWidth;
 			Game.getInstance().container.addChild(gameView);
 			
@@ -177,7 +177,7 @@ package com.jack.llk.view.module.classic
 			_list.itemRendererProperties.iconPosition = Button.ICON_POSITION_TOP;
 			_list.onScroll.add(onListScroll);
 			_list.onItemTouch.add(onChapterTouch);
-			addChild(_list);
+			addChildAt(_list, 1);
 			
 			var normalSymbolTexture:Texture = Assets.getTexture("normal-page-symbol");
 			var selectedSymbolTexture:Texture = Assets.getTexture("selected-page-symbol");

@@ -210,6 +210,9 @@ package com.jack.llk.view.view
 			items.set(a.x, a.y, null);
 			items.set(b.x, b.y, null);
 
+			// dispatch item pair dispose event
+			var e1:GameEvent=new GameEvent(GameEvent.XIAOCHU);
+			EventController.e.dispatchEvent(e1);
 			// check whether the game was over
 			if (round.isMapEmpty())
 			{

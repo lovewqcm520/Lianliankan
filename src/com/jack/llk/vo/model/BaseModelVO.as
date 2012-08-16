@@ -1,36 +1,23 @@
 package com.jack.llk.vo.model
 {
 	import com.jack.llk.control.LocalCache;
-	import com.jack.llk.control.asset.Maps;
 	import com.jack.llk.vo.ChapterVO;
 
 	public class BaseModelVO
 	{
-		private var MAX_LEVEL:int;
-		private var _chapterList:Vector.<ChapterVO>;
+		protected var MAX_LEVEL:int;
+		protected var _chapterList:Vector.<ChapterVO>;
+		protected var cacheName:String;
 		
-		private static var _instance:BaseModelVO;	
-		private var type:String;
-
 		public function BaseModelVO()
 		{
 		}
 		
-		public static function getInstance():BaseModelVO
-		{
-			if(!_instance)
-				_instance = new BaseModelVO();
-			
-			return _instance;
-		}
-
 		/**
 		 * Run this init function when user choose classic model.
 		 */
-		public function init(type:String):void
+		public function init():void
 		{
-			MAX_LEVEL = Maps.totalClassicMaps;
-			this.type = type;
 			if(!_chapterList)
 			{
 				// first read from cache, if cache has nothing, init manually
@@ -48,7 +35,7 @@ package com.jack.llk.vo.model
 		{
 			// flush the data to local shared object
 			if (chapterList && chapterList.length > 0)
-				LocalCache.getInstance().addValue(type, chapterList);
+				LocalCache.getInstance().addValue(cacheName, chapterList);
 		}
 
 
@@ -110,7 +97,7 @@ package com.jack.llk.vo.model
 
 		private function initChapterListFromCache():Boolean
 		{
-			var arr:Vector.<Object>=LocalCache.getInstance().getValue(type);
+			var arr:Vector.<Object>=LocalCache.getInstance().getValue(cacheName);
 			if (arr && arr.length > 0)
 			{
 				var obj:Object;

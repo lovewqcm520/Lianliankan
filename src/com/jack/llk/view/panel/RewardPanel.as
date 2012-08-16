@@ -1,6 +1,6 @@
 package com.jack.llk.view.panel
 {
-	import com.jack.llk.control.Constant;
+	import com.jack.llk.control.Common;
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.control.events.EventController;
 	import com.jack.llk.control.events.GameEvent;
@@ -115,8 +115,8 @@ package com.jack.llk.view.panel
 			blackBg=Assets.getImage("bg_line0000");
 			if (blackBg)
 			{
-				blackBg.width=Constant.DEFAULT_WIDTH;
-				blackBg.height=Constant.DEFAULT_HEIGHT;
+				blackBg.width=Common.DEFAULT_WIDTH;
+				blackBg.height=Common.DEFAULT_HEIGHT;
 				blackBg.scaleX/=0.75;
 				blackBg.scaleY/=0.75;
 				addChildAt(blackBg, 0);

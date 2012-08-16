@@ -7,6 +7,9 @@ package com.jack.llk.view.view
 	import com.jack.llk.log.Log;
 	import com.jack.llk.view.BaseImage;
 	import com.jack.llk.view.button.CommonButton;
+	import com.jack.llk.view.module.classic.ClassicModelChapterView;
+	import com.jack.llk.view.module.endless.EndlessModelChapterView;
+	import com.jack.llk.view.module.time.TimeModelChapterView;
 	import com.jack.llk.view.panel.SettingPanel;
 	
 	import org.josht.starling.foxhole.controls.ScrollContainer;
@@ -17,9 +20,6 @@ package com.jack.llk.view.view
 	import starling.display.Image;
 	import starling.events.Event;
 	import starling.textures.Texture;
-	import com.jack.llk.view.module.endless.EndlessModelChapterView;
-	import com.jack.llk.view.module.classic.ClassicModelChapterView;
-	import com.jack.llk.view.module.time.TimeModelChapterView;
 
 	public class ModelView extends BaseView
 	{
@@ -37,7 +37,6 @@ package com.jack.llk.view.view
 		private var diff:Number=30;
 		private var lastDescIndex:int=-1;
 
-		private var timeModelView:TimeModelChapterView;
 		private var endlessModelView:EndlessModelChapterView;
 
 		private var tModelDesc:Vector.<Texture>;
@@ -141,6 +140,19 @@ package com.jack.llk.view.view
 			this.prepareHide();
 		}
 		
+		private function onTimeModelSelected():void
+		{
+			Log.log("onTimeModelSelected");
+			var timeModelView:TimeModelChapterView=new TimeModelChapterView();
+			Game.getInstance().container.addChild(timeModelView);
+			// show time model screen
+			timeModelView.visible=true;
+			timeModelView.prepareShow();
+			// hide model selecte screen
+			this.visible=false;
+			this.prepareHide();
+		}
+		
 		private function onEndlessModelSelected():void
 		{
 			Log.log("onEndlessModelSelected");
@@ -152,26 +164,6 @@ package com.jack.llk.view.view
 			// show endless model screen
 			endlessModelView.visible=true;
 			endlessModelView.prepareShow();
-			// hide model selecte screen
-			this.visible=false;
-			this.prepareHide();
-		}
-
-		private function onTimeModelSelected():void
-		{
-			Log.log("onTimeModelSelected");
-			if (!timeModelView)
-			{
-				timeModelView=new TimeModelChapterView();
-				Game.getInstance().container.addChild(timeModelView);
-			}
-			else
-			{
-				timeModelView.addChapterContainerToStage();
-			}
-			// show time model screen
-			timeModelView.visible=true;
-			timeModelView.prepareShow();
 			// hide model selecte screen
 			this.visible=false;
 			this.prepareHide();

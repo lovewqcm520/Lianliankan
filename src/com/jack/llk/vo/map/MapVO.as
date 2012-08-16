@@ -1,5 +1,6 @@
 package com.jack.llk.vo.map
 {
+	import com.jack.llk.control.Common;
 	import com.jack.llk.control.events.EventController;
 	import com.jack.llk.control.events.GameEvent;
 	import com.jack.llk.util.ArrayUtil;
@@ -51,14 +52,16 @@ package com.jack.llk.vo.map
 		private var _lines:Vector.<Line>; //保存符合条件线段的地方
 		private var _items:Vector.<ItemVO>; // 保存当前存在的所有item的坐标和index	
 		private var _allItemIndexs:Array; // 保存当前存在的所有item的index	
+		private var gameMode:int;
 
 		public function MapVO()
 		{
 
 		}
 
-		public function init(data:String):void
+		public function init(data:String, gameMode:int):void
 		{
+			this.gameMode = gameMode;
 			map=new Array2(actualWidth, actualHeight);
 			_array=new Array(width * height);
 			_lines=new Vector.<Line>();
@@ -156,7 +159,6 @@ package com.jack.llk.vo.map
 					b.y = tmp[j].y;
 					if(test(a, b))
 					{
-						trace("find2Items takes",getTimer()-oldTime);
 						return [a, b];
 					}
 				}	
@@ -175,8 +177,6 @@ package com.jack.llk.vo.map
 			// update data
 			updateItemLayout();
 			validateMap();
-			
-			trace("erase", _restBlock, _items.length);
 		}
 
 		public function get count():int
@@ -257,6 +257,22 @@ package com.jack.llk.vo.map
 		 */
 		private function initMap(data:String):void
 		{
+			if(gameMode == Common.GAME_MODEL_CLASSIC)
+			{
+				initClassicModelMap(data);
+			}
+			else if(gameMode == Common.GAME_MODEL_TIME)
+			{
+				initTimeModelMap(data);
+			}
+			else if(gameMode == Common.GAME_MODEL_ENDLESS)
+			{
+				initEndlessModelMap(data);
+			}
+		}
+		
+		private function initClassicModelMap(data:String):void
+		{
 			var allItems:int = nAvailableItems+nToolItems+nStoneItems;
 			var i:int;
 			var j:int;
@@ -271,16 +287,12 @@ package com.jack.llk.vo.map
 			}
 			
 			var start:int=_nDiffItems * _countOfPerItem;
-			for (i=start; i < nAvailableItems-2; i+=2)
+			for (i=start; i < nAvailableItems; i+=2)
 			{
 				tmp[i]=Math.ceil(Math.random() * _nDiffItems);
 				tmp[i + 1]=tmp[i];
 			}
 			
-			// add one pair eggs or time
-			tmp[nAvailableItems-2]= RandomUtil.isEnabledOnProbability(0.5) ? TIME_ITEM : EGG_ITEM;
-			tmp[nAvailableItems-1]= tmp[nAvailableItems-2];
-
 			var nCurAll:int = nAvailableItems+nStoneItems;
 			// add stones
 			for (i=nAvailableItems; i < nCurAll; i++)
@@ -288,6 +300,9 @@ package com.jack.llk.vo.map
 				tmp[i]=STONE_ITEM;
 			}
 			
+			// add one pair eggs or time
+			tmp[nAvailableItems-2]= RandomUtil.isEnabledOnProbability(0.5) ? TIME_ITEM : EGG_ITEM;
+			tmp[nAvailableItems-1]= tmp[nAvailableItems-2];
 			// add tool items
 			var m:int = int(nToolItems/6);
 			var n:int = nToolItems - m*6;
@@ -314,6 +329,7 @@ package com.jack.llk.vo.map
 				}
 			}
 			
+			// shuffle the array
 			tmp=ArrayUtil.random(tmp);
 			
 			// set map data
@@ -335,7 +351,176 @@ package com.jack.llk.vo.map
 			}	
 			
 			updateItemLayout();
-			validateMap();			
+			validateMap();	
+		}
+		
+		private function initTimeModelMap(data:String):void
+		{
+			// testonly 
+			nAvailableItems = nAvailableItems + nToolItems - 2;
+			nToolItems = 2;
+			
+			var allItems:int = nAvailableItems+nToolItems+nStoneItems;
+			var i:int;
+			var j:int;
+			
+			var tmp:Array=new Array(nAvailableItems+nToolItems);
+			for (i=0; i < _nDiffItems; i++)
+			{
+				for (j=0; j < _countOfPerItem; j++)
+				{
+					tmp[i * _countOfPerItem + j]=i + 1;
+				}
+			}
+			
+			var start:int=_nDiffItems * _countOfPerItem;
+			for (i=start; i < nAvailableItems; i+=2)
+			{
+				tmp[i]=Math.ceil(Math.random() * _nDiffItems);
+				tmp[i + 1]=tmp[i];
+			}
+			
+			var nCurAll:int = nAvailableItems;
+			
+			// add eggs
+			for (i=nCurAll; i < nCurAll + nToolItems; i+=2)
+			{
+				tmp[i]=EGG_ITEM;
+				tmp[i + 1]=EGG_ITEM;
+			}
+			
+			// shuffle the array
+			tmp=ArrayUtil.random(tmp);
+			
+			// set map data
+			var arr:Array = data.split(",");
+			var index:int;
+			var flag:int=0;
+			for (i=0; i < actualHeight; i++) 
+			{
+				for (j= 0; j < actualWidth; j++) 
+				{
+					index = int(arr[i*actualWidth + j]);
+					if(index != EMPTY_ITEM)
+					{
+						if(index != STONE_ITEM)
+						{
+							index = tmp[flag];
+							flag++;
+						}		
+						else
+						{
+							trace(i, j);
+						}
+					}
+					map.set(j, i, index);
+					if(index == 0)
+					{
+						trace(i, j);
+					}
+					if(index == -2)
+					{
+						trace(i, j);
+					}
+				}				
+			}	
+			
+			updateItemLayout();
+			validateMap();	
+		}
+		
+		private function initEndlessModelMap(data:String):void
+		{
+			var allItems:int = nAvailableItems+nToolItems+nStoneItems;
+			var i:int;
+			var j:int;
+			
+			var tmp:Array=new Array(numTotalItems);
+			for (i=0; i < _nDiffItems; i++)
+			{
+				for (j=0; j < _countOfPerItem; j++)
+				{
+					tmp[i * _countOfPerItem + j]=i + 1;
+				}
+			}
+			
+			var start:int=_nDiffItems * _countOfPerItem;
+			for (i=start; i < nAvailableItems; i+=2)
+			{
+				tmp[i]=Math.ceil(Math.random() * _nDiffItems);
+				tmp[i + 1]=tmp[i];
+			}
+			
+			var nCurAll:int = nAvailableItems+nStoneItems;
+			// add stones
+			for (i=nAvailableItems; i < nCurAll; i++)
+			{
+				tmp[i]=STONE_ITEM;
+			}
+			
+			if(gameMode == Common.GAME_MODEL_CLASSIC)
+			{
+				// add one pair eggs or time
+				tmp[nAvailableItems-2]= RandomUtil.isEnabledOnProbability(0.5) ? TIME_ITEM : EGG_ITEM;
+				tmp[nAvailableItems-1]= tmp[nAvailableItems-2];
+				// add tool items
+				var m:int = int(nToolItems/6);
+				var n:int = nToolItems - m*6;
+				if(m > 0)
+				{
+					for (i = 0; i < m; i++) 
+					{
+						tmp[nCurAll] = REFRESH_ITEM;
+						tmp[++nCurAll] = REFRESH_ITEM;
+						
+						tmp[++nCurAll] = BOMB_ITEM;
+						tmp[++nCurAll] = BOMB_ITEM;
+						
+						tmp[++nCurAll] = FIND_ITEM;
+						tmp[++nCurAll] = FIND_ITEM;
+					}				
+				}
+				if(n > 0)
+				{
+					for (i=nCurAll; i < nCurAll + nToolItems; i+=2)
+					{
+						tmp[i]=RandomUtil.randomGet(TOOLS);
+						tmp[i + 1]=tmp[i];
+					}
+				}
+			}
+			else if(gameMode == Common.GAME_MODEL_TIME)
+			{
+				for (i=nCurAll; i < nCurAll + nToolItems; i+=2)
+				{
+					tmp[i]=EGG_ITEM;
+					tmp[i + 1]=EGG_ITEM;
+				}
+			}
+			
+			// shuffle the array
+			tmp=ArrayUtil.random(tmp);
+			
+			// set map data
+			var arr:Array = data.split(",");
+			var index:int;
+			var flag:int=0;
+			for (i=0; i < actualHeight; i++) 
+			{
+				for (j= 0; j < actualWidth; j++) 
+				{
+					index = int(arr[i*actualWidth + j]);
+					if(index != EMPTY_ITEM)
+					{
+						index = tmp[flag];
+						flag++;
+					}
+					map.set(j, i, index);
+				}				
+			}	
+			
+			updateItemLayout();
+			validateMap();	
 		}
 		
 		private function validateMap():void

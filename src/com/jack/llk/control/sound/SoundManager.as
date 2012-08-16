@@ -1,6 +1,6 @@
 package com.jack.llk.control.sound
 {
-	import com.jack.llk.control.Constant;
+	import com.jack.llk.control.Common;
 	import com.jack.llk.control.LocalCache;
 
 	import flash.media.Sound;
@@ -62,8 +62,8 @@ package com.jack.llk.control.sound
 
 		public static function readSettingFromCache():void
 		{
-			var m:*=LocalCache.getInstance().getValue(Constant.CACHE_MUSIC);
-			var s:*=LocalCache.getInstance().getValue(Constant.CACHE_SOUND);
+			var m:*=LocalCache.getInstance().getValue(Common.CACHE_MUSIC);
+			var s:*=LocalCache.getInstance().getValue(Common.CACHE_SOUND);
 
 			m == undefined ? musicEnabled=true : musicEnabled=m;
 			s == undefined ? soundEnabled=true : soundEnabled=s;
@@ -186,7 +186,7 @@ package com.jack.llk.control.sound
 
 				value ? resumeMusic() : muteMusic();
 				// flush data to local shared object
-				LocalCache.getInstance().addValue(Constant.CACHE_MUSIC, value);
+				LocalCache.getInstance().addValue(Common.CACHE_MUSIC, value);
 			}
 
 			_musicEnabled=value;
@@ -205,7 +205,7 @@ package com.jack.llk.control.sound
 
 				value ? null : muteSound();
 				// flush data to local shared object
-				LocalCache.getInstance().addValue(Constant.CACHE_SOUND, value);
+				LocalCache.getInstance().addValue(Common.CACHE_SOUND, value);
 			}
 
 			_soundEnabled=value;

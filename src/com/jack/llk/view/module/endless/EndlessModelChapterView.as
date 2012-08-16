@@ -1,7 +1,7 @@
 package com.jack.llk.view.module.endless
 {
 	import com.jack.llk.Game;
-	import com.jack.llk.control.Constant;
+	import com.jack.llk.control.Common;
 	import com.jack.llk.control.Global;
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.control.events.ViewEvent;
@@ -188,7 +188,7 @@ package com.jack.llk.view.module.endless
 
 		private function onPlayClick():void
 		{
-			var gameView:GameView=new GameView(Constant.GAME_MODEL_ENDLESS);
+			var gameView:GameView=new GameView(Common.GAME_MODEL_ENDLESS);
 			gameView.x=Starling.current.nativeStage.fullScreenWidth;
 			Game.getInstance().container.addChild(gameView);
 

@@ -18,6 +18,7 @@ package com.jack.llk.control.events
 		public static const GAME_REFRESH_MAP:String="game_refresh_map";
 		
 		public static const BATTER:String = "batter";
+		public static const XIAOCHU:String = "xiaochu";
 		
 		
 		public static const GET_TOOL_TIME:String = 		"get_tool_time";		

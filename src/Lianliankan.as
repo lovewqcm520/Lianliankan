@@ -1,7 +1,7 @@
 package
 {
 	import com.jack.llk.Game;
-	import com.jack.llk.control.Constant;
+	import com.jack.llk.control.Common;
 	import com.jack.llk.control.Global;
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.log.Log;
@@ -32,6 +32,9 @@ package
 			addEventListener(flash.events.Event.ADDED_TO_STAGE, onAddedToStage);
 			stage.addEventListener(ResizeEvent.RESIZE, onResize);
 
+			// init the Common
+			Common.init();
+			
 			// show the splash view
 			var splash:Splash=new Splash(Assets.getBitmap("asset_bg_splash"), Game.getInstance().showGame, 2000, Splash.SCALE_MODE_STRETCH);
 			stage.addChild(splash);
@@ -52,8 +55,8 @@ package
 
 			mStarling.start();
 
-			Global.contentScaleXFactor=stage.fullScreenWidth / Constant.DEFAULT_WIDTH;
-			Global.contentScaleYFactor=stage.fullScreenHeight / Constant.DEFAULT_HEIGHT;
+			Global.contentScaleXFactor=stage.fullScreenWidth / Common.DEFAULT_WIDTH;
+			Global.contentScaleYFactor=stage.fullScreenHeight / Common.DEFAULT_HEIGHT;
 			
 			Starling.current.addEventListener(starling.events.Event.CONTEXT3D_CREATE, onContextCreated);
 		}

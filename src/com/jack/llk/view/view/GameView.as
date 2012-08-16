@@ -1,7 +1,7 @@
 package com.jack.llk.view.view
 {
 	import com.jack.llk.Game;
-	import com.jack.llk.control.Constant;
+	import com.jack.llk.control.Common;
 	import com.jack.llk.control.Global;
 	import com.jack.llk.control.asset.Assets;
 	import com.jack.llk.control.asset.Maps;
@@ -22,12 +22,14 @@ package com.jack.llk.view.view
 	import com.jack.llk.view.module.classic.ClassicModelChapterView;
 	import com.jack.llk.view.module.classic.ClassicModelRewardPanel;
 	import com.jack.llk.view.module.endless.EndlessModelRewardPanel;
+	import com.jack.llk.view.module.time.TimeModelChapterView;
 	import com.jack.llk.view.panel.PausePanel;
 	import com.jack.llk.view.panel.RewardPanel;
 	import com.jack.llk.vo.RoundVO;
 	import com.jack.llk.vo.map.MapVO;
 	import com.jack.llk.vo.model.ClassicModelVO;
 	import com.jack.llk.vo.model.EndlessModelVO;
+	import com.jack.llk.vo.model.TimeModelVO;
 	
 	import flash.desktop.NativeApplication;
 	import flash.events.StatusEvent;
@@ -102,7 +104,8 @@ package com.jack.llk.view.view
 		{
 			this.level=nLevel;
 			EndlessModelVO.getInstance().maxLevel = this.level;
-			this.round=Maps.getClassicRoundAt(level);
+
+			this.round = getRoundAt(nLevel);
 
 			resetData();
 			initGameCenter();
@@ -120,7 +123,8 @@ package com.jack.llk.view.view
 		{
 			this.level=nLevel;
 			EndlessModelVO.getInstance().maxLevel = this.level;
-			this.round=Maps.getClassicRoundAt(level);
+			
+			this.round = getRoundAt(nLevel);
 
 			resetData();
 			initialize();
@@ -154,8 +158,8 @@ package com.jack.llk.view.view
 
 			gameCanvas=new GameContainer();
 			gameCanvas.init(round);
-			var tx:Number = (Constant.DEFAULT_WIDTH - gameCanvas.width) / 2;
-			var ty:Number = (Constant.DEFAULT_HEIGHT - gameCanvas.height) / 2;
+			var tx:Number = (Common.DEFAULT_WIDTH - gameCanvas.width) / 2;
+			var ty:Number = (Common.DEFAULT_HEIGHT - gameCanvas.height) / 2;
 			addChildScaled(gameCanvas, tx, ty);				
 
 			Game.getInstance().gameCanvas=gameCanvas;
@@ -171,7 +175,7 @@ package com.jack.llk.view.view
 			spTop=new BaseSprite();
 			// set the game_board
 			topBg=Assets.getImage("game_board");
-			topBg.width=Constant.DEFAULT_WIDTH;
+			topBg.width=Common.DEFAULT_WIDTH;
 			topBg.scaleY=topBg.scaleX;
 			spTop.addChild(topBg);
 
@@ -190,7 +194,7 @@ package com.jack.llk.view.view
 
 			// set the top banner overlay
 			var topOverlay:Image=Assets.getImage("game_closerange");
-			topOverlay.width=Constant.DEFAULT_WIDTH;
+			topOverlay.width=Common.DEFAULT_WIDTH;
 			topOverlay.scaleY=topOverlay.scaleX;
 			addChildScaled(topOverlay, 0, 0);
 
@@ -232,10 +236,13 @@ package com.jack.llk.view.view
 			// goto next level and reset game
 			this.reset(++level);
 
-			// remain the tools 
-			round.numRefreshTool = nOldRefreshTools;
-			round.numBombTool = nOldBombTools;
-			round.numFindTool = nOldFindTools;
+			if(model == Common.GAME_MODEL_TIME || model == Common.GAME_MODEL_ENDLESS)
+			{
+				// remain the tools 
+				round.numRefreshTool = nOldRefreshTools;
+				round.numBombTool = nOldBombTools;
+				round.numFindTool = nOldFindTools;
+			}
 			
 			// set the game status
 			Game.getInstance().gameStatus=GameStatusFactors.STATUS_PLAYING;
@@ -272,16 +279,17 @@ package com.jack.llk.view.view
 			countDown.pause();
 
 			// get use time
-			round.timeUsed = usedTime = countDown.passedTime;
+			round.timeUsed = usedTime = countDown.usedTime;
 			// get the max combo
 			maxBatter=round.comboMax;
 			// get final scores
 			curScores=round.scores;
-			curScores+= (Constant.BATTER_SCORE*maxBatter + 5*(100 * (round.totalTime + 10 * round.nEggItems / 2 - round.timeUsed) / 1000));
+			curScores+= Common.BATTER_SCORE*maxBatter + 
+				Common.BATTER_SCORE*(round.totalTime + (round.nAvailableItems + round.numToolItems)/2 - round.timeUsed);
 
 			// show the win reward panel
 			var reward:RewardPanel;
-			if(model == Constant.GAME_MODEL_ENDLESS)
+			if(model == Common.GAME_MODEL_ENDLESS)
 			{ 
 				reward=new EndlessModelRewardPanel();
 				EndlessModelRewardPanel(reward).curScores=curScores;
@@ -292,7 +300,7 @@ package com.jack.llk.view.view
 				EndlessModelVO.getInstance().addScores(level, curScores);
 				EndlessModelVO.getInstance().flushToCache();
 			}
-			else if(model == Constant.GAME_MODEL_CLASSIC)
+			else if(model == Common.GAME_MODEL_CLASSIC)
 			{
 				stars = calculateRating();
 				reward=new ClassicModelRewardPanel();
@@ -302,6 +310,17 @@ package com.jack.llk.view.view
 				
 				// flush data to local shared object
 				ClassicModelVO.getInstance().flushAt(level, stars);
+			}
+			else if(model == Common.GAME_MODEL_TIME)
+			{
+				stars = calculateRating();
+				reward=new ClassicModelRewardPanel();
+				ClassicModelRewardPanel(reward).stars = stars;
+				ClassicModelRewardPanel(reward).usedTime=usedTime;
+				ClassicModelRewardPanel(reward).maxCombo=maxBatter;
+				
+				// flush data to local shared object
+				TimeModelVO.getInstance().flushAt(level, stars);
 			}
 			reward.showWin();
 			reward.scaleX*=0.75;
@@ -333,14 +352,14 @@ package com.jack.llk.view.view
 			
 			// get final scores
 			curScores = round.scores;
-			if(model == Constant.GAME_MODEL_ENDLESS)
+			if(model == Common.GAME_MODEL_ENDLESS)
 			{
-				curScores += (Constant.BATTER_SCORE*maxBatter);
+				curScores += (Common.BATTER_SCORE*maxBatter);
 			}
 
 			// show the lose reward panel
 			var reward:RewardPanel;
-			if(model == Constant.GAME_MODEL_ENDLESS)
+			if(model == Common.GAME_MODEL_ENDLESS)
 			{ 
 				reward=new EndlessModelRewardPanel();
 				EndlessModelRewardPanel(reward).highestHistoryScores=EndlessModelVO.getInstance().maxScore;
@@ -350,7 +369,11 @@ package com.jack.llk.view.view
 				EndlessModelVO.getInstance().addScores(level, curScores);
 				EndlessModelVO.getInstance().flushToCache();
 			}
-			else if(model == Constant.GAME_MODEL_CLASSIC)
+			else if(model == Common.GAME_MODEL_CLASSIC)
+			{
+				reward=new ClassicModelRewardPanel();
+			}
+			else if(model == Common.GAME_MODEL_TIME)
 			{
 				reward=new ClassicModelRewardPanel();
 			}
@@ -400,8 +423,8 @@ package com.jack.llk.view.view
 			if (!pausePanel)
 			{
 				pausePanel=new PausePanel();
-				addChildScaled(pausePanel, 65, Constant.DEFAULT_HEIGHT);
-				pausePanel.y=Constant.DEFAULT_HEIGHT;
+				addChildScaled(pausePanel, 65, Common.DEFAULT_HEIGHT);
+				pausePanel.y=Common.DEFAULT_HEIGHT;
 				setChildIndex(pausePanel, numChildren-1);
 			}
 			else
@@ -458,7 +481,7 @@ package com.jack.llk.view.view
 			// show previous view
 			var t2:Tween=new Tween(Game.getInstance().previousView, 0.3);
 			t2.animate("x", 0);
-			if(model == Constant.GAME_MODEL_CLASSIC || model == Constant.GAME_MODEL_TIME)
+			if(model == Common.GAME_MODEL_CLASSIC || model == Common.GAME_MODEL_TIME)
 			{
 				t2.onUpdate=onPreviousViewMoveUpdate;
 			}
@@ -471,8 +494,10 @@ package com.jack.llk.view.view
 		{
 			if(Starling.current.nativeStage.fullScreenWidth - Math.abs(Game.getInstance().previousView.x) >= 10)
 			{
-				if(model == Constant.GAME_MODEL_CLASSIC)
+				if(model == Common.GAME_MODEL_CLASSIC)
 					(Game.getInstance().previousView as ClassicModelChapterView).recoverChapterContainer();
+				else if(model == Common.GAME_MODEL_TIME)
+					(Game.getInstance().previousView as TimeModelChapterView).recoverChapterContainer();
 			}
 		}
 		
@@ -566,6 +591,11 @@ package com.jack.llk.view.view
 			onBatterShow();
 		}
 		
+		private function onXiaochu(event:GameEvent):void
+		{
+			addTime();
+		}
+		
 		private function onGameRefreshMap(event:GameEvent):void
 		{
 			Delay.doIt(1000, onRefreshMap);
@@ -574,10 +604,13 @@ package com.jack.llk.view.view
 		private function onGetToolTime(event:GameEvent):void
 		{
 			if(!round)	return;
+			
 			// update the count down timer
 			if(countDown)
 			{
-				countDown.updateTotalTime(round.totalTime + Constant.TOOL_TIME_ADD);
+				var newCurTime:int = countDown.currentTime - Common.TOOL_TIME_ADD;
+				newCurTime = newCurTime < 0 ? 0 : newCurTime;
+				countDown.updateCurTime(newCurTime);
 			}
 			
 			////////////////////// to be continued ///////////////////
@@ -876,6 +909,7 @@ package com.jack.llk.view.view
 			EventController.e.addEventListener(GameEvent.GAME_WIN, onGameWin);
 			EventController.e.addEventListener(GameEvent.GAME_LOSE, onGameLose);
 			EventController.e.addEventListener(GameEvent.BATTER, onBatter);
+			EventController.e.addEventListener(GameEvent.XIAOCHU, onXiaochu);
 			EventController.e.addEventListener(GameEvent.GAME_REFRESH_MAP, onGameRefreshMap);
 			
 			EventController.e.addEventListener(GameEvent.GET_TOOL_BOMB, onGetToolBomb);
@@ -899,6 +933,7 @@ package com.jack.llk.view.view
 			EventController.e.removeEventListener(GameEvent.GAME_WIN, onGameWin);
 			EventController.e.removeEventListener(GameEvent.GAME_LOSE, onGameLose);
 			EventController.e.removeEventListener(GameEvent.BATTER, onBatter);
+			EventController.e.removeEventListener(GameEvent.XIAOCHU, onXiaochu);
 			EventController.e.removeEventListener(GameEvent.GAME_REFRESH_MAP, onGameRefreshMap);
 			
 			EventController.e.removeEventListener(GameEvent.GET_TOOL_BOMB, onGetToolBomb);
@@ -912,12 +947,23 @@ package com.jack.llk.view.view
 			EventController.e.removeEventListener(GameEvent.USE_TOOL_BOMB, onUseToolBomb);
 		}
 		
+		// calculate how many stars user get after win this level
 		private function calculateRating():int
 		{
 			var pokerNumber:int = round.nAvailableItems + round.numToolItems;
-			var f:Number = 0.4*(2.0*this.maxBatter/pokerNumber) + 
-				0.6*((round.totalTime-round.timeUsed)/(round.totalTime - pokerNumber/4));
+			var f:Number;
 			
+			if(model == Common.GAME_MODEL_CLASSIC)
+			{
+				f = 0.4*(2.0*maxBatter/pokerNumber) + 
+				0.6*((round.totalTime-round.timeUsed)/(round.totalTime - pokerNumber/4));
+			}
+			else if(model == Common.GAME_MODEL_TIME)
+			{
+				f = 0.4*(2.0*maxBatter/pokerNumber) + 
+				0.6*((round.totalTime+pokerNumber/2-round.timeUsed)/(round.totalTime+pokerNumber/4));
+			}
+				
 			var n:int;
 			if(f > 0.6666667)
 			{
@@ -933,6 +979,39 @@ package com.jack.llk.view.view
 			}
 			
 			return n;
+		}
+		
+		private function getRoundAt(level:int):RoundVO
+		{
+			if(model == Common.GAME_MODEL_CLASSIC)
+			{ 
+				return Maps.getClassicRoundAt(level);
+			}
+			else if(model == Common.GAME_MODEL_TIME)
+			{ 
+				return Maps.getTimeRoundAt(level);
+			}
+			else if(model == Common.GAME_MODEL_ENDLESS)
+			{ 
+				return Maps.getClassicRoundAt(level);
+			}	
+			
+			return null;
+		}
+		
+		// at time model game, add time after dispose on pair of items
+		private function addTime():void
+		{
+			if(model == Common.GAME_MODEL_TIME || model == Common.GAME_MODEL_ENDLESS)
+			{
+				// update the count down timer
+				if(countDown)
+				{
+					var newCurTime:int = countDown.currentTime - Common.TIME_ADD_TIME;
+					newCurTime = newCurTime < 0 ? 0 : newCurTime;
+					countDown.updateCurTime(newCurTime);
+				}
+			}
 		}
 		
 		//////////////////  dispose function  /////////////////////////
