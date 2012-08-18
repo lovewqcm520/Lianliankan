@@ -82,19 +82,17 @@ package com.jack.llk.view.view
 			// start moving
 			var t1:Tween=new Tween(modelScreen, 0.3);
 			t1.animate("x", 0);
-			t1.onComplete=onModelScreenMoveComplete;
+			t1.onUpdate=onModelViewMoveUpdate;
 			Starling.juggler.add(t1);
-
 			modelScreen.prepareShow();
 
 			var t2:Tween=new Tween(this, 0.3);
 			t2.animate("x", -Starling.current.nativeStage.fullScreenWidth);
 			Starling.juggler.add(t2);
-
 			this.prepareHide();
 		}
 
-		private function onModelScreenMoveComplete():void
+		private function onModelViewMoveUpdate():void
 		{
 			modelScreen.addModelContainerToStage();
 		}

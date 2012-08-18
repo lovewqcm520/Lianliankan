@@ -81,6 +81,56 @@ package com.jack.llk.view.view
 			super();
 		}
 		
+		//////////////////  write functions for add and remove event /////////////////////////
+		
+		private function addEvents():void
+		{
+			// add event listener
+			EventController.e.addEventListener(GameEvent.GAME_RESUME, onGameResume);
+			EventController.e.addEventListener(GameEvent.GAME_PAUSE, onGamePause);
+			EventController.e.addEventListener(GameEvent.GAME_RESTART, onGameRestart);
+			EventController.e.addEventListener(GameEvent.GAME_NEXT, onGameNext);
+			EventController.e.addEventListener(GameEvent.GAME_WIN, onGameWin);
+			EventController.e.addEventListener(GameEvent.GAME_LOSE, onGameLose);
+			EventController.e.addEventListener(GameEvent.BATTER, onBatter);
+			EventController.e.addEventListener(GameEvent.XIAOCHU, onXiaochu);
+			EventController.e.addEventListener(GameEvent.GAME_REFRESH_MAP, onGameRefreshMap);
+			
+			EventController.e.addEventListener(GameEvent.GET_TOOL_BOMB, onGetToolBomb);
+			EventController.e.addEventListener(GameEvent.GET_TOOL_EGG, onGetToolEgg);
+			EventController.e.addEventListener(GameEvent.GET_TOOL_FIND, onGetToolFind);
+			EventController.e.addEventListener(GameEvent.GET_TOOL_REFRESH, onGetToolRefresh);
+			EventController.e.addEventListener(GameEvent.GET_TOOL_TIME, onGetToolTime);
+			
+			EventController.e.addEventListener(GameEvent.USE_TOOL_FIND, onUseToolFind);
+			EventController.e.addEventListener(GameEvent.USE_TOOL_REFRESH, onUseToolRefresh);
+			EventController.e.addEventListener(GameEvent.USE_TOOL_BOMB, onUseToolBomb);
+		}
+		
+		private function removeEvents():void
+		{
+			// remove event listener
+			EventController.e.removeEventListener(GameEvent.GAME_RESUME, onGameResume);
+			EventController.e.removeEventListener(GameEvent.GAME_PAUSE, onGamePause);
+			EventController.e.removeEventListener(GameEvent.GAME_RESTART, onGameRestart);
+			EventController.e.removeEventListener(GameEvent.GAME_NEXT, onGameNext);
+			EventController.e.removeEventListener(GameEvent.GAME_WIN, onGameWin);
+			EventController.e.removeEventListener(GameEvent.GAME_LOSE, onGameLose);
+			EventController.e.removeEventListener(GameEvent.BATTER, onBatter);
+			EventController.e.removeEventListener(GameEvent.XIAOCHU, onXiaochu);
+			EventController.e.removeEventListener(GameEvent.GAME_REFRESH_MAP, onGameRefreshMap);
+			
+			EventController.e.removeEventListener(GameEvent.GET_TOOL_BOMB, onGetToolBomb);
+			EventController.e.removeEventListener(GameEvent.GET_TOOL_EGG, onGetToolEgg);
+			EventController.e.removeEventListener(GameEvent.GET_TOOL_FIND, onGetToolFind);
+			EventController.e.removeEventListener(GameEvent.GET_TOOL_REFRESH, onGetToolRefresh);
+			EventController.e.removeEventListener(GameEvent.GET_TOOL_TIME, onGetToolTime);
+			
+			EventController.e.removeEventListener(GameEvent.USE_TOOL_FIND, onUseToolFind);
+			EventController.e.removeEventListener(GameEvent.USE_TOOL_REFRESH, onUseToolRefresh);
+			EventController.e.removeEventListener(GameEvent.USE_TOOL_BOMB, onUseToolBomb);
+		}
+		
 		private function onRemoveFromStage(event:Event):void
 		{
 			removeEventListener(Event.REMOVED_FROM_STAGE, onRemoveFromStage);
@@ -633,8 +683,8 @@ package com.jack.llk.view.view
 			var item:BaseMovieClip=GameUtil.getSmallItemAt(MapVO.REFRESH_ITEM, 3);
 			item.loop=true;
 			item.play();
-			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + ((p.x - 1) * (round.nTileWidth + round.nGapHorizontal));
-			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + ((p.y - 1) * (round.nTileHeight + round.nGapVertical));
+			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + ((p.x - 1) * (round.nItemWidth + round.nGapHorizontal));
+			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + ((p.y - 1) * (round.nItemHeight + round.nGapVertical));
 			addChildScaled(item, itemX, itemY);
 			
 			var t:Tween = new Tween(item, 0.5);
@@ -664,8 +714,8 @@ package com.jack.llk.view.view
 			var item:BaseMovieClip=GameUtil.getSmallItemAt(MapVO.FIND_ITEM, 3);
 			item.loop=true;
 			item.play();
-			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + ((p.x - 1) * (round.nTileWidth + round.nGapHorizontal));
-			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + ((p.y - 1) * (round.nTileHeight + round.nGapVertical));
+			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + ((p.x - 1) * (round.nItemWidth + round.nGapHorizontal));
+			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + ((p.y - 1) * (round.nItemHeight + round.nGapVertical));
 			addChildScaled(item, itemX, itemY);
 			
 			var t:Tween = new Tween(item, 0.5);
@@ -683,25 +733,36 @@ package com.jack.llk.view.view
 		private function onGetToolEgg(event:GameEvent):void
 		{
 			var r:Number = Math.random();
-			var probability:Number = 0.2;
+			var probability:Number = 1/6;
+			
 			if(r <= probability)
 			{
+				// add a refresh tool
 				round.numRefreshTool++;	
 			}
 			else if(r <= probability*2)
 			{
+				// add a bomb tool
 				round.numBombTool++;	
 			}
 			else if(r <= probability*3)
 			{
+				// add a find tool
 				round.numFindTool++;	
 			}
 			else if(r <= probability*4)
 			{
+				// auto refresh the map
 				gameCanvas.refreshMap(false);
+			}
+			else if(r <= probability*5)
+			{
+				// auto add some random matched items at random position
+				gameCanvas.addRandomPoker();
 			}
 			else if(r <= 1)
 			{
+				// auto bomb 2 matched items
 				gameCanvas.bomb2Items(false);
 			}
 		}
@@ -722,8 +783,8 @@ package com.jack.llk.view.view
 			var item:BaseMovieClip=GameUtil.getSmallItemAt(MapVO.BOMB_ITEM, 3);
 			item.loop=true;
 			item.play();
-			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + ((p.x - 1) * (round.nTileWidth + round.nGapHorizontal));
-			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + ((p.y - 1) * (round.nTileHeight + round.nGapVertical));
+			var itemX:Number=gameCanvas.x/Global.contentScaleXFactor + ((p.x - 1) * (round.nItemWidth + round.nGapHorizontal));
+			var itemY:Number=gameCanvas.y/Global.contentScaleYFactor + ((p.y - 1) * (round.nItemHeight + round.nGapVertical));
 			addChildScaled(item, itemX, itemY);
 			
 			var t:Tween = new Tween(item, 0.5);
@@ -897,56 +958,6 @@ package com.jack.llk.view.view
 			}
 		}
 		
-		//////////////////  write functions for add and remove event /////////////////////////
-		
-		private function addEvents():void
-		{
-			// add event listener
-			EventController.e.addEventListener(GameEvent.GAME_RESUME, onGameResume);
-			EventController.e.addEventListener(GameEvent.GAME_PAUSE, onGamePause);
-			EventController.e.addEventListener(GameEvent.GAME_RESTART, onGameRestart);
-			EventController.e.addEventListener(GameEvent.GAME_NEXT, onGameNext);
-			EventController.e.addEventListener(GameEvent.GAME_WIN, onGameWin);
-			EventController.e.addEventListener(GameEvent.GAME_LOSE, onGameLose);
-			EventController.e.addEventListener(GameEvent.BATTER, onBatter);
-			EventController.e.addEventListener(GameEvent.XIAOCHU, onXiaochu);
-			EventController.e.addEventListener(GameEvent.GAME_REFRESH_MAP, onGameRefreshMap);
-			
-			EventController.e.addEventListener(GameEvent.GET_TOOL_BOMB, onGetToolBomb);
-			EventController.e.addEventListener(GameEvent.GET_TOOL_EGG, onGetToolEgg);
-			EventController.e.addEventListener(GameEvent.GET_TOOL_FIND, onGetToolFind);
-			EventController.e.addEventListener(GameEvent.GET_TOOL_REFRESH, onGetToolRefresh);
-			EventController.e.addEventListener(GameEvent.GET_TOOL_TIME, onGetToolTime);
-			
-			EventController.e.addEventListener(GameEvent.USE_TOOL_FIND, onUseToolFind);
-			EventController.e.addEventListener(GameEvent.USE_TOOL_REFRESH, onUseToolRefresh);
-			EventController.e.addEventListener(GameEvent.USE_TOOL_BOMB, onUseToolBomb);
-		}
-		
-		private function removeEvents():void
-		{
-			// remove event listener
-			EventController.e.removeEventListener(GameEvent.GAME_RESUME, onGameResume);
-			EventController.e.removeEventListener(GameEvent.GAME_PAUSE, onGamePause);
-			EventController.e.removeEventListener(GameEvent.GAME_RESTART, onGameRestart);
-			EventController.e.removeEventListener(GameEvent.GAME_NEXT, onGameNext);
-			EventController.e.removeEventListener(GameEvent.GAME_WIN, onGameWin);
-			EventController.e.removeEventListener(GameEvent.GAME_LOSE, onGameLose);
-			EventController.e.removeEventListener(GameEvent.BATTER, onBatter);
-			EventController.e.removeEventListener(GameEvent.XIAOCHU, onXiaochu);
-			EventController.e.removeEventListener(GameEvent.GAME_REFRESH_MAP, onGameRefreshMap);
-			
-			EventController.e.removeEventListener(GameEvent.GET_TOOL_BOMB, onGetToolBomb);
-			EventController.e.removeEventListener(GameEvent.GET_TOOL_EGG, onGetToolEgg);
-			EventController.e.removeEventListener(GameEvent.GET_TOOL_FIND, onGetToolFind);
-			EventController.e.removeEventListener(GameEvent.GET_TOOL_REFRESH, onGetToolRefresh);
-			EventController.e.removeEventListener(GameEvent.GET_TOOL_TIME, onGetToolTime);
-			
-			EventController.e.removeEventListener(GameEvent.USE_TOOL_FIND, onUseToolFind);
-			EventController.e.removeEventListener(GameEvent.USE_TOOL_REFRESH, onUseToolRefresh);
-			EventController.e.removeEventListener(GameEvent.USE_TOOL_BOMB, onUseToolBomb);
-		}
-		
 		// calculate how many stars user get after win this level
 		private function calculateRating():int
 		{
@@ -993,7 +1004,7 @@ package com.jack.llk.view.view
 			}
 			else if(model == Common.GAME_MODEL_ENDLESS)
 			{ 
-				return Maps.getClassicRoundAt(level);
+				return Maps.getEndlessRoundAt(level);
 			}	
 			
 			return null;

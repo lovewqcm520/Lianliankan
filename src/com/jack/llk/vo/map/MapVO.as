@@ -28,13 +28,18 @@ package com.jack.llk.vo.map
 		// increase the number of bomb tools user have
 		public static const BOMB_ITEM:int = 34;
 		
+		public static const TOP:int = 1;
+		public static const BOTTOM:int = 2;
+		public static const LEFT:int = 3;
+		public static const RIGHT:int = 4;		
+		
 		public static const LIST:Array = [EMPTY_ITEM, STONE_ITEM];
 		public static const TOOLS:Array = [EGG_ITEM, TIME_ITEM, FIND_ITEM, REFRESH_ITEM, BOMB_ITEM];
 
 		private var _nDiffItems:int; //游戏关卡对应的项目数量
 		private var _restBlock:int=0; //剩余的项目数量
 		private var _countOfPerItem:int; //每个项目出现的次数(偶数)
-		private var _result:MatchResult; //暂存符合条件的结果
+		private var _result:PathMatchResultVO; //暂存符合条件的结果
 
 		public var actualWidth:int;
 		public var actualHeight:int;
@@ -47,13 +52,21 @@ package com.jack.llk.vo.map
 		public var nToolItems:int;	// tool items
 
 		public var map:Array2;
+		public var refreshList:Array;
+		public var moveList:Array;
 
 		private var _array:Array; //辅助的一维数组
 		private var _lines:Vector.<Line>; //保存符合条件线段的地方
 		private var _items:Vector.<ItemVO>; // 保存当前存在的所有item的坐标和index	
-		private var _allItemIndexs:Array; // 保存当前存在的所有item的index	
+		private var _allItemIndexs:Array; // 保存当前存在的所有可以消除的item的index	
+		private var _emptyItems:Array; // 保存当前是空位empty的item的坐标	
 		private var gameMode:int;
-
+		
+		private var minX:int=int.MAX_VALUE;
+		private var minY:int=int.MAX_VALUE;
+		private var maxX:int=0;
+		private var maxY:int=0;
+		
 		public function MapVO()
 		{
 
@@ -65,9 +78,12 @@ package com.jack.llk.vo.map
 			map=new Array2(actualWidth, actualHeight);
 			_array=new Array(width * height);
 			_lines=new Vector.<Line>();
-			_result=new MatchResult();
+			_result=new PathMatchResultVO();
 			_items=new Vector.<ItemVO>();
+			_emptyItems=[];
 			_allItemIndexs=[];
+			refreshList=[];
+			moveList=[];
 			this.nDiffItems=nItemTypes;
 			
 			//取得一个尽量大的偶数值
@@ -78,7 +94,7 @@ package com.jack.llk.vo.map
 			initMap(data);
 		}
 
-		public function get result():MatchResult
+		public function get result():PathMatchResultVO
 		{
 			return _result;
 		}
@@ -97,7 +113,35 @@ package com.jack.llk.vo.map
 			return TOOLS.indexOf(index) != -1;
 		}
 		
-		public function findLine():MatchResult
+		/**
+		 * Get the item's type index from map data.
+		 * @param x
+		 * @param y
+		 * @return
+		 */
+		public function getItemIndex(x:int, y:int):*
+		{
+			return map.get(x, y);
+		}
+		
+		/**
+		 * Update the item's type index to map data.
+		 * @param x
+		 * @param y
+		 * @param itemIndex
+		 */
+		public function setItemIndex(x:int, y:int, itemIndex:int):void
+		{
+			if(map.get(x, y) == EMPTY_ITEM)
+			{
+				// add a new item
+				_restBlock++;
+			}
+			map.set(x, y, itemIndex);
+			updateItemLayout();
+		}
+		
+		public function findLine():PathMatchResultVO
 		{
 			var a:Point=_findRestPointA();
 			if (!a)
@@ -174,6 +218,27 @@ package com.jack.llk.vo.map
 			map.set(b.x, b.y, EMPTY_ITEM);
 			_restBlock -= 2;
 
+			// testonly
+			// choose the item move style
+			moveList.length=0;
+	
+			if(Math.random() <= 0.333)
+			{
+				moveToTop(a);
+				moveToTop(b);
+			}
+			else if(Math.random() <= 0.666)
+			{
+				moveToLeft(a);
+				moveToLeft(b);
+			}
+			else 
+			{
+				moveToRight(a);
+				moveToRight(b);
+			}
+
+			
 			// update data
 			updateItemLayout();
 			validateMap();
@@ -191,20 +256,30 @@ package com.jack.llk.vo.map
 				return false;
 
 			var flag:int=0;
+			var index:int;
+			var i:int;
 			// random 
 			_allItemIndexs = ArrayUtil.random(_allItemIndexs);			
 			// random map with same position, just change item index
-			for (var i:int = 1; i <= width; i++) 
+			var len:int = _items.length;
+			var a:ItemVO;
+			var b:ItemVO;
+			refreshList.length=0;
+			var x:int;
+			var y:int;
+			for (i = 0; i < len; i+=2) 
 			{
-				for (var j:int = 1; j <= height; j++) 
-				{
-					if(int(map.get(i, j)) != EMPTY_ITEM)
-					{
-						map.set(i, j, _allItemIndexs[flag]);
-						flag++;
-					}
-				}				
+				x = RandomUtil.integer(0, len, false);
+				y = RandomUtil.integer(0, len, false);
+				a = _items[x];
+				b = _items[y];
+				refreshList.push(a);
+				refreshList.push(b);
+				map.set(a.x, a.y, b.index);
+				map.set(b.x, b.y, a.index);
 			}
+			// 清除随机数历史记录。重新开始取数。
+			RandomUtil.clearHistory();
 
 			// update item layout
 			updateItemLayout();
@@ -231,7 +306,7 @@ package com.jack.llk.vo.map
 		 */
 		public function test(a:Point, b:Point):Boolean
 		{
-			_result=new MatchResult();
+			_result=new PathMatchResultVO();
 
 			if (map.get(a.x, a.y) != map.get(b.x, b.y))
 				return false;
@@ -273,11 +348,10 @@ package com.jack.llk.vo.map
 		
 		private function initClassicModelMap(data:String):void
 		{
-			var allItems:int = nAvailableItems+nToolItems+nStoneItems;
 			var i:int;
 			var j:int;
 			
-			var tmp:Array=new Array(numTotalItems);
+			var tmp:Array=new Array(nAvailableItems+nToolItems);
 			for (i=0; i < _nDiffItems; i++)
 			{
 				for (j=0; j < _countOfPerItem; j++)
@@ -293,12 +367,7 @@ package com.jack.llk.vo.map
 				tmp[i + 1]=tmp[i];
 			}
 			
-			var nCurAll:int = nAvailableItems+nStoneItems;
-			// add stones
-			for (i=nAvailableItems; i < nCurAll; i++)
-			{
-				tmp[i]=STONE_ITEM;
-			}
+			var nCurAll:int = nAvailableItems;
 			
 			// add one pair eggs or time
 			tmp[nAvailableItems-2]= RandomUtil.isEnabledOnProbability(0.5) ? TIME_ITEM : EGG_ITEM;
@@ -341,12 +410,23 @@ package com.jack.llk.vo.map
 				for (j= 0; j < actualWidth; j++) 
 				{
 					index = int(arr[i*actualWidth + j]);
-					if(index != EMPTY_ITEM)
+					if(isAvailableItem(index))
 					{
 						index = tmp[flag];
 						flag++;
+						map.set(j, i, index);
+						
+						// get horizontal info
+						minX = Math.min(minX, j);
+						maxX = Math.max(maxX, j);
+						// get vertical info
+						minY = Math.min(minY, i);
+						maxY = Math.max(maxY, i);
 					}
-					map.set(j, i, index);
+					else
+					{
+						map.set(j, i, EMPTY_ITEM);
+					}
 				}				
 			}	
 			
@@ -408,20 +488,15 @@ package com.jack.llk.vo.map
 							index = tmp[flag];
 							flag++;
 						}		
-						else
-						{
-							trace(i, j);
-						}
+						
+						// get horizontal info
+						minX = Math.min(minX, j);
+						maxX = Math.max(maxX, j);
+						// get vertical info
+						minY = Math.min(minY, i);
+						maxY = Math.max(maxY, i);
 					}
 					map.set(j, i, index);
-					if(index == 0)
-					{
-						trace(i, j);
-					}
-					if(index == -2)
-					{
-						trace(i, j);
-					}
 				}				
 			}	
 			
@@ -431,11 +506,15 @@ package com.jack.llk.vo.map
 		
 		private function initEndlessModelMap(data:String):void
 		{
+			// testonly 
+			nAvailableItems = nAvailableItems + nToolItems - 2;
+			nToolItems = 2;
+			
 			var allItems:int = nAvailableItems+nToolItems+nStoneItems;
 			var i:int;
 			var j:int;
 			
-			var tmp:Array=new Array(numTotalItems);
+			var tmp:Array=new Array(nAvailableItems+nToolItems);
 			for (i=0; i < _nDiffItems; i++)
 			{
 				for (j=0; j < _countOfPerItem; j++)
@@ -451,51 +530,13 @@ package com.jack.llk.vo.map
 				tmp[i + 1]=tmp[i];
 			}
 			
-			var nCurAll:int = nAvailableItems+nStoneItems;
-			// add stones
-			for (i=nAvailableItems; i < nCurAll; i++)
-			{
-				tmp[i]=STONE_ITEM;
-			}
+			var nCurAll:int = nAvailableItems;
 			
-			if(gameMode == Common.GAME_MODEL_CLASSIC)
+			// add eggs
+			for (i=nCurAll; i < nCurAll + nToolItems; i+=2)
 			{
-				// add one pair eggs or time
-				tmp[nAvailableItems-2]= RandomUtil.isEnabledOnProbability(0.5) ? TIME_ITEM : EGG_ITEM;
-				tmp[nAvailableItems-1]= tmp[nAvailableItems-2];
-				// add tool items
-				var m:int = int(nToolItems/6);
-				var n:int = nToolItems - m*6;
-				if(m > 0)
-				{
-					for (i = 0; i < m; i++) 
-					{
-						tmp[nCurAll] = REFRESH_ITEM;
-						tmp[++nCurAll] = REFRESH_ITEM;
-						
-						tmp[++nCurAll] = BOMB_ITEM;
-						tmp[++nCurAll] = BOMB_ITEM;
-						
-						tmp[++nCurAll] = FIND_ITEM;
-						tmp[++nCurAll] = FIND_ITEM;
-					}				
-				}
-				if(n > 0)
-				{
-					for (i=nCurAll; i < nCurAll + nToolItems; i+=2)
-					{
-						tmp[i]=RandomUtil.randomGet(TOOLS);
-						tmp[i + 1]=tmp[i];
-					}
-				}
-			}
-			else if(gameMode == Common.GAME_MODEL_TIME)
-			{
-				for (i=nCurAll; i < nCurAll + nToolItems; i+=2)
-				{
-					tmp[i]=EGG_ITEM;
-					tmp[i + 1]=EGG_ITEM;
-				}
+				tmp[i]=EGG_ITEM;
+				tmp[i + 1]=EGG_ITEM;
 			}
 			
 			// shuffle the array
@@ -512,8 +553,18 @@ package com.jack.llk.vo.map
 					index = int(arr[i*actualWidth + j]);
 					if(index != EMPTY_ITEM)
 					{
-						index = tmp[flag];
-						flag++;
+						if(index != STONE_ITEM)
+						{
+							index = tmp[flag];
+							flag++;
+						}		
+						
+						// get horizontal info
+						minX = Math.min(minX, j);
+						maxX = Math.max(maxX, j);
+						// get vertical info
+						minY = Math.min(minY, i);
+						maxY = Math.max(maxY, i);
 					}
 					map.set(j, i, index);
 				}				
@@ -564,21 +615,27 @@ package com.jack.llk.vo.map
 		{
 			_items.length = 0;
 			_allItemIndexs.length = 0;
+			_emptyItems.length = 0;
+			
 			var index:int;
 			//get the items vo
-			for (var i:uint=1; i <= width; i++)
+			for (var x:uint=1; x <= width; x++)
 			{
-				for (var j:uint=1; j <= height; j++)
+				for (var y:uint=1; y <= height; y++)
 				{
-					index=int(map.get(i, j));
-					if (index != EMPTY_ITEM)
+					index=int(map.get(x, y));
+					if (index != EMPTY_ITEM)		
 					{
-						_allItemIndexs.push(index);
 						if (index != STONE_ITEM)
 						{
-							_items.push(new ItemVO(i, j, index));
+							_allItemIndexs.push(index);
+							_items.push(new ItemVO(x, y, index));
 						}
-					}					
+					}	
+					else
+					{
+						_emptyItems.push(new Point(x, y))
+					}
 				}
 			}
 		}
@@ -588,7 +645,7 @@ package com.jack.llk.vo.map
 			return LIST.indexOf(index) == -1;
 		}
 
-		private function hTest(a:Point, b:Point):MatchResult
+		private function hTest(a:Point, b:Point):PathMatchResultVO
 		{
 			//如果点击的是同一个图案，直接返回false  
 			if (a.x == b.x && a.y == b.y)
@@ -608,7 +665,7 @@ package com.jack.llk.vo.map
 			return _result;
 		}
 
-		private function vTest(a:Point, b:Point):MatchResult
+		private function vTest(a:Point, b:Point):PathMatchResultVO
 		{
 			//如果点击的是同一个图案，直接返回false  
 			if (a.x == b.x && a.y == b.y)
@@ -628,7 +685,7 @@ package com.jack.llk.vo.map
 			return _result;
 		}
 
-		private function oneCornerTest(a:Point, b:Point):MatchResult
+		private function oneCornerTest(a:Point, b:Point):PathMatchResultVO
 		{
 			var c:Point=new Point(a.x, b.y);
 			var d:Point=new Point(b.x, a.y);
@@ -717,7 +774,7 @@ package com.jack.llk.vo.map
 			return v;
 		}
 
-		private function twoCornerTest(a:Point, b:Point):MatchResult
+		private function twoCornerTest(a:Point, b:Point):PathMatchResultVO
 		{
 			_lines=scanLines(a, b);
 
@@ -844,6 +901,135 @@ package com.jack.llk.vo.map
 			return _items;
 		}
 
+		public function get emptyItems():Array
+		{
+			return _emptyItems;
+		}
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////
+		//  Aug 18, 2012 by Jack, Code for move item at 4 directions when other items are disposed.
+		/////////////////////////////////////////////////////////////////////////////////////////////////////
+		
+		/**
+		 * Move all the items align right by the "p" to left.
+		 * @param p
+		 */
+		private function moveToLeft(p:Point):void
+		{
+			var i:int;
+			var j:int;
+			var index:int;
+			var distance:int;
+			if(p.x < maxX)
+			{
+				for (i = p.x+1; i <= maxX; i++) 
+				{
+					index = map.get(i, p.y);
+					if(isAvailableItem(index))
+					{
+						distance=0;
+						// move item to left as far as possible, stop when meet a item or stone
+						for (j = i-1; j >= minX; j--) 
+						{
+							if(map.get(j, p.y) == EMPTY_ITEM)
+								distance++;
+							else
+								break;
+						}
+						if(distance > 0)
+						{
+							// set empty spot to item
+							map.set(i-distance, p.y, index);
+							// set item to empty spot
+							map.set(i, p.y, EMPTY_ITEM);
+							// add to the move item list
+							moveList.push(new MoveItemVO(new Point(i, p.y), new Point(i-distance, p.y)));							
+						}
+					}
+				}				
+			}
+		}
+		
+		/**
+		 * Move all the items align left by the "p" to right.
+		 * @param p
+		 */
+		private function moveToRight(p:Point):void
+		{
+			var i:int;
+			var j:int;
+			var index:int;
+			var distance:int;
+			if(p.x <= maxX)
+			{
+				for (i = p.x-1; i >= minX; i--) 
+				{
+					index = map.get(i, p.y);
+					if(isAvailableItem(index))
+					{
+						distance=0;
+						// move item to left as far as possible, stop when meet a item or stone
+						for (j = i+1; j <= maxX; j++) 
+						{
+							if(map.get(j, p.y) == EMPTY_ITEM)
+								distance++;
+							else
+								break;
+						}
+						if(distance > 0)
+						{
+							// set empty spot to item
+							map.set(i+distance, p.y, index);
+							// set item to empty spot
+							map.set(i, p.y, EMPTY_ITEM);
+							// add to the move item list
+							moveList.push(new MoveItemVO(new Point(i, p.y), new Point(i+distance, p.y)));							
+						}
+					}
+				}				
+			}
+		}
+		
+		/**
+		 * Move all the items align bottom by the "p" to top.
+		 * @param p
+		 */
+		private function moveToTop(p:Point):void
+		{
+			var i:int;
+			var j:int;
+			var index:int;
+			var distance:int;
+			
+			for (i = p.y+1; i <= maxY; i++) 
+			{
+				index = map.get(p.x, i);
+				if(isAvailableItem(index))
+				{
+					distance=0;
+					// move item to left as far as possible, stop when meet a item or stone
+					for (j = i-1; j >= minY; j--) 
+					{
+						if(map.get(p.x, j) == EMPTY_ITEM)
+							distance++;
+						else
+							break;
+					}
+					if(distance > 0)
+					{
+						// set empty spot to item
+						map.set(p.x, i-distance, index);
+						// set item to empty spot
+						map.set(p.x, i, EMPTY_ITEM);
+						// add to the move item list
+						moveList.push(new MoveItemVO(new Point(p.x, i), new Point(p.x, i-distance)));							
+					}
+				}
+			}		
+		}
+		
+		
+		
 	}
 }
 

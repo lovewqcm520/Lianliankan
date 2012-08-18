@@ -87,13 +87,25 @@ package com.jack.llk.control.asset
 		
 		public static function getEndlessRoundAt(level:int):RoundVO
 		{
-			if(dicTimeMapXmls[level])
+			var l:int = level;
+			
+			if (level < 15)
 			{
-				var xml:XML = dicTimeMapXmls[level];
+				l = 9 + Math.random()*10;
+			}
+			else
+			{
+				l = 2 + Math.random()*10;
+			}
+			
+			if(dicTimeMapXmls[l])
+			{
+				var xml:XML = dicTimeMapXmls[l];
 				if(xml)
 				{
 					var r:RoundVO = new RoundVO(Common.GAME_MODEL_ENDLESS);
 					r.importFromXML(xml);
+					r.level=l;
 					
 					return r;
 				}

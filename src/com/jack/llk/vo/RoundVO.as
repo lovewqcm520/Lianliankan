@@ -3,9 +3,10 @@ package com.jack.llk.vo
 	import com.jack.llk.control.Common;
 	import com.jack.llk.control.events.EventController;
 	import com.jack.llk.control.events.GameEvent;
+	import com.jack.llk.util.ArrayUtil;
 	import com.jack.llk.vo.map.ItemVO;
 	import com.jack.llk.vo.map.MapVO;
-	import com.jack.llk.vo.map.MatchResult;
+	import com.jack.llk.vo.map.PathMatchResultVO;
 	
 	import de.polygonal.ds.Array2;
 	
@@ -34,8 +35,8 @@ package com.jack.llk.vo
 		public var nFlicker:int=6;
 
 		// map layout
-		public var nTileWidth:Number=Common.ITEM_SMALL_WIDTH;
-		public var nTileHeight:Number=Common.ITEM_SMALL_HEIGHT;
+		public var nItemWidth:Number=Common.ITEM_SMALL_WIDTH;
+		public var nItemHeight:Number=Common.ITEM_SMALL_HEIGHT;
 		public var nGapHorizontal:Number=0;
 		public var nGapVertical:Number=0;
 		public var nPaddingTop:Number=0;
@@ -117,6 +118,19 @@ package com.jack.llk.vo
 		}
 		
 		/**
+		 * Return a empty point.
+		 * @return 
+		 */
+		public function getAnRandomEmptyPoint():Point
+		{
+			var emptyItems:Array = ArrayUtil.random(voMap.emptyItems);
+			if(emptyItems && emptyItems.length > 0)
+				return emptyItems[0];
+			
+			return null;
+		}
+		
+		/**
 		 *
 		 */
 		private function init(data:String):void
@@ -162,7 +176,7 @@ package com.jack.llk.vo
 		 */
 		public function getItemIndex(x:int, y:int):*
 		{
-			return map.get(x, y);
+			return voMap.getItemIndex(x, y);
 		}
 
 		/**
@@ -173,7 +187,7 @@ package com.jack.llk.vo
 		 */
 		public function setItemIndex(x:int, y:int, itemIndex:int):void
 		{
-			map.set(x, y, itemIndex);
+			voMap.setItemIndex(x, y, itemIndex);
 		}
 
 		/**
@@ -264,6 +278,14 @@ package com.jack.llk.vo
 				if(e)
 					EventController.e.dispatchEvent(e);
 			}
+			
+			// check whether the game was over
+			if (isMapEmpty())
+			{
+				// game over
+				var e1:GameEvent=new GameEvent(GameEvent.GAME_WIN);
+				EventController.e.dispatchEvent(e1);
+			}
 		}
 
 		/**
@@ -279,7 +301,7 @@ package com.jack.llk.vo
 		 * Find 2 items are available and can be cleared.
 		 * @return
 		 */
-		public function findLine():MatchResult
+		public function findLine():PathMatchResultVO
 		{
 			return voMap.findLine();
 		}

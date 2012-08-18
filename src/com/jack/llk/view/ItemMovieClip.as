@@ -16,9 +16,9 @@ package com.jack.llk.view
 
 	public class ItemMovieClip extends BaseSprite
 	{
-		private var itemIndex:int;
-		private var mapX:int;
-		private var mapY:int;
+		public var itemIndex:int;
+		public var mapX:int;
+		public var mapY:int;
 		private var _activated:Boolean;
 
 		private var smallItem:BaseMovieClip;
@@ -97,6 +97,12 @@ package com.jack.llk.view
 			}
 
 			super.dispose();
+		}
+		
+		public function updateMapPosition(x:int, y:int):void
+		{
+			this.mapX = x;	
+			this.mapY = y;	
 		}
 
 		public function playSmallAnimation():void

@@ -9,6 +9,8 @@ package com.jack.llk.view.module.endless
 	import com.jack.llk.view.button.CommonButton;
 	import com.jack.llk.view.button.PlayButton;
 	import com.jack.llk.view.panel.SettingPanel;
+	import com.jack.llk.view.view.BaseView;
+	import com.jack.llk.view.view.GameView;
 	import com.jack.llk.vo.model.EndlessModelVO;
 	
 	import starling.animation.Tween;
@@ -16,8 +18,6 @@ package com.jack.llk.view.module.endless
 	import starling.display.Image;
 	import starling.display.Sprite;
 	import starling.events.Event;
-	import com.jack.llk.view.view.BaseView;
-	import com.jack.llk.view.view.GameView;
 
 	public class EndlessModelChapterView extends BaseView
 	{
@@ -215,9 +215,7 @@ package com.jack.llk.view.module.endless
 		 */
 		private function onBackClick():void
 		{
-			// hide classic model screen
-			this.visible=false;
-			this.prepareHide();
+			removeFromParent(true);
 			// show model selecte screen
 			Game.getInstance().modelView.visible=true;
 			Game.getInstance().modelView.prepareShow();

@@ -8,18 +8,22 @@ package com.jack.llk.view.view
 	import com.jack.llk.log.Log;
 	import com.jack.llk.util.ArrayUtil;
 	import com.jack.llk.util.DrawUtil;
+	import com.jack.llk.util.RandomUtil;
 	import com.jack.llk.view.BaseSprite;
 	import com.jack.llk.view.ItemMovieClip;
 	import com.jack.llk.view.component.chain.ThunderChain;
 	import com.jack.llk.vo.RoundVO;
 	import com.jack.llk.vo.map.ItemVO;
 	import com.jack.llk.vo.map.MapVO;
+	import com.jack.llk.vo.map.MoveItemVO;
 	
 	import de.polygonal.ds.Array2;
 	
 	import flash.geom.Point;
 	import flash.utils.getTimer;
 	
+	import starling.animation.Tween;
+	import starling.core.Starling;
 	import starling.display.Image;
 
 	public class GameContainer extends BaseSprite
@@ -95,8 +99,8 @@ package com.jack.llk.view.view
 			}
 
 			// new some data
-			var itemW:Number=round.nTileWidth;
-			var itemH:Number=round.nTileHeight;
+			var itemW:Number=round.nItemWidth;
+			var itemH:Number=round.nItemHeight;
 			var gapX:Number=round.nGapHorizontal;
 			var gapY:Number=round.nGapVertical;
 			var col:int=round.width;
@@ -211,15 +215,11 @@ package com.jack.llk.view.view
 			items.set(b.x, b.y, null);
 
 			// dispatch item pair dispose event
-			var e1:GameEvent=new GameEvent(GameEvent.XIAOCHU);
-			EventController.e.dispatchEvent(e1);
-			// check whether the game was over
-			if (round.isMapEmpty())
-			{
-				// game over
-				var e:GameEvent=new GameEvent(GameEvent.GAME_WIN);
-				EventController.e.dispatchEvent(e);
-			}
+			var e:GameEvent=new GameEvent(GameEvent.XIAOCHU);
+			EventController.e.dispatchEvent(e);
+			
+			// testonly
+			moveItems();
 		}
 
 		public function refreshMap(useTool:Boolean=true):Boolean
@@ -233,7 +233,8 @@ package com.jack.llk.view.view
 			if(isOK)
 			{
 				// refresh the items
-				initGameCenter();
+				//initGameCenter();
+				refreshGameBoardWithMoveAnimation();
 				
 				SoundManager.play(SoundFactors.SHUA_XIN_MUSIC);
 				
@@ -346,13 +347,13 @@ package com.jack.llk.view.view
 		{
 			var chain:ThunderChain=new ThunderChain();
 			canvas.addChild(chain);
-			chain.initialize(list, round.nTileWidth, round.nTileHeight, round.nGapHorizontal, round.nGapVertical);
+			chain.initialize(list, round.nItemWidth, round.nItemHeight, round.nGapHorizontal, round.nGapVertical);
 		}
 		
 		private function setGameContainerSize():void
 		{
-			var w:Number = round.nPaddingLeft + round.width*(round.nTileWidth+round.nGapHorizontal) - round.nGapHorizontal + round.nPaddingRight;
-			var h:Number = round.nPaddingTop + round.height*(round.nTileHeight+round.nGapVertical) - round.nGapVertical + round.nPaddingBottom;
+			var w:Number = round.nPaddingLeft + round.width*(round.nItemWidth+round.nGapHorizontal) - round.nGapHorizontal + round.nPaddingRight;
+			var h:Number = round.nPaddingTop + round.height*(round.nItemHeight+round.nGapVertical) - round.nGapVertical + round.nPaddingBottom;
 			var transparentImgBg:Image = DrawUtil.drawTransparentImage(w, h);
 			
 			this.addChildAt(transparentImgBg, 0);
@@ -382,6 +383,151 @@ package com.jack.llk.view.view
 			
 			tmpLastBatterTime = newBatterTime;
 		}
+		
+		// add some random matched items at random empty position
+		public function addRandomPoker():void
+		{
+			var nAdd:int = 10;
+			var nItemTypes:int = round.nItemTypes;
+			
+			var index:int;
+			var p:Point;
+			for (var i:int = 0; i < nAdd; i+=2) 
+			{
+				index = RandomUtil.integer(1, nItemTypes+1, false);
+				for (var j:int = 0; j < 2; j++) 
+				{
+					p = round.getAnRandomEmptyPoint();
+					if(p)
+					{
+						// update the map data
+						round.setItemIndex(p.x, p.y, index);
+						// update the map ui
+						addItemAt(p.x, p.y, index);
+					}
+				}
+			}			
+			
+			// 清除随机数历史记录。重新开始取数。
+			RandomUtil.clearHistory();
+		}
+		
+		// add a item at specify positions
+		private function addItemAt(i:int, j:int, itemIndex:int):void
+		{
+			var item:ItemMovieClip=new ItemMovieClip(itemIndex, i, j);
+			if (item)
+			{
+				item.x=(i - 1) * (round.nItemWidth + round.nGapHorizontal);
+				item.y=(j - 1) * (round.nItemHeight + round.nGapVertical);
+				item.onActivate(onItemActivate, i, j);
+				item.onInactivate(onItemInactivate, i, j);
+				canvas.addChild(item);
+				items.set(i, j, item);
+				
+				// set a fade in animation when add a item
+				item.alpha=0;
+				var t:Tween = new Tween(item, 1);
+				t.fadeTo(1);
+				Starling.juggler.add(t);
+			}
+			else
+			{
+				Log.error("initGameCenter wrong", itemIndex);
+			}
+		}
 
+		/**
+		 * Move the item on the gameboard to refreshed spot when refresh the map.
+		 */
+		private function refreshGameBoardWithMoveAnimation():void
+		{
+			var moveDuration:Number = 0.35;
+			var itemW:Number=round.nItemWidth;
+			var itemH:Number=round.nItemHeight;
+			var gapX:Number=round.nGapHorizontal;
+			var gapY:Number=round.nGapVertical;
+			
+			var list:Array = round.voMap.refreshList;
+			var len:int = list.length;
+			var a:ItemVO;
+			var b:ItemVO;	
+			var aItem:ItemMovieClip;
+			var bItem:ItemMovieClip;
+			for (var i:int = 0; i < len; i+=2) 
+			{
+				a = list[i];
+				b = list[i+1];				
+				// switch the position of two items
+				aItem = items.get(a.x, a.y);
+				bItem = items.get(b.x, b.y);		
+				if(!aItem || !bItem)
+					continue;
+				// move a to b
+				var ta:Tween = new Tween(aItem, moveDuration);
+				ta.moveTo((b.x-1)*(itemW+gapX), (b.y-1)*(itemH+gapY)); 
+				// update a item's data
+				aItem.updateMapPosition(b.x, b.y);
+				aItem.onActivate(onItemActivate, b.x, b.y);
+				aItem.onInactivate(onItemInactivate, b.x, b.y);
+				// add to juggler
+				Starling.juggler.add(ta);	
+				// update in items
+				items.set(b.x, b.y, aItem);
+				
+				// move b to a
+				var tb:Tween = new Tween(bItem, moveDuration);
+				tb.moveTo((a.x-1)*(itemW+gapX), (a.y-1)*(itemH+gapY)); 
+				// update a item's data
+				bItem.updateMapPosition(a.x, a.y);
+				bItem.onActivate(onItemActivate, a.x, a.y);
+				bItem.onInactivate(onItemInactivate, a.x, a.y);
+				// add to juggler
+				Starling.juggler.add(tb);
+				// update in items
+				items.set(a.x, a.y, bItem);
+			}			
+		}
+		
+		/**
+		 * Move the item on the gameboard to refreshed spot when need.
+		 */
+		private function moveItems():void
+		{
+			var moveDuration:Number = 0.2;
+			var itemW:Number=round.nItemWidth;
+			var itemH:Number=round.nItemHeight;
+			var gapX:Number=round.nGapHorizontal;
+			var gapY:Number=round.nGapVertical;
+			
+			var list:Array = round.voMap.moveList;
+			var len:int = list.length;
+			var a:Point;
+			var b:Point;	
+			var voMoveItem:MoveItemVO;
+			var aItem:ItemMovieClip;
+			for (var i:int = 0; i < len; i++) 
+			{
+				voMoveItem = list[i];
+				a = voMoveItem.start;
+				b = voMoveItem.end;	
+				// switch the position of two items
+				aItem = items.get(a.x, a.y);
+				if(!aItem)
+					continue;
+				// start move
+				var ta:Tween = new Tween(aItem, moveDuration);
+				ta.moveTo((b.x-1)*(itemW+gapX), (b.y-1)*(itemH+gapY)); 
+				// update a item's data
+				aItem.updateMapPosition(b.x, b.y);
+				aItem.onActivate(onItemActivate, b.x, b.y);
+				aItem.onInactivate(onItemInactivate, b.x, b.y);
+				// add to juggler
+				Starling.juggler.add(ta);	
+				// update in items
+				items.set(b.x, b.y, aItem);	
+				items.set(a.x, a.y, null);	
+			}			
+		}
 	}
 }

@@ -12,19 +12,27 @@ package com.jack.llk.view.view
 	import com.jack.llk.view.module.time.TimeModelChapterView;
 	import com.jack.llk.view.panel.SettingPanel;
 	
-	import org.josht.starling.foxhole.controls.ScrollContainer;
+	import org.josht.starling.foxhole.controls.Button;
+	import org.josht.starling.foxhole.controls.List;
+	import org.josht.starling.foxhole.controls.PageIndicator;
+	import org.josht.starling.foxhole.controls.Scroller;
+	import org.josht.starling.foxhole.data.ListCollection;
 	import org.josht.starling.foxhole.layout.HorizontalLayout;
+	import org.josht.starling.foxhole.layout.TiledRowsLayout;
 	
 	import starling.animation.Tween;
 	import starling.core.Starling;
+	import starling.display.DisplayObject;
 	import starling.display.Image;
 	import starling.events.Event;
+	import starling.events.Touch;
+	import starling.events.TouchEvent;
+	import starling.events.TouchPhase;
 	import starling.textures.Texture;
 
 	public class ModelView extends BaseView
 	{
 		private var modelDesc:Image;
-		private var container:ScrollContainer;
 
 		private var mModelIconWidth:Number;
 
@@ -37,9 +45,9 @@ package com.jack.llk.view.view
 		private var diff:Number=30;
 		private var lastDescIndex:int=-1;
 
-		private var endlessModelView:EndlessModelChapterView;
-
 		private var tModelDesc:Vector.<Texture>;
+		private var _list:List;
+		private var _pageIndicator:PageIndicator;
 
 		public function ModelView()
 		{
@@ -52,27 +60,24 @@ package com.jack.llk.view.view
 		{
 			super.onAddedToStage(event);
 
-			initialize1();
+			initialize();
 		}
 
-		private function initialize1():void
+		private function initialize():void
 		{
 			var w:Number=this.width;
 			var h:Number=this.height;
 
 			// classic model
 			classicImage=Assets.getImage("classicmodelbg", true) as BaseImage;
-			classicImage.onClick=onClassicModelSelected;
 			scaleObject(classicImage);
 
 			// time model
 			timeImage=Assets.getImage("timemodelbg", true) as BaseImage;
-			timeImage.onClick=onTimeModelSelected;
 			scaleObject(timeImage);
 
 			// endless model
 			endlessImage=Assets.getImage("endlessmodelbg", true) as BaseImage;
-			endlessImage.onClick=onEndlessModelSelected;
 			scaleObject(endlessImage);
 
 			mModelIconWidth=endlessImage.width;
@@ -82,30 +87,39 @@ package com.jack.llk.view.view
 
 			var conScaleX:Number=Global.contentScaleXFactor;
 			var conScaleY:Number=Global.contentScaleYFactor;
-			// try to use foxhole ui component			
-			var layout:HorizontalLayout=new HorizontalLayout();
-			layout.gap=80 * conScaleX;
+			
+			// set list layout		
+			var layout:TiledRowsLayout = new TiledRowsLayout();
+			layout.paging = TiledRowsLayout.PAGING_HORIZONTAL;
+			layout.useSquareTiles = false;
+			layout.tileHorizontalAlign = TiledRowsLayout.HORIZONTAL_ALIGN_CENTER;
+			layout.horizontalAlign = TiledRowsLayout.HORIZONTAL_ALIGN_CENTER;
 			layout.paddingTop=35 * conScaleY;
 			layout.paddingRight=80 * conScaleX;
-			layout.paddingBottom=0 * conScaleY;
-			layout.paddingLeft=115 * conScaleX;
-			layout.horizontalAlign=HorizontalLayout.HORIZONTAL_ALIGN_LEFT;
-			layout.verticalAlign=HorizontalLayout.VERTICAL_ALIGN_TOP;
+			layout.paddingBottom=200 * conScaleY;
+			layout.paddingLeft=100 * conScaleX;
 
-			container=new ScrollContainer();
-			container.layout=layout;
-
-			container.verticalScrollPolicy=ScrollContainer.SCROLL_POLICY_OFF;
-			container.horizontalScrollPolicy=ScrollContainer.SCROLL_POLICY_ON;
-			container.setSize(w, h);
-			container.onScroll.add(onScroll);
-
-			container.addChild(classicImage);
-			container.addChild(timeImage);
-			container.addChild(endlessImage);
-
-			addChild(container);
-
+			// set the list data provider
+			var data:Array = [{icon:classicImage}, {icon:timeImage}, {icon:endlessImage}];			
+			var collection:ListCollection = new ListCollection(data);
+			
+			// init the list 
+			_list = new List();
+			_list.dataProvider = collection;
+			_list.layout = layout;
+			_list.scrollerProperties.snapToPages = true;
+			_list.scrollerProperties.scrollBarDisplayMode = Scroller.SCROLL_BAR_DISPLAY_MODE_NONE;
+			_list.itemRendererProperties.iconField = "icon";
+			_list.itemRendererProperties.iconPosition = Button.ICON_POSITION_TOP;
+			_list.onScroll.add(onScroll);
+			_list.onItemTouch.add(onChapterTouch);
+			//_list.itemRendererProperties.gap = 10 * conScaleX;			
+			_list.width = w;
+			_list.height = h;
+			_list.validate();
+			
+			addChild(_list);
+			
 			// init the model desc movie clip
 			tModelDesc=new Vector.<Texture>();
 			tModelDesc[0]=Assets.getTexture("classicmodelcontent");
@@ -125,8 +139,56 @@ package com.jack.llk.view.view
 			var backBtn:CommonButton=new CommonButton("backbt");
 			addChildScaled(backBtn, 10, 690);
 			backBtn.onClick=onBackClick;
+			
+			var normalSymbolTexture:Texture = Assets.getTexture("normal-page-symbol");
+			var selectedSymbolTexture:Texture = Assets.getTexture("selected-page-symbol");
+			
+			// set layout for page indicator
+			var pageIndicatorLayout:HorizontalLayout = new HorizontalLayout();
+			pageIndicatorLayout.gap = 3;
+			pageIndicatorLayout.paddingTop = 5;
+			pageIndicatorLayout.verticalAlign = HorizontalLayout.VERTICAL_ALIGN_MIDDLE;
+			
+			// set the page indicator
+			_pageIndicator = new PageIndicator();
+			_pageIndicator.normalSymbolFactory = function():Image
+			{
+				var img1:Image = new Image(normalSymbolTexture);
+				img1.scaleX *= Global.contentScaleXFactor;
+				img1.scaleY *= Global.contentScaleYFactor;
+				return img1;
+			}
+			_pageIndicator.selectedSymbolFactory = function():Image
+			{
+				var img2:Image = new Image(selectedSymbolTexture);
+				img2.scaleX *= Global.contentScaleXFactor;
+				img2.scaleY *= Global.contentScaleYFactor;
+				return img2;
+			}
+			_pageIndicator.layout = pageIndicatorLayout;
+			_pageIndicator.maximum = 3;
+			addChild(_pageIndicator);
+			
+			updateListLayout();
 		}
-
+		
+		private function onChapterTouch(list:List, item:Object, index:int, event:TouchEvent):void
+		{
+			var touch:Touch=event.getTouch(item.icon as DisplayObject);
+			if (touch)
+			{
+				if (touch.phase == TouchPhase.ENDED)
+				{
+					if(list.horizontalPageIndex == 0)
+						onClassicModelSelected();
+					else if(list.horizontalPageIndex == 1)
+						onTimeModelSelected();
+					else if(list.horizontalPageIndex == 2)
+						onEndlessModelSelected();
+				}
+			}			
+		}
+		
 		private function onClassicModelSelected():void
 		{
 			Log.log("onClassicModelSelected");
@@ -156,11 +218,8 @@ package com.jack.llk.view.view
 		private function onEndlessModelSelected():void
 		{
 			Log.log("onEndlessModelSelected");
-			if (!endlessModelView)
-			{
-				endlessModelView=new EndlessModelChapterView();
-				Game.getInstance().container.addChild(endlessModelView);
-			}
+			var endlessModelView:EndlessModelChapterView=new EndlessModelChapterView();
+			Game.getInstance().container.addChild(endlessModelView);
 			// show endless model screen
 			endlessModelView.visible=true;
 			endlessModelView.prepareShow();
@@ -177,26 +236,23 @@ package com.jack.llk.view.view
 
 		public function addModelContainerToStage():void
 		{
-			if (container && !contains(container))
-				addChildAt(container, 2);
+			if (_list && !contains(_list))
+				addChildAt(_list, 2);
 		}
 
-		private function onScroll(con:ScrollContainer):void
+		private function onScroll(l:List):void
 		{
-			var horizontalScrollPosition:Number=con.horizontalScrollPosition;
-			var index:int=Math.ceil(horizontalScrollPosition / mModelIconWidth) - 1;
-			if (lastDescIndex != index && index >= 0 && index < 3)
-			{
-				lastDescIndex=index;
-
-				var t:Texture=tModelDesc[index];
-				modelDesc.texture=t;
-				modelDesc.width=t.width;
-				modelDesc.height=t.height;
-
-				addChildScaled(modelDesc, 65, 440);
-				setChildIndex(modelDesc, 1);
-			}
+			var index:int=l.horizontalPageIndex;
+			
+			var t:Texture=tModelDesc[index];
+			modelDesc.texture=t;
+			modelDesc.width=t.width;
+			modelDesc.height=t.height;
+			
+			addChildScaled(modelDesc, 65, 440);
+			setChildIndex(modelDesc, 1);
+			
+			_pageIndicator.selectedIndex = index;
 		}
 
 		/**
@@ -204,21 +260,25 @@ package com.jack.llk.view.view
 		 */
 		private function onBackClick():void
 		{
-			// stop horizontal layout container?
-			container.removeFromParent();
-
 			// start moving
 			var t1:Tween=new Tween(this, 0.3);
 			t1.animate("x", Starling.current.nativeStage.fullScreenWidth);
+			t1.onUpdate=onCurrentViewMoveUpdate;
 			Starling.juggler.add(t1);
-
 			this.prepareHide();
 
 			var t2:Tween=new Tween(Game.getInstance().initView, 0.3);
 			t2.animate("x", 0);
 			Starling.juggler.add(t2);
-
 			Game.getInstance().initView.prepareShow();
+		}
+		
+		private function onCurrentViewMoveUpdate():void
+		{
+			if(contains(_list))
+			{
+				_list.removeFromParent();
+			}
 		}
 
 		override protected function onGotoPreviousView(event:ViewEvent):void
@@ -226,6 +286,16 @@ package com.jack.llk.view.view
 			super.onGotoPreviousView(event);
 
 			onBackClick();
+		}
+		
+		protected function updateListLayout():void
+		{
+			_pageIndicator.validate();
+			_pageIndicator.y = stage.stageHeight - stage.stageHeight * 0.1;
+			
+			_pageIndicator.maximum = 3;
+			_pageIndicator.validate();
+			_pageIndicator.x = (stage.stageWidth - _pageIndicator.width) / 2;
 		}
 
 	}

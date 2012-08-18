@@ -218,8 +218,8 @@ package com.jack.llk.vo
 			round.warningTime=this.warningTime;
 			round.batterInterval=this.batterInterval;
 
-			round.nTileWidth=this.nTileWidth;
-			round.nTileHeight=this.nTileHeight;
+			round.nItemWidth=this.nTileWidth;
+			round.nItemHeight=this.nTileHeight;
 			round.nGapHorizontal=this.nGapHorizontal;
 			round.nGapVertical=this.nGapVertical;
 			round.nPaddingTop=this.nPaddingTop;

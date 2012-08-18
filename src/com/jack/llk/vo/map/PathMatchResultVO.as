@@ -1,11 +1,10 @@
 package com.jack.llk.vo.map
 {
-
-	public class MatchResult
+	public class PathMatchResultVO
 	{
 		private var _list:Array;
 
-		public function MatchResult()
+		public function PathMatchResultVO()
 		{
 		}
 
@@ -25,11 +24,11 @@ package com.jack.llk.vo.map
 				_list.length=0;
 		}
 
-		public function clone():MatchResult
+		public function clone():PathMatchResultVO
 		{
 			if (_list)
 			{
-				var mr:MatchResult=new MatchResult();
+				var mr:PathMatchResultVO=new PathMatchResultVO();
 				mr.fill(_list.concat());
 				return mr;
 			}
