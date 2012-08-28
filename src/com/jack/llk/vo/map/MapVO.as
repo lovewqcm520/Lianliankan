@@ -10,7 +10,6 @@ package com.jack.llk.vo.map
 	import de.polygonal.ds.Array2;
 	
 	import flash.geom.Point;
-	import flash.utils.getTimer;
 
 	public class MapVO
 	{
@@ -41,6 +40,7 @@ package com.jack.llk.vo.map
 		private var _countOfPerItem:int; //每个项目出现的次数(偶数)
 		private var _result:PathMatchResultVO; //暂存符合条件的结果
 
+		public var level:int;
 		public var actualWidth:int;
 		public var actualHeight:int;
 		public var width:int;
@@ -66,6 +66,8 @@ package com.jack.llk.vo.map
 		private var minY:int=int.MAX_VALUE;
 		private var maxX:int=0;
 		private var maxY:int=0;
+
+		private var item_move_type:int=-1;
 		
 		public function MapVO()
 		{
@@ -92,6 +94,13 @@ package com.jack.llk.vo.map
 			_restBlock=nAvailableItems+nToolItems;
 			
 			initMap(data);
+			
+			if((this.gameMode == Common.GAME_MODEL_ENDLESS && this.level >= 3) || 
+				(this.gameMode == Common.GAME_MODEL_TIME && this.level >= 10)
+			)
+			{
+				item_move_type = RandomUtil.integer(1, 8);
+			}
 		}
 
 		public function get result():PathMatchResultVO
@@ -137,6 +146,7 @@ package com.jack.llk.vo.map
 				// add a new item
 				_restBlock++;
 			}
+		
 			map.set(x, y, itemIndex);
 			updateItemLayout();
 		}
@@ -187,8 +197,6 @@ package com.jack.llk.vo.map
 
 		public function find2Items():Array
 		{
-			var oldTime:Number=getTimer();
-			
 			var len:int = _items.length;
 			var a:Point=new Point();
 			var b:Point=new Point();
@@ -221,27 +229,62 @@ package com.jack.llk.vo.map
 			// testonly
 			// choose the item move style
 			moveList.length=0;
-	
-			if(Math.random() <= 0.333)
+			
+			item_move_type = 7;
+			switch(item_move_type)
 			{
-				moveToTop(a);
-				moveToTop(b);
+				case 1:
+				{
+					moveToLeft(a);
+					moveToLeft(b);
+					break;
+				}
+					
+				case 2:
+				{
+					moveToRight(a);
+					moveToRight(b);
+					break;
+				}
+					
+				case 3:
+				{
+					moveToTop(a);
+					moveToTop(b);
+					break;
+				}
+					
+				case 4:
+				{
+					moveToBottom(a);
+					moveToBottom(b);
+					break;
+				}
+					
+				case 5:
+				{
+					moveToTopBottom(a);
+					moveToTopBottom(b);
+					break;
+				}
+					
+				case 6:
+				{
+					moveToLeftRight(a);
+					moveToLeftRight(b);
+					break;
+				}
+					
+				case 7:
+				{
+					moveToVerticalCenter(a);
+					moveToVerticalCenter(b);
+					break;
+				}
 			}
-			else if(Math.random() <= 0.666)
-			{
-				moveToLeft(a);
-				moveToLeft(b);
-			}
-			else 
-			{
-				moveToRight(a);
-				moveToRight(b);
-			}
-
 			
 			// update data
 			updateItemLayout();
-			validateMap();
 		}
 
 		public function get count():int
@@ -249,52 +292,19 @@ package com.jack.llk.vo.map
 			return _restBlock <= 0 ? 0 : _restBlock;
 		}
 
-		public function refresh():Boolean
+		public function refresh():void
 		{
-			var num:uint=this.count;
-			if (num <= 0)
-				return false;
-
-			var flag:int=0;
-			var index:int;
-			var i:int;
-			// random 
-			_allItemIndexs = ArrayUtil.random(_allItemIndexs);			
-			// random map with same position, just change item index
-			var len:int = _items.length;
-			var a:ItemVO;
-			var b:ItemVO;
-			refreshList.length=0;
-			var x:int;
-			var y:int;
-			for (i = 0; i < len; i+=2) 
-			{
-				x = RandomUtil.integer(0, len, false);
-				y = RandomUtil.integer(0, len, false);
-				a = _items[x];
-				b = _items[y];
-				refreshList.push(a);
-				refreshList.push(b);
-				map.set(a.x, a.y, b.index);
-				map.set(b.x, b.y, a.index);
-			}
-			// 清除随机数历史记录。重新开始取数。
-			RandomUtil.clearHistory();
-
+			// shuffle the map
+			shuffle(true);
+			
 			// update item layout
 			updateItemLayout();
 			
 			// check map
 			if(!isMapHasMatchedItems())
 			{
-				var e:GameEvent = new GameEvent(GameEvent.GAME_REFRESH_MAP);
-				EventController.e.dispatchEvent(e);
-				
-				trace("refresh", GameEvent.GAME_REFRESH_MAP);
-				return false;
+				shuffle(false);
 			}
-			
-			return true;
 		}
 
 		/**
@@ -574,7 +584,7 @@ package com.jack.llk.vo.map
 			validateMap();	
 		}
 		
-		private function validateMap():void
+		public function validateMap():void
 		{
 			// check map
 			if(!isMapHasMatchedItems())
@@ -736,7 +746,7 @@ package com.jack.llk.vo.map
 			for (x=a.x; x >= 0; x--)
 			{
 				// 存在完整路线 -- c,d点为零且纵向连通
-				if (map.get(x, a.y) == -1 && map.get(x, b.y) == -1 && vTest(new Point(x, a.y), new Point(x, b.y)))
+				if (map.get(x, a.y) == EMPTY_ITEM && map.get(x, b.y) == EMPTY_ITEM && vTest(new Point(x, a.y), new Point(x, b.y)))
 				{
 					v.push(new Line(Line.VERTICAL, new Point(x, a.y), new Point(x, b.y)));
 				}
@@ -745,7 +755,7 @@ package com.jack.llk.vo.map
 			// 扫描 A 点右边的所有线
 			for (x=a.x; x < actualWidth; x++)
 			{
-				if (map.get(x, a.y) == -1 && map.get(x, b.y) == -1 && vTest(new Point(x, a.y), new Point(x, b.y)))
+				if (map.get(x, a.y) == EMPTY_ITEM && map.get(x, b.y) == EMPTY_ITEM && vTest(new Point(x, a.y), new Point(x, b.y)))
 				{
 					v.push(new Line(Line.VERTICAL, new Point(x, a.y), new Point(x, b.y)));
 				}
@@ -756,7 +766,7 @@ package com.jack.llk.vo.map
 			// 扫描 A 点上面的所有线
 			for (y=a.y; y >= 0; y--)
 			{
-				if (map.get(a.x, y) == -1 && map.get(b.x, y) == -1 && hTest(new Point(a.x, y), new Point(b.x, y)))
+				if (map.get(a.x, y) == EMPTY_ITEM && map.get(b.x, y) == EMPTY_ITEM && hTest(new Point(a.x, y), new Point(b.x, y)))
 				{
 					v.push(new Line(Line.HORIZONTAL, new Point(a.x, y), new Point(b.x, y)));
 				}
@@ -765,7 +775,7 @@ package com.jack.llk.vo.map
 			// 扫描 A 点下面的所有线
 			for (y=a.y; y < actualHeight; y++)
 			{
-				if (map.get(a.x, y) == -1 && map.get(b.x, y) == -1 && hTest(new Point(a.x, y), new Point(b.x, y)))
+				if (map.get(a.x, y) == EMPTY_ITEM && map.get(b.x, y) == EMPTY_ITEM && hTest(new Point(a.x, y), new Point(b.x, y)))
 				{
 					v.push(new Line(Line.HORIZONTAL, new Point(a.x, y), new Point(b.x, y)));
 				}
@@ -905,130 +915,388 @@ package com.jack.llk.vo.map
 		{
 			return _emptyItems;
 		}
+		
+		/**
+		 * Shuffle the map.
+		 * @param keepOldMapShape
+		 */
+		private function shuffle(keepOldMapShape:Boolean):void
+		{
+			var i:int, x:int, y:int;			
+			var len:int = _items.length;
+			var a:ItemVO;
+			var b:ItemVO;
+			refreshList.length=0;
+			// 清除随机数历史记录。重新开始取数。
+			RandomUtil.clearHistory();
+			
+			if(keepOldMapShape)
+			{
+				// random map with same position, just change item index
+				for (i = 0; i < len; i+=2) 
+				{
+					x = RandomUtil.integer(0, len, false);
+					y = RandomUtil.integer(0, len, false);
+					a = _items[x];
+					b = _items[y];
+					refreshList.push(a);
+					refreshList.push(b);
+					map.set(a.x, a.y, b.index);
+					map.set(b.x, b.y, a.index);
+				}
+			}
+			else
+			{
+				_itemList1.length = 0;
+				// complete shuffle the map
+				for (i = 0; i < len; i++) 
+				{
+					x = RandomUtil.integer(0, len, false);
+					a = _items[x];
+					moveToRandomPoint(a.x, a.y, a.index);
+				}
+			}
+			
+			trace("refresh", GameEvent.GAME_REFRESH_MAP);
+		}
 
+		private var _itemList1:Array=[];
+		private function moveToRandomPoint(x:int, y:int, index:int):void
+		{
+			var len:int = _itemList1.length;
+			for (var i:int = 0; i < len; i++) 
+			{
+				if(_itemList1[i].x == x && _itemList1[i].y == y)
+					return;
+			}
+			
+			
+			var nx:int = RandomUtil.integer(1, width+1);
+			var ny:int = RandomUtil.integer(1, height+1);
+			if(nx !=x || ny != y)
+			{
+				var ind:int = map.get(nx, ny);
+				if(ind != STONE_ITEM)
+				{
+					if(ind != EMPTY_ITEM)
+					{
+						_itemList1.push(new Point(nx, ny));
+					}
+					var a:ItemVO = new ItemVO(x, y, index);
+					var b:ItemVO = new ItemVO(nx, ny, ind);
+					refreshList.push(a);
+					refreshList.push(b);
+					map.set(a.x, a.y, ind);
+					map.set(b.x, b.y, index);
+				}
+				else
+				{
+					moveToRandomPoint(x, y, index);
+				}
+			}
+			else
+			{
+				moveToRandomPoint(x, y, index);
+			}
+		}
+		
 		/////////////////////////////////////////////////////////////////////////////////////////////////////
-		//  Aug 18, 2012 by Jack, Code for move item at 4 directions when other items are disposed.
+		//  Aug 18, 2012 by Jack, Code for move item at 8 directions when other items are disposed.
 		/////////////////////////////////////////////////////////////////////////////////////////////////////
 		
 		/**
+		 * 向左
 		 * Move all the items align right by the "p" to left.
 		 * @param p
 		 */
 		private function moveToLeft(p:Point):void
 		{
-			var i:int;
-			var j:int;
-			var index:int;
-			var distance:int;
-			if(p.x < maxX)
-			{
-				for (i = p.x+1; i <= maxX; i++) 
-				{
-					index = map.get(i, p.y);
-					if(isAvailableItem(index))
-					{
-						distance=0;
-						// move item to left as far as possible, stop when meet a item or stone
-						for (j = i-1; j >= minX; j--) 
-						{
-							if(map.get(j, p.y) == EMPTY_ITEM)
-								distance++;
-							else
-								break;
-						}
-						if(distance > 0)
-						{
-							// set empty spot to item
-							map.set(i-distance, p.y, index);
-							// set item to empty spot
-							map.set(i, p.y, EMPTY_ITEM);
-							// add to the move item list
-							moveList.push(new MoveItemVO(new Point(i, p.y), new Point(i-distance, p.y)));							
-						}
-					}
-				}				
-			}
+			moveHorizontally(p.y, minX, maxX, minX);
 		}
 		
 		/**
+		 * 向右
 		 * Move all the items align left by the "p" to right.
 		 * @param p
 		 */
 		private function moveToRight(p:Point):void
 		{
-			var i:int;
-			var j:int;
-			var index:int;
-			var distance:int;
-			if(p.x <= maxX)
-			{
-				for (i = p.x-1; i >= minX; i--) 
-				{
-					index = map.get(i, p.y);
-					if(isAvailableItem(index))
-					{
-						distance=0;
-						// move item to left as far as possible, stop when meet a item or stone
-						for (j = i+1; j <= maxX; j++) 
-						{
-							if(map.get(j, p.y) == EMPTY_ITEM)
-								distance++;
-							else
-								break;
-						}
-						if(distance > 0)
-						{
-							// set empty spot to item
-							map.set(i+distance, p.y, index);
-							// set item to empty spot
-							map.set(i, p.y, EMPTY_ITEM);
-							// add to the move item list
-							moveList.push(new MoveItemVO(new Point(i, p.y), new Point(i+distance, p.y)));							
-						}
-					}
-				}				
-			}
+			moveHorizontally(p.y, minX, maxX, maxX);
 		}
 		
 		/**
+		 * 向上
 		 * Move all the items align bottom by the "p" to top.
 		 * @param p
 		 */
 		private function moveToTop(p:Point):void
+		{
+			moveVertically(p.x, minY, maxY, minY);
+		}
+		
+		/**
+		 * 向下
+		 * Move all the items align top by the "p" to bottom.
+		 * @param p
+		 */
+		private function moveToBottom(p:Point):void
+		{
+			moveVertically(p.x, minY, maxY, maxY);
+		}
+		
+		/**
+		 * 上下分离
+		 * Move all the items align top by the "p" to top, align bottom by the "p" to bottom.
+		 * @param p
+		 */
+		private function moveToTopBottom(p:Point):void
+		{
+			var y1:int = NumberUtil.isEven(maxY) ? maxY/2 : Math.floor(maxY/2);
+			var y2:int = NumberUtil.isEven(maxY) ? maxY/2 : Math.ceil(maxY/2);
+			
+			if(p.y <= y1)
+			{
+				// move to top
+				moveVertically(p.x, minY, y1, minY);
+			}
+			else
+			{
+				// move to bottom
+				moveVertically(p.x, y2, maxY, maxY);
+			}
+		}
+		
+		/**
+		 * 左右分离
+		 * Move all the items align left by the "p" to right, align right by the "p" to left.
+		 * @param p
+		 */
+		private function moveToLeftRight(p:Point):void
+		{
+			var x1:int = NumberUtil.isEven(maxX) ? maxX/2 : Math.floor(maxX/2);
+			var x2:int = NumberUtil.isEven(maxX) ? maxX/2 : Math.ceil(maxX/2);
+			
+			if(p.x <= x1)
+			{
+				// move to left
+				moveHorizontally(p.y, minX, x1, minX);
+			}
+			else
+			{
+				// move to right
+				moveHorizontally(p.y, x2, maxX, maxX);
+			}
+		}
+		
+		/**
+		 * 上下集中
+		 * Move all the items align vertical to center.
+		 * @param p
+		 */
+		private function moveToVerticalCenter(p:Point):void
+		{
+			var y:int = NumberUtil.isEven(maxY) ? maxY/2 : Math.floor(maxY/2);
+
+			var i:int;
+			var index:int;
+			var nAvailableItems:int=0;
+			var arr:Array=[];
+			for (i = 1; i <= maxY; i++) 
+			{
+				index = map.get(p.x, i);
+				if(isAvailableItem(index))
+				{
+					nAvailableItems++;
+					arr.push(new Point(p.x, i));
+				}
+			}
+			
+			var centerStartY:int = Math.floor((maxY-nAvailableItems)/2);
+
+			var oldCol:Array = map.getCol(p.x);
+			var newCol:Array = new Array(actualHeight);
+			for (var j:int = 0; j < actualHeight; j++) 
+			{
+				newCol[j] = EMPTY_ITEM;
+			}
+			
+			var tmp:int = 0;
+			var flag:int = 0;
+			var a:Point;
+			var next:int;
+			while(tmp < nAvailableItems)
+			{
+				a = arr[tmp];
+				index = map.get(a.x, a.y);
+				next = minY+centerStartY+tmp+flag;
+				if(index != EMPTY_ITEM)
+				{
+					if(a.y <= next)
+					{
+						moveVertically(a.x, a.y, next, next);
+					}
+					else
+					{
+						moveVertically(a.x, next, a.y, next);
+					}
+					
+					while(oldCol[next] == STONE_ITEM)
+					{
+						newCol[a.y]=STONE_ITEM;
+						next++;
+						flag++;
+					}	
+					newCol[next]=index;
+//					// add to the move item list
+//					if(a.y != next)
+//					{
+//						justTest(new Point(p.x, a.y), new Point(p.x, next));	
+//						trace(new Point(p.x, a.y), new Point(p.x, next));
+//					}
+				}
+				tmp++;
+			}
+			
+			map.setCol(p.x, newCol);			
+		}
+		
+		private function moveVertically(x:int, yBegin:int, yStop:int, yTarget:int):void
 		{
 			var i:int;
 			var j:int;
 			var index:int;
 			var distance:int;
 			
-			for (i = p.y+1; i <= maxY; i++) 
+			// move toward bottom
+			if(yTarget > yBegin)
 			{
-				index = map.get(p.x, i);
-				if(isAvailableItem(index))
+				for (i = yStop; i >= yBegin; i--) 
 				{
-					distance=0;
-					// move item to left as far as possible, stop when meet a item or stone
-					for (j = i-1; j >= minY; j--) 
+					index = map.get(x, i);
+					if(isAvailableItem(index))
 					{
-						if(map.get(p.x, j) == EMPTY_ITEM)
-							distance++;
-						else
-							break;
+						distance=0;
+						// move item to bottom as far as possible, stop when meet a item or stone
+						for (j = i+1; j <= yTarget; j++) 
+						{
+							if(map.get(x, j) == EMPTY_ITEM)
+								distance++;
+							else
+								break;
+						}
+						if(distance > 0)
+						{
+							// set item to empty spot
+							map.set(x, i, EMPTY_ITEM);
+							// set empty spot to item
+							map.set(x, i+distance, index);
+							// add to the move item list
+							justTest(new Point(x, i), new Point(x, i+distance));							
+						}
 					}
-					if(distance > 0)
+				}		
+			}
+			else
+			{
+				for (i = yBegin; i <= yStop; i++) 
+				{
+					index = map.get(x, i);
+					if(isAvailableItem(index))
 					{
-						// set empty spot to item
-						map.set(p.x, i-distance, index);
-						// set item to empty spot
-						map.set(p.x, i, EMPTY_ITEM);
-						// add to the move item list
-						moveList.push(new MoveItemVO(new Point(p.x, i), new Point(p.x, i-distance)));							
+						distance=0;
+						// move item to top as far as possible, stop when meet a item or stone
+						for (j = i-1; j >= yTarget; j--) 
+						{
+							if(map.get(x, j) == EMPTY_ITEM)
+								distance++;
+							else
+								break;
+						}
+						if(distance > 0)
+						{
+							// set item to empty spot
+							map.set(x, i, EMPTY_ITEM);
+							// set empty spot to item
+							map.set(x, i-distance, index);							
+							// add to the move item list
+							justTest(new Point(x, i), new Point(x, i-distance));							
+						}
 					}
-				}
-			}		
+				}		
+			}
 		}
 		
+		private function moveHorizontally(y:int, xBegin:int, xStop:int, xTarget:int):void
+		{
+			var i:int;
+			var j:int;
+			var index:int;
+			var distance:int;
+			
+			// move toward right
+			if(xTarget > xBegin)
+			{
+				for (i = xStop; i >= xBegin; i--) 
+				{
+					index = map.get(i, y);
+					if(isAvailableItem(index))
+					{
+						distance=0;
+						// move item to right as far as possible, stop when meet a item or stone
+						for (j = i+1; j <= xTarget; j++) 
+						{
+							if(map.get(j, y) == EMPTY_ITEM)
+								distance++;
+							else
+								break;
+						}
+						if(distance > 0)
+						{
+							// set item to empty spot
+							map.set(i, y, EMPTY_ITEM);
+							// set empty spot to item
+							map.set(i+distance, y, index);
+							// add to the move item list
+							justTest(new Point(i, y), new Point(i+distance, y));							
+						}
+					}
+				}		
+			}
+			else
+			{
+				for (i = xBegin; i <= xStop; i++) 
+				{
+					index = map.get(i, y);
+					if(isAvailableItem(index))
+					{
+						distance=0;
+						// move item to left as far as possible, stop when meet a item or stone
+						for (j = i-1; j >= xTarget; j--) 
+						{
+							if(map.get(j, y) == EMPTY_ITEM)
+								distance++;
+							else
+								break;
+						}
+						if(distance > 0)
+						{
+							// set item to empty spot
+							map.set(i, y, EMPTY_ITEM);
+							// set empty spot to item
+							map.set(i-distance, y, index);							
+							// add to the move item list
+							justTest(new Point(i, y), new Point(i-distance, y));							
+						}
+					}
+				}		
+			}
+		}
 		
+		private function justTest(c:Point, d:Point):void
+		{
+			// add to the move item list
+			moveList.push(new MoveItemVO(c, d));	
+		}
 		
 	}
 }

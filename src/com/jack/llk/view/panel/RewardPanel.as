@@ -17,6 +17,8 @@ package com.jack.llk.view.panel
 		protected var bg:Image;
 		protected var topIcon:Image;
 
+		private var nextBtn:CommonButton;
+
 		public function RewardPanel()
 		{
 			super();
@@ -25,6 +27,14 @@ package com.jack.llk.view.panel
 		override public function dispose():void
 		{
 			super.dispose();
+		}
+		
+		public function showWinTheFinalChapter():void
+		{
+			this.isWin=true;
+			initialize();
+			
+			nextBtn.visible = false;
 		}
 
 		public function showWin():void
@@ -75,7 +85,7 @@ package com.jack.llk.view.panel
 			{
 				// set buttons				
 				// next level button
-				var nextBtn:CommonButton=new CommonButton("nextbtn");
+				nextBtn=new CommonButton("nextbtn");
 				nextBtn.onClick=onNext;
 
 				btnX=bg.x + (bg.width - backBtn.width - restartBtn.width - nextBtn.width - 2 * btnGap) / 2;

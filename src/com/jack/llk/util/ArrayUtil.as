@@ -38,25 +38,14 @@ package com.jack.llk.util
 		 */
 		public static function random(array:Array):Array
 		{
-			if (isEmpty(array))
-				return array;
-
-			var i:uint=0;
-			var n:int=array.length;
-			var r:int;
-			var e:*;
-
-			for (i; i < n; i++)
-			{
-				r=int(Math.random() * n);
-				e=array[i];
-				array[i]=array[r];
-				array[r]=e;
-			}
-
-			return array;
+			return array.sort(randomFunction);
 		}
 
+		private static function randomFunction(n1:*, n2:*):int
+		{
+			return (Math.random() < 0.5) ? -1 : 1;
+		}
+		
 		public static function getWarppedMapArray(map:Array2):Array
 		{
 			var arr:Array=[];
@@ -81,11 +70,11 @@ package com.jack.llk.util
 			var w:int=map.width - 2;
 			var h:int=map.height - 2;
 
-			for (var i:int=1; i <= w; i++)
+			for (var y:int=1; y <= h; y++)
 			{
-				for (var j:int=1; j <= h; j++)
+				for (var x:int=1; x <= w; x++)
 				{
-					map.set(i, j, arr[(i - 1) * h + (j - 1)]);
+					map.set(x, y, arr[(y - 1) * w + (x - 1)]);
 				}
 			}
 		}

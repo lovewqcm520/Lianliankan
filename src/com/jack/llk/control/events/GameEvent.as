@@ -19,6 +19,7 @@ package com.jack.llk.control.events
 		
 		public static const BATTER:String = "batter";
 		public static const XIAOCHU:String = "xiaochu";
+		public static const MOVE_ITEM:String = "move_item";
 		
 		
 		public static const GET_TOOL_TIME:String = 		"get_tool_time";		

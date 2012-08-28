@@ -95,6 +95,7 @@ package com.jack.llk.view.view
 			EventController.e.addEventListener(GameEvent.BATTER, onBatter);
 			EventController.e.addEventListener(GameEvent.XIAOCHU, onXiaochu);
 			EventController.e.addEventListener(GameEvent.GAME_REFRESH_MAP, onGameRefreshMap);
+			EventController.e.addEventListener(GameEvent.MOVE_ITEM, onMoveItems);
 			
 			EventController.e.addEventListener(GameEvent.GET_TOOL_BOMB, onGetToolBomb);
 			EventController.e.addEventListener(GameEvent.GET_TOOL_EGG, onGetToolEgg);
@@ -119,6 +120,7 @@ package com.jack.llk.view.view
 			EventController.e.removeEventListener(GameEvent.BATTER, onBatter);
 			EventController.e.removeEventListener(GameEvent.XIAOCHU, onXiaochu);
 			EventController.e.removeEventListener(GameEvent.GAME_REFRESH_MAP, onGameRefreshMap);
+			EventController.e.removeEventListener(GameEvent.MOVE_ITEM, onMoveItems);
 			
 			EventController.e.removeEventListener(GameEvent.GET_TOOL_BOMB, onGetToolBomb);
 			EventController.e.removeEventListener(GameEvent.GET_TOOL_EGG, onGetToolEgg);
@@ -349,6 +351,9 @@ package com.jack.llk.view.view
 				// flush data to local shared object
 				EndlessModelVO.getInstance().addScores(level, curScores);
 				EndlessModelVO.getInstance().flushToCache();
+				
+				// show the win reward window
+				reward.showWin();
 			}
 			else if(model == Common.GAME_MODEL_CLASSIC)
 			{
@@ -360,6 +365,12 @@ package com.jack.llk.view.view
 				
 				// flush data to local shared object
 				ClassicModelVO.getInstance().flushAt(level, stars);
+				
+				// show the win reward window
+				if(level == ClassicModelVO.getInstance().MAX_LEVEL)
+					reward.showWinTheFinalChapter();
+				else
+					reward.showWin();
 			}
 			else if(model == Common.GAME_MODEL_TIME)
 			{
@@ -371,8 +382,14 @@ package com.jack.llk.view.view
 				
 				// flush data to local shared object
 				TimeModelVO.getInstance().flushAt(level, stars);
+				
+				// show the win reward window
+				if(level == TimeModelVO.getInstance().MAX_LEVEL)
+					reward.showWinTheFinalChapter();
+				else
+					reward.showWin();
 			}
-			reward.showWin();
+			
 			reward.scaleX*=0.75;
 			reward.scaleY*=0.75;
 			addChildScaled(reward, 0, 0);
@@ -648,7 +665,13 @@ package com.jack.llk.view.view
 		
 		private function onGameRefreshMap(event:GameEvent):void
 		{
-			Delay.doIt(1000, onRefreshMap);
+			Delay.doIt(600, onRefreshMap);
+			//onRefreshMap();
+		}
+		
+		private function onMoveItems(event:GameEvent):void
+		{
+			gameCanvas.moveItems();
 		}
 		
 		private function onGetToolTime(event:GameEvent):void
@@ -734,6 +757,8 @@ package com.jack.llk.view.view
 		{
 			var r:Number = Math.random();
 			var probability:Number = 1/6;
+			
+			r = 0.83;
 			
 			if(r <= probability)
 			{
@@ -1031,6 +1056,9 @@ package com.jack.llk.view.view
 		{
 			removeEvents();
 			round = null;
+			
+			// set the game status
+			Game.getInstance().gameStatus=GameStatusFactors.STATUS_IDLE;
 			
 			super.dispose();
 		}

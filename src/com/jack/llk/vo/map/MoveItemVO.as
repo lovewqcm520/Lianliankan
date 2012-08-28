@@ -12,5 +12,10 @@ package com.jack.llk.vo.map
 			this.start = start;
 			this.end = end;
 		}
+		
+		public function toString():String
+		{
+			return start.toString() + "	" + end.toString();
+		}
 	}
 }

@@ -130,6 +130,11 @@ package com.jack.llk.vo
 			return null;
 		}
 		
+		public function get nEmptyItems():int
+		{
+			return voMap.emptyItems.length;
+		}
+		
 		/**
 		 *
 		 */
@@ -137,6 +142,7 @@ package com.jack.llk.vo
 		{
 			voMap=new MapVO();
 
+			voMap.level=level;
 			voMap.width=width;
 			voMap.height=height;
 			voMap.actualWidth=actualWidth;
@@ -232,6 +238,9 @@ package com.jack.llk.vo
 			
 			// erase 2 items
 			voMap.erase(a, b);
+			// move item
+			var e2:GameEvent=new GameEvent(GameEvent.MOVE_ITEM);
+			EventController.e.dispatchEvent(e2);
 			
 			// update current level scores
 			scores += Common.ITEM_SCORE;
@@ -286,6 +295,11 @@ package com.jack.llk.vo
 				var e1:GameEvent=new GameEvent(GameEvent.GAME_WIN);
 				EventController.e.dispatchEvent(e1);
 			}
+			else
+			{
+				// validate map locked or not
+				voMap.validateMap();
+			}
 		}
 
 		/**
@@ -309,9 +323,9 @@ package com.jack.llk.vo
 		/**
 		 * Refresh map based on current all available items.
 		 */
-		public function refreshMap():Boolean
+		public function refreshMap():void
 		{
-			return voMap.refresh();
+			voMap.refresh();
 		}
 
 		private function get map():Array2

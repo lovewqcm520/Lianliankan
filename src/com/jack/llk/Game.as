@@ -27,7 +27,7 @@ package com.jack.llk
 		private static var _instance:Game=new Game();
 
 		public var container:Sprite;
-		public var gameStatus:int;
+		private var _gameStatus:int;
 		public var gameModel:int;
 
 		public var initView:InitView;
@@ -82,7 +82,8 @@ package com.jack.llk
 		{
 			Log.log("showGame");
 			// play the waiting background music
-			SoundManager.play(SoundFactors.DATING_BACK_MUSIC, true, true);
+			//SoundManager.play(SoundFactors.DATING_BACK_MUSIC, true, true);
+			gameStatus = GameStatusFactors.STATUS_IDLE;
 		}
 
 		/**
@@ -137,6 +138,8 @@ package com.jack.llk
 				case GameStatusFactors.STATUS_PLAYING:
 				{
 					Starling.current.nativeStage.frameRate=FramerateFactors.FPS_PLAYING;
+					// play the play background music
+					SoundManager.play(SoundFactors.GAME_BACK_MUSIC, true, true);
 					break;
 				}
 
@@ -182,7 +185,6 @@ package com.jack.llk
 					// prevent the default event behavior
 					event.preventDefault();
 
-
 					// if game status was playing, then pause the game
 					if (gameStatus == GameStatusFactors.STATUS_PLAYING)
 					{
@@ -213,5 +215,75 @@ package com.jack.llk
 				gameCanvas.showItemIdleAnimation();
 			}
 		}
+
+		public function get gameStatus():int
+		{
+			return _gameStatus;
+		}
+
+		public function set gameStatus(value:int):void
+		{
+			if(_gameStatus != value)
+			{
+				_gameStatus = value;
+				
+				// 针对不同的游戏状态更新不同的framerate
+				switch (gameStatus)
+				{
+					case GameStatusFactors.STATUS_IDLE:
+					{
+						Starling.current.nativeStage.frameRate=FramerateFactors.FPS_IDLE;
+						// resume play warning sound
+						SoundManager.play(SoundFactors.DATING_BACK_MUSIC, true, true);
+						break;
+					}
+						
+					case GameStatusFactors.STATUS_PAUSE_BY_DEACTIVATE:
+					{
+						Starling.current.nativeStage.frameRate=FramerateFactors.FPS_PAUSE_BY_DEACTIVATE;
+						break;
+					}
+						
+					case GameStatusFactors.STATUS_PAUSE_BY_USER:
+					{
+						Starling.current.nativeStage.frameRate=FramerateFactors.FPS_PAUSE_BY_USER;
+						break;
+					}
+						
+					case GameStatusFactors.STATUS_PLAYING:
+					{
+						Starling.current.nativeStage.frameRate=FramerateFactors.FPS_PLAYING;
+						// play the play background music
+						SoundManager.play(SoundFactors.GAME_BACK_MUSIC, true, true);
+						break;
+					}
+						
+					case GameStatusFactors.STATUS_WARNING:
+					{
+						Starling.current.nativeStage.frameRate=FramerateFactors.FPS_PLAYING;
+						
+						// resume play warning sound
+						SoundManager.play(SoundFactors.DAO_JI_SHI_MUSIC, false, true);
+						break;
+					}
+						
+					case GameStatusFactors.STATUS_OVER:
+					{
+						break;
+					}
+						
+					case GameStatusFactors.STATUS_START:
+					{
+						break;
+					}
+						
+					default:
+					{
+						Starling.current.nativeStage.frameRate=FramerateFactors.FPS_PLAYING;
+					}
+				}
+			}
+		}
+
 	}
 }

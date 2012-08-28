@@ -61,7 +61,7 @@ package com.jack.llk.control.asset
 		public static function init():void
 		{
 			registeTextureAtlas("effect", "effectXml");
-			registeTextureAtlas("asset2", "asset2Xml");
+			registeTextureAtlas("asset2", "asset2Xml"); 
 			registeTextureAtlas("asset3", "asset3Xml");
 			registeTextureAtlas("items", "itemsXml");
 		}

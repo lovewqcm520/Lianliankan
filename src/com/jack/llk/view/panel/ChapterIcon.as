@@ -58,7 +58,7 @@ package com.jack.llk.view.panel
 			if (locked)
 			{
 				var lock:Image=Assets.getImage("smalllock");
-				lock.scaleX = lock.scaleY = 0.75;
+				lock.scaleX = lock.scaleY = 0.75; 
 				lock.x=bg.x + (bg.width - lock.width) / 2;
 				lock.y=bg.y + (bg.height - lock.height);
 				addChild(lock);

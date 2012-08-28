@@ -104,8 +104,8 @@ package com.jack.llk.control.asset
 				if(xml)
 				{
 					var r:RoundVO = new RoundVO(Common.GAME_MODEL_ENDLESS);
-					r.importFromXML(xml);
-					r.level=l;
+					xml.@level = level;
+					r.importFromXML(xml);					
 					
 					return r;
 				}

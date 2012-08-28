@@ -5,7 +5,7 @@ package com.jack.llk.vo.model
 
 	public class BaseModelVO
 	{
-		protected var MAX_LEVEL:int;
+		public var MAX_LEVEL:int;
 		protected var _chapterList:Vector.<ChapterVO>;
 		protected var cacheName:String;
 		
@@ -47,6 +47,9 @@ package com.jack.llk.vo.model
 		 */
 		public function flushAt(level:int, stars:int, locked:Boolean=false, autoUpdateNextLevel:Boolean=true):void
 		{
+			if(level > MAX_LEVEL)
+				return;
+			
 			var readyToFlush:Boolean = false;
 			if (chapterList[level - 1] == undefined)
 			{

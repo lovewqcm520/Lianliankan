@@ -151,7 +151,7 @@ package com.jack.llk.control.sound
 				if (vo)
 				{
 					vo.sound.isBuffering ? vo.sound.close() : null;
-					vo.channel.stop();
+					vo.channel ? vo.channel.stop() : null;
 				}
 			}
 		}

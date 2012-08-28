@@ -8,6 +8,7 @@ package com.jack.llk.view.view
 	import com.jack.llk.log.Log;
 	import com.jack.llk.util.ArrayUtil;
 	import com.jack.llk.util.DrawUtil;
+	import com.jack.llk.util.NumberUtil;
 	import com.jack.llk.util.RandomUtil;
 	import com.jack.llk.view.BaseSprite;
 	import com.jack.llk.view.ItemMovieClip;
@@ -22,6 +23,7 @@ package com.jack.llk.view.view
 	import flash.geom.Point;
 	import flash.utils.getTimer;
 	
+	import starling.animation.Transitions;
 	import starling.animation.Tween;
 	import starling.core.Starling;
 	import starling.display.Image;
@@ -208,41 +210,36 @@ package com.jack.llk.view.view
 				bItem=null;
 			}
 
-			// delete from map
-			round.erase2Items(a, b);
 			// delete from items
 			items.set(a.x, a.y, null);
 			items.set(b.x, b.y, null);
+			// delete from map
+			round.erase2Items(a, b);
 
 			// dispatch item pair dispose event
 			var e:GameEvent=new GameEvent(GameEvent.XIAOCHU);
 			EventController.e.dispatchEvent(e);
 			
 			// testonly
-			moveItems();
+			//initGameCenter();
 		}
 
-		public function refreshMap(useTool:Boolean=true):Boolean
+		public function refreshMap(useTool:Boolean=true):void
 		{
 			if(useTool && round.numRefreshTool <= 0)
-				return false;
+				return ;
 			
 			// refresh the map data
-			var isOK:Boolean = round.refreshMap();
+			round.refreshMap();
 
-			if(isOK)
-			{
-				// refresh the items
-				//initGameCenter();
-				refreshGameBoardWithMoveAnimation();
-				
-				SoundManager.play(SoundFactors.SHUA_XIN_MUSIC);
-				
-				if(useTool)
-					round.numRefreshTool--;
-			}
+			// refresh the items
+			//initGameCenter();
+			refreshGameBoardWithMoveAnimation();
 			
-			return isOK;
+			SoundManager.play(SoundFactors.SHUA_XIN_MUSIC);
+			
+			if(useTool)
+				round.numRefreshTool--;
 		}
 
 		public function bomb2Items(useTool:Boolean=true):void
@@ -387,11 +384,21 @@ package com.jack.llk.view.view
 		// add some random matched items at random empty position
 		public function addRandomPoker():void
 		{
+			// 清除随机数历史记录。重新开始取数。
+			RandomUtil.clearHistory();
+			
 			var nAdd:int = 10;
 			var nItemTypes:int = round.nItemTypes;
 			
 			var index:int;
 			var p:Point;
+			
+			var nEmptyItems:int = round.nEmptyItems;
+			if(nAdd > nEmptyItems)
+			{
+				nAdd = NumberUtil.isEven(nEmptyItems) ? nEmptyItems : nEmptyItems-1;
+			}
+			
 			for (var i:int = 0; i < nAdd; i+=2) 
 			{
 				index = RandomUtil.integer(1, nItemTypes+1, false);
@@ -400,6 +407,10 @@ package com.jack.llk.view.view
 					p = round.getAnRandomEmptyPoint();
 					if(p)
 					{
+						if(items.get(p.x, p.y))
+						{
+							break;
+						}						
 						// update the map data
 						round.setItemIndex(p.x, p.y, index);
 						// update the map ui
@@ -407,9 +418,6 @@ package com.jack.llk.view.view
 					}
 				}
 			}			
-			
-			// 清除随机数历史记录。重新开始取数。
-			RandomUtil.clearHistory();
 		}
 		
 		// add a item at specify positions
@@ -442,7 +450,7 @@ package com.jack.llk.view.view
 		 */
 		private function refreshGameBoardWithMoveAnimation():void
 		{
-			var moveDuration:Number = 0.35;
+			var moveDuration:Number = 0.5;
 			var itemW:Number=round.nItemWidth;
 			var itemH:Number=round.nItemHeight;
 			var gapX:Number=round.nGapHorizontal;
@@ -461,40 +469,45 @@ package com.jack.llk.view.view
 				// switch the position of two items
 				aItem = items.get(a.x, a.y);
 				bItem = items.get(b.x, b.y);		
-				if(!aItem || !bItem)
-					continue;
-				// move a to b
-				var ta:Tween = new Tween(aItem, moveDuration);
-				ta.moveTo((b.x-1)*(itemW+gapX), (b.y-1)*(itemH+gapY)); 
-				// update a item's data
-				aItem.updateMapPosition(b.x, b.y);
-				aItem.onActivate(onItemActivate, b.x, b.y);
-				aItem.onInactivate(onItemInactivate, b.x, b.y);
-				// add to juggler
-				Starling.juggler.add(ta);	
-				// update in items
-				items.set(b.x, b.y, aItem);
+
+				if(aItem)
+				{
+					// move a to b
+					var ta:Tween = new Tween(aItem, moveDuration, Transitions.EASE_OUT_BACK);
+					ta.moveTo((b.x-1)*(itemW+gapX), (b.y-1)*(itemH+gapY)); 
+					// update a item's data
+					aItem.updateMapPosition(b.x, b.y);
+					aItem.onActivate(onItemActivate, b.x, b.y);
+					aItem.onInactivate(onItemInactivate, b.x, b.y);
+					// add to juggler
+					Starling.juggler.add(ta);	
+					// update in items
+					items.set(b.x, b.y, aItem);
+				}
 				
-				// move b to a
-				var tb:Tween = new Tween(bItem, moveDuration);
-				tb.moveTo((a.x-1)*(itemW+gapX), (a.y-1)*(itemH+gapY)); 
-				// update a item's data
-				bItem.updateMapPosition(a.x, a.y);
-				bItem.onActivate(onItemActivate, a.x, a.y);
-				bItem.onInactivate(onItemInactivate, a.x, a.y);
-				// add to juggler
-				Starling.juggler.add(tb);
-				// update in items
-				items.set(a.x, a.y, bItem);
+				if(bItem)
+				{
+					// move b to a
+					var tb:Tween = new Tween(bItem, moveDuration, Transitions.EASE_OUT_BACK);
+					tb.moveTo((a.x-1)*(itemW+gapX), (a.y-1)*(itemH+gapY)); 
+					// update a item's data
+					bItem.updateMapPosition(a.x, a.y);
+					bItem.onActivate(onItemActivate, a.x, a.y);
+					bItem.onInactivate(onItemInactivate, a.x, a.y);
+					// add to juggler
+					Starling.juggler.add(tb);
+					// update in items
+					items.set(a.x, a.y, bItem);
+				}
 			}			
 		}
 		
 		/**
 		 * Move the item on the gameboard to refreshed spot when need.
 		 */
-		private function moveItems():void
+		public function moveItems():void
 		{
-			var moveDuration:Number = 0.2;
+			var moveDuration:Number = 0.5;
 			var itemW:Number=round.nItemWidth;
 			var itemH:Number=round.nItemHeight;
 			var gapX:Number=round.nGapHorizontal;
@@ -516,7 +529,7 @@ package com.jack.llk.view.view
 				if(!aItem)
 					continue;
 				// start move
-				var ta:Tween = new Tween(aItem, moveDuration);
+				var ta:Tween = new Tween(aItem, moveDuration, Transitions.EASE_OUT_BACK);
 				ta.moveTo((b.x-1)*(itemW+gapX), (b.y-1)*(itemH+gapY)); 
 				// update a item's data
 				aItem.updateMapPosition(b.x, b.y);

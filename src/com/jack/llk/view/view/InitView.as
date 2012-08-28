@@ -10,6 +10,8 @@ package com.jack.llk.view.view
 	import flash.desktop.NativeApplication;
 	import flash.events.StatusEvent;
 	
+	import milkmidi.air3.demo.extensions.AIR3Extension;
+	
 	import starling.animation.Tween;
 	import starling.core.Starling;
 	import starling.display.Image;
@@ -78,7 +80,7 @@ package com.jack.llk.view.view
 				modelScreen.y=0;
 				Game.getInstance().container.addChild(modelScreen);
 			}
-
+ 
 			// start moving
 			var t1:Tween=new Tween(modelScreen, 0.3);
 			t1.animate("x", 0);
@@ -130,16 +132,16 @@ package com.jack.llk.view.view
 		 */
 		private function onBackClick():void
 		{
-//			try
-//			{
-//				var ane:AIR3Extension = new AIR3Extension();
-//				ane.alertDialog("提示", "确定退出游戏?");
-//				ane.addEventListener(StatusEvent.STATUS, onStatusEvent);
-//			} 
-//			catch(error:Error) 
-//			{
-//				trace(error.message);
-//			}			
+			try
+			{
+				var ane:AIR3Extension = new AIR3Extension();
+				ane.alertDialog("提示", "确定退出游戏?");
+				ane.addEventListener(StatusEvent.STATUS, onStatusEvent);
+			} 
+			catch(error:Error) 
+			{
+				trace(error.message);
+			}			
 		}
 
 		protected function onStatusEvent(event:StatusEvent):void
