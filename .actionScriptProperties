@@ -4,6 +4,7 @@
     <compilerSourcePath>
       <compilerSourcePathEntry kind="1" linkType="1" path="D:/jack's data/Github/as3-signals/src"/>
       <compilerSourcePathEntry kind="1" linkType="1" path="D:/jack's data/Github/foxhole-starling/source"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="D:/jack's data/Github/Starling-Framework/starling/src"/>
     </compilerSourcePath>
     <libraryPath defaultLinkType="0">
       <libraryPathEntry kind="4" path="">
@@ -52,13 +53,13 @@
   <flashCatalyst validateFlashCatalystCompatibility="false"/>
   <buildTargets>
     <buildTarget buildTargetName="com.adobe.flexide.multiplatform.ios.platform" iosSettingsVersion="1" provisioningFile="" releasePackageType="">
-      <multiPlatformSettings enabled="false" includePlatformLibs="false" platformID="com.adobe.flexide.multiplatform.ios.platform" version="2"/>
       <airSettings airCertificatePath="" airTimestamp="true" anePathSet="true" version="1">
         <airExcludes/>
         <anePaths>
           <anePathEntry path="D:/ane/HelloWorld.ane"/>
         </anePaths>
       </airSettings>
+      <multiPlatformSettings enabled="false" includePlatformLibs="false" platformID="com.adobe.flexide.multiplatform.ios.platform" version="2"/>
       <actionScriptSettings version="1"/>
     </buildTarget>
     <buildTarget airDownloadURL="https://market.android.com/details?id=com.adobe.air" androidSettingsVersion="1" buildTargetName="com.adobe.flexide.multiplatform.android.platform">
@@ -75,19 +76,19 @@
       <actionScriptSettings version="1"/>
     </buildTarget>
     <buildTarget buildTargetName="default">
-      <multiPlatformSettings enabled="false" includePlatformLibs="false" platformID="default" version="2"/>
       <airSettings airCertificatePath="" airTimestamp="true" anePathSet="false" version="1">
         <airExcludes/>
         <anePaths/>
       </airSettings>
+      <multiPlatformSettings enabled="false" includePlatformLibs="false" platformID="default" version="2"/>
       <actionScriptSettings version="1"/>
     </buildTarget>
     <buildTarget buildTargetName="com.qnx.flexide.multiplatform.qnx.platform" extraPackagingOptions="" signBarFile="false">
-      <multiPlatformSettings enabled="false" includePlatformLibs="false" platformID="com.qnx.flexide.multiplatform.qnx.platform" version="2"/>
       <airSettings airCertificatePath="" airTimestamp="true" anePathSet="true" version="1">
         <airExcludes/>
         <anePaths/>
       </airSettings>
+      <multiPlatformSettings enabled="false" includePlatformLibs="false" platformID="com.qnx.flexide.multiplatform.qnx.platform" version="2"/>
       <actionScriptSettings version="1"/>
     </buildTarget>
   </buildTargets>

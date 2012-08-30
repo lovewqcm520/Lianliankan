@@ -24,14 +24,19 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>[source path] as3-signals-src</name>
+			<type>2</type>
+			<location>D:/jack&apos;s data/Github/as3-signals/src</location>
+		</link>
+		<link>
 			<name>[source path] source</name>
 			<type>2</type>
 			<location>D:/jack&apos;s data/Github/foxhole-starling/source</location>
 		</link>
 		<link>
-			<name>[source path] src</name>
+			<name>[source path] starling-src</name>
 			<type>2</type>
-			<location>D:/jack&apos;s data/Github/as3-signals/src</location>
+			<location>D:/jack&apos;s data/Github/Starling-Framework/starling/src</location>
 		</link>
 	</linkedResources>
 </projectDescription>

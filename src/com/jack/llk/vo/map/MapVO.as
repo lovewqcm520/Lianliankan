@@ -99,7 +99,7 @@ package com.jack.llk.vo.map
 				(this.gameMode == Common.GAME_MODEL_TIME && this.level >= 10)
 			)
 			{
-				item_move_type = RandomUtil.integer(1, 8);
+				item_move_type = RandomUtil.integer(1, 7);
 			}
 		}
 
@@ -230,7 +230,6 @@ package com.jack.llk.vo.map
 			// choose the item move style
 			moveList.length=0;
 			
-			item_move_type = 7;
 			switch(item_move_type)
 			{
 				case 1:
